@@ -101,14 +101,18 @@ jobs:
   windows:
     needs: verify
     strategy:
+      fail-fast: false
       matrix:
         include:
           - runner: windows-2022
             arch: x64
             java: x64
+            distribution: temurin
+          # Temurin has no JDK 25 for Windows on arm64
           - runner: windows-11-arm
             arch: arm64
             java: aarch64
+            distribution: microsoft
     runs-on: ${{ matrix.runner }}
     defaults:
       run:
@@ -120,7 +124,7 @@ jobs:
 
       - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
         with:
-          distribution: temurin
+          distribution: ${{ matrix.distribution }}
           java-version: "25"
           architecture: ${{ matrix.java }}
 
@@ -163,6 +167,7 @@ jobs:
   macos:
     needs: verify
     strategy:
+      fail-fast: false
       matrix:
         include:
           - runner: macos-14
