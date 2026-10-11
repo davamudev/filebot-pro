@@ -1,0 +1,144 @@
+---
+title: Rename
+description: Match files with online databases and rename them with your own naming scheme.
+---
+
+The Rename panel has two lists: **Original Files** on the left and **New Names** on the right. Each row on the
+left is renamed to the row next to it on the right.
+
+## Original files
+
+| Button | Action |
+| --- | --- |
+| ↓ ↑ | Move the selected rows down or up to line them up with the new names |
+| ✕ | Remove the selected rows (`Delete`) |
+| **Load** | Add files or folders (also by drag and drop) |
+| Clear | Empty both lists |
+| History | Open the [rename history](#history) |
+| Presets | Apply or edit [presets](#presets) |
+
+## New names
+
+**Fetch Data** looks up every file:
+
+| Mode | Sources |
+| --- | --- |
+| Episode mode | TheTVDB, AniDB, TheMovieDB::TV, TVmaze |
+| Movie mode | TheMovieDB, OMDb |
+| Music mode | AcoustID (audio fingerprint), ID3 tags. Files with the same name as a song (lyrics `.lrc`, artwork, ...) are renamed along with it |
+| Smart mode | **Autodetect**: episodes, movies and music in one go. **Attributes**: the data stored in the files themselves (earlier renames, Exif of photos, ID3 tags of music, series and episode tags of videos) |
+
+The same menu has **Edit Format** (the [format expression](/formats/syntax/) of the new names) and
+**Preferences**:
+
+- **Match Mode**: *Opportunistic* tries harder and guesses more, *Strict* only accepts reliable matches.
+- **Language** of titles and names.
+- **Episode Order**: Airdate, Official, DVD, Absolute, AbsoluteAirdate, Digital, StoryArc or Production (with TheTVDB, Official is the Aired Order, Digital the Alternate Order, StoryArc the Alternate DVD Order and Production the Regional Order, and Airdate follows the default order of the series; with TheMovieDB, Digital, StoryArc and Production are episode groups. Series without that order use the default one).
+
+The gear button next to it holds the rename options:
+
+- **Extension**: *Preserve* keeps the original extension, *Override* lets the format decide.
+- **Action**: Rename (move), Copy, Keeplink, Symlink, Hardlink or Clone (macOS and Linux only). Copy already makes a
+  copy-on-write clone where the file system supports it (APFS, Btrfs, XFS, ReFS / Dev Drive), so it's instant and
+  takes no extra space.
+
+When a series or movie can't be identified, FileBot Pro asks for its name. You can also type its id: `tt0133093`
+(IMDb) or the number of the series or movie in the selected source (e.g. `81189` for TheTVDB).
+
+If some videos are left without a match, FileBot Pro offers to try again, only for those files: in *Opportunistic*
+mode if *Strict* was used, in *Absolute* order if *Airdate* was used, and with the series or movie selected by hand if
+it was detected automatically.
+
+Disc rips with MakeMKV names such as `title_t01.mkv` or `Disc_1_t01.mkv` say nothing about what they hold. For the
+series and movies in [TheDiscDB](https://thediscdb.com), FileBot Pro identifies each title by its duration, and by
+the disc number (from the file or folder name, e.g. `Season 1 Disc 2`), the title number and the size when several
+titles last the same:
+
+- **Series** (TheTVDB, TheMovieDB or AniDB): the episode of each title. The series is still detected from the folder
+  name or asked for.
+- **Movies**: the main movie and the extras, which are never treated as parts (CD1, CD2) of the movie. If the folder
+  name says nothing (e.g. `DISC1`), the movie is identified by the duration and size of its titles alone.
+- **Extras** (featurettes, deleted scenes, trailers, interviews, ...) of movies and series: `{plex}`, `{jellyfin}`,
+  `{emby}` and `{kodi}` put them in the extras folder of the movie, season or series (e.g. `Featurettes/Behind The
+  Story`), and [`{disc}`](/formats/bindings/#media-servers-and-lists) tells them apart in your own formats.
+
+Play All titles and titles that are not in TheDiscDB are matched as usual.
+
+To match or re-match only some files, select them and right-click the selection (or use **Match …** in the menu of a
+single file). The other files keep their matches.
+
+Right-click a new name for:
+
+- **Edit Format**: open the format editor with that file as the example.
+- **Edit Match**: search that file again, by name or id, when the match is wrong. Type in the list of results to
+  filter it.
+- **Edit Name**: type the new name by hand. Suggestions (the current and the original name, the other new names
+  and earlier input) appear as you type.
+- **Edit All Names …** (`Ctrl`+`Shift`+`N`): edit every new name at once (or only the selected ones, if you selected
+  several rows), one per line, with **Find** and **Replace** (plain text or regular expressions) for changes that
+  repeat in every name. With **Column Edit** (on when all names start the same way), a change within that common
+  start, such as the series name, applies to every name. Names you don't touch keep their match.
+
+Right-click an original file to **Open** it, **Reveal** it in its folder, match only that file (**Match …**),
+**Rename** it on disk, store its match in its attributes (**Set Attributes**) or **Move** it **to Trash**.
+
+Hover a new name to see the details of its match. Click the spinning indicator or press `Esc` to cancel
+**Fetch Data**.
+
+## Match details
+
+`F6` or `Space` (or **Fetch Data** › **Match Details**) shows the values of the most used bindings for the selected row below
+the lists, and on the **Media** tab every MediaInfo property of the file.
+
+**Match** lines both lists up again after you add, remove or reorder rows by hand. `F2` uses the file names as
+they are and `F3` the data stored on earlier renames, without looking anything up.
+
+## Presets
+
+A preset stores a format, a source, a language, an episode order and a rename action under a name. Create
+them with **Presets** › **Edit Presets**, then apply them from the same menu or with the number keys `1` to
+`9`. Each preset can have its own **Shortcut**: a fixed number key, **None**, or **Automatic**, which gives it the
+next free number in alphabetical order. The **Presets** menu groups the presets by mode (episodes, movies, music,
+files, format only) and shows the key of each preset. Number keys never
+apply a preset while you type in a text field.
+
+**File Order** sorts the files before matching: `name`, `path`, `date` (newest first), `size` (largest first),
+`resolution` (best video quality first) or an `{expression}` that gives each file a sort key, e.g. `{-bytes}`. It also
+decides which file wins when two files get the same new name.
+
+### Presets to start with
+
+FileBot Pro ships without presets. These cover the usual libraries: create each one in **Edit Presets** with
+the values of the table and put your library folder in front of the expression (e.g. `D:/Media/{plex.id}`).
+
+| Name | Datasource | Episode Order | Expression | Rename Action |
+| --- | --- | --- | --- | --- |
+| Plex · TV Shows | TheTVDB | Airdate | `{plex.id}` | Move |
+| Plex · Movies | TheMovieDB | | `{plex.id}` | Move |
+| Jellyfin · TV Shows | TheTVDB | Airdate | `{jellyfin.id}` | Move |
+| Jellyfin · Movies | TheMovieDB | | `{jellyfin.id}` | Move |
+| Kodi · TV Shows | TheTVDB | Airdate | `{kodi}` | Move |
+| Anime | AniDB | Absolute | `{plex.id}` | Move |
+| Music | ID3 tags | | `Music/{artist}/{album}/{pi.pad(2)} - {t}` | Move |
+| Downloads · Copy | TheMovieDB::TV | Airdate | `{plex.id}` | Copy |
+
+`{plex.id}` and `{jellyfin.id}` add the TheTVDB or TheMovieDB id to the series or movie folder, so the media server
+never picks the wrong one. Use **Test** as the action first if you want to check the new names without touching
+the files, and see [Examples](/formats/examples/) for formats with quality tags (`[{vf} {hd} {acf}]`).
+
+## Conflicts and validation
+
+Before renaming, FileBot Pro checks the new names:
+
+- **Illegal characters** for your file system are reported and can be replaced with **Validate**.
+- **Conflicts** (an existing file, two files with the same new name, a missing extension) are listed with the
+  reason and the files involved: the source, the new name and folder, the file that would be overwritten, or which
+  duplicate is renamed (the highest quality one) and which is skipped. **Override** moves the existing files to the
+  trash (or deletes them if there is no trash) and replaces them, **Skip** keeps the current names of the
+  conflicting files and renames all others. The dialog shows how many files will be skipped and renamed.
+
+## History
+
+Every rename is stored in the history (**History** button). Filter it, select a session or single files and
+use **Revert Selection** to move them back to where they were. **Export** and **Import** save the history to
+a file and load it again.

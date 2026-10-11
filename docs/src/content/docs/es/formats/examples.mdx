@@ -1,0 +1,65 @@
+---
+title: Ejemplos
+description: Formatos listos para copiar para series, películas, anime y música.
+---
+
+## Series
+
+```groovy title="Plex o Jellyfin"
+TV Shows/{n}/Season {s.pad(2)}/{n} - {s00e00} - {t}
+```
+
+```groovy title="Año en el nombre de la carpeta"
+{n} ({y})/Season {s}/{n} - {s00e00} - {t}
+```
+
+```groovy title="Con calidad"
+{n}/Season {s}/{n} - {s00e00} - {t} [{vf} {vc} {ac}]
+```
+
+## Películas
+
+```groovy title="Una carpeta por película"
+Movies/{n} ({y})/{n} ({y})
+```
+
+```groovy title="Colecciones"
+Movies/{collection + '/'}{n} ({y})/{n} ({y})
+```
+
+Las películas que no forman parte de una colección simplemente se saltan esa carpeta.
+
+```groovy title="Con edición y calidad"
+{n} ({y}){' ' + tags.join(' ')} [{vf}{' ' + hdr}]
+```
+
+```groovy title="Audio y definición al estilo de las releases"
+Movies/{n} ({y})/{n} ({y}) [{hd} {vc} {acf}]
+```
+
+Para una película 1080p en HEVC con audio Dolby Digital Plus 5.1 da `The Matrix (1999) [FHD x265 DDP5.1]`.
+
+## Anime
+
+```groovy title="Numeración absoluta"
+Anime/{n}/{n} - {absolute.pad(3)} - {t}
+```
+
+```groovy title="Temporadas para AniDB"
+Anime/{n}/Season {seasonize.s}/{n} - {seasonize.s00e00} - {t}
+```
+
+## Música
+
+```groovy title="Artista y álbum"
+Music/{albumArtist}/{album} ({y})/{pi.pad(2)} - {t}
+```
+
+## Subtítulos junto a su vídeo
+
+```groovy
+{n} - {s00e00} - {t}{subt}
+```
+
+`{subt}` añade el idioma y la etiqueta `forced` o `sdh` del subtítulo (`.eng.forced`), así los reproductores lo
+siguen reconociendo.

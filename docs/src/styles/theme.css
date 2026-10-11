@@ -1,0 +1,1604 @@
+/* =========================================================================
+   FileBot Pro — documentation theme
+   Design system derived from two references (extracted with skillui):
+     · aprendesql.dev   → very high-contrast neutrals, very heavy display
+                          type, pill buttons, dotted background.
+     · gitbook.com/docs → three-column layout, numbered steps,
+                          uppercase micro-labels.
+   The accent is the orange of the FileBot Pro logo (#f97316, the app accent).
+   All colour goes through custom properties: there are no stray hex values
+   in the component CSS.
+   ========================================================================= */
+
+/* ---------- 1. Tokens ---------------------------------------------------- */
+
+:root {
+	/* Orange accent (the app and logo accent). Ramp around #f97316. The light theme uses
+	   steps 600-700 so that text on white stays readable. */
+	--w-accent-50: #fff7ed;
+	--w-accent-100: #ffedd5;
+	--w-accent-200: #fed7aa;
+	--w-accent-300: #fdba74;
+	--w-accent-400: #fb923c;
+	--w-accent-500: #f97316;
+	--w-accent-600: #ea580c;
+	--w-accent-700: #c2410c;
+	--w-accent-800: #9a3412;
+	--w-accent-900: #7c2d12;
+
+	/* Neutrals (aprendesql: pure white ↔ #0a0a0a). */
+	--w-neutral-0: #ffffff;
+	--w-neutral-50: #fafafa;
+	--w-neutral-100: #f4f4f5;
+	--w-neutral-200: #e4e4e7;
+	--w-neutral-300: #d4d4d8;
+	--w-neutral-400: #a1a1aa;
+	--w-neutral-500: #71717a;
+	--w-neutral-600: #52525b;
+	--w-neutral-700: #3f3f46;
+	--w-neutral-800: #262626;
+	--w-neutral-850: #1a1a1a;
+	--w-neutral-900: #18181b;
+	--w-neutral-950: #0a0a0a;
+
+	/* 4 px spacing grid. */
+	--w-space-1: 0.25rem;
+	--w-space-2: 0.5rem;
+	--w-space-3: 0.75rem;
+	--w-space-4: 1rem;
+	--w-space-6: 1.5rem;
+	--w-space-8: 2rem;
+	--w-space-12: 3rem;
+	--w-space-16: 4rem;
+
+	/* Radii: pill for actions, card for surfaces. */
+	--w-radius-sm: 6px;
+	--w-radius-md: 10px;
+	--w-radius-lg: 16px;
+	--w-radius-xl: 24px;
+	--w-radius-pill: 999px;
+
+	/* Typography. */
+	--sl-font: 'Roboto Variable', 'Roboto', system-ui, -apple-system, 'Segoe UI', sans-serif;
+	--sl-font-mono: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+	/* Three-column layout, a bit wider than the default one. */
+	--sl-sidebar-width: 17.5rem;
+	--sl-content-width: 48rem;
+	--sl-nav-height: 4rem;
+
+	--w-transition: 180ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Dark mode (the one Starlight applies by default). */
+:root {
+	--sl-color-accent-low: var(--w-accent-800);
+	--sl-color-accent: var(--w-accent-400);
+	--sl-color-accent-high: var(--w-accent-300);
+
+	--sl-color-white: #ffffff;
+	--sl-color-gray-1: #ededed;
+	--sl-color-gray-2: #c9c9cd;
+	--sl-color-gray-3: #a1a1aa;
+	--sl-color-gray-4: #71717a;
+	--sl-color-gray-5: #3f3f46;
+	--sl-color-gray-6: #1f1f22;
+	--sl-color-gray-7: #141416;
+	--sl-color-black: var(--w-neutral-950);
+
+	--sl-color-bg: var(--w-neutral-950);
+	--sl-color-bg-nav: color-mix(in srgb, var(--w-neutral-950) 88%, transparent);
+	--sl-color-bg-sidebar: var(--w-neutral-950);
+	--sl-color-bg-inline-code: #202024;
+	--sl-color-hairline: var(--w-neutral-800);
+	--sl-color-hairline-light: #1f1f22;
+	--sl-color-hairline-shade: var(--w-neutral-850);
+	--sl-color-text: #c9c9cd;
+	--sl-color-text-accent: var(--w-accent-400);
+	--w-link: var(--w-accent-400);
+	--sl-color-text-invert: var(--w-neutral-950);
+
+	/* Accent fill (step numbers, lightbox buttons) and the ink that goes on
+	   top: the light cyan needs dark text. */
+	--w-accent-solid: var(--w-accent-400);
+	--w-on-accent: var(--w-neutral-950);
+
+	--w-surface: #121214;
+	--w-surface-raised: #17171a;
+	--w-border: var(--w-neutral-800);
+	--w-border-strong: #33333a;
+	--w-kicker: var(--w-neutral-400);
+	--w-dot: rgb(255 255 255 / 0.07);
+	--w-cta-bg: #ffffff;
+	--w-cta-fg: var(--w-neutral-950);
+	--w-shadow-raised: 0 1px 3px rgb(0 0 0 / 0.5);
+	--w-shadow-float: 0 8px 24px rgb(0 0 0 / 0.45);
+
+	/* Asides. Starlight colours them with its blue/purple/orange/red ramps;
+	   they are redefined so they don't clash with the house cyan.
+	   `tip` takes the accent: it is the brand cue. */
+	--sl-color-blue: #5b8def;
+	--sl-color-blue-high: #a9c4ff;
+	--sl-color-blue-low: #131a29;
+	--sl-color-purple: var(--w-accent-400);
+	--sl-color-purple-high: var(--w-accent-300);
+	--sl-color-purple-low: #092326;
+	--sl-color-orange: #d97706;
+	--sl-color-orange-high: #fbbf24;
+	--sl-color-orange-low: #241703;
+	--sl-color-red: #dc2626;
+	--sl-color-red-high: #fca5a5;
+	--sl-color-red-low: #290d0d;
+
+	color-scheme: dark;
+}
+
+/* Light mode. */
+:root[data-theme='light'] {
+	--sl-color-accent-low: var(--w-accent-100);
+	--sl-color-accent: var(--w-accent-600);
+	--sl-color-accent-high: var(--w-accent-700);
+
+	--sl-color-white: var(--w-neutral-900);
+	--sl-color-gray-1: var(--w-neutral-900);
+	--sl-color-gray-2: var(--w-neutral-700);
+	--sl-color-gray-3: var(--w-neutral-500);
+	--sl-color-gray-4: var(--w-neutral-400);
+	--sl-color-gray-5: var(--w-neutral-300);
+	--sl-color-gray-6: var(--w-neutral-100);
+	--sl-color-gray-7: var(--w-neutral-50);
+	--sl-color-black: #ffffff;
+
+	--sl-color-bg: #ffffff;
+	--sl-color-bg-nav: color-mix(in srgb, #ffffff 88%, transparent);
+	--sl-color-bg-sidebar: #ffffff;
+	--sl-color-bg-inline-code: var(--w-neutral-100);
+	--sl-color-hairline: var(--w-neutral-200);
+	--sl-color-hairline-light: var(--w-neutral-200);
+	--sl-color-hairline-shade: var(--w-neutral-100);
+	--sl-color-text: var(--w-neutral-600);
+	/* Logo orange (600) for the title, active items and fills; 700 only for links inside text, where small
+	   text on white needs the extra contrast. */
+	--sl-color-text-accent: var(--w-accent-600);
+	--sl-color-text-invert: #ffffff;
+	--w-link: var(--w-accent-700);
+
+	--w-accent-solid: var(--w-accent-600);
+	--w-on-accent: #ffffff;
+
+	--w-surface: var(--w-neutral-50);
+	--w-surface-raised: #ffffff;
+	--w-border: var(--w-neutral-200);
+	--w-border-strong: var(--w-neutral-300);
+	--w-kicker: var(--w-neutral-500);
+	--w-dot: rgb(0 0 0 / 0.07);
+	--w-cta-bg: var(--w-neutral-900);
+	--w-cta-fg: #ffffff;
+	--w-shadow-raised: 0 1px 3px rgb(0 0 0 / 0.08), 0 1px 2px rgb(0 0 0 / 0.04);
+	--w-shadow-float: 0 8px 24px rgb(0 0 0 / 0.08);
+
+	/* The same asides, in light mode. */
+	--sl-color-blue: #3b6fd4;
+	--sl-color-blue-high: #1e3a8a;
+	--sl-color-blue-low: #eef3ff;
+	--sl-color-purple: var(--w-accent-600);
+	--sl-color-purple-high: var(--w-accent-700);
+	--sl-color-purple-low: var(--w-accent-50);
+	--sl-color-orange: #d97706;
+	--sl-color-orange-high: #92400e;
+	--sl-color-orange-low: #fff8eb;
+	--sl-color-red: #dc2626;
+	--sl-color-red-high: #991b1b;
+	--sl-color-red-low: #fef2f2;
+
+	color-scheme: light;
+}
+
+/* ---------- 2. Base ------------------------------------------------------ */
+
+body {
+	font-family: var(--sl-font);
+	-webkit-font-smoothing: antialiased;
+	text-rendering: optimizeLegibility;
+}
+
+/* Display headings, heavy and very tight (aprendesql). */
+.sl-markdown-content :is(h1, h2, h3, h4) {
+	letter-spacing: -0.022em;
+	font-weight: 700;
+}
+
+.sl-markdown-content h2 {
+	font-size: clamp(1.5rem, 1.15rem + 1.5vw, 1.9rem);
+	margin-top: var(--w-space-12);
+	padding-top: var(--w-space-6);
+	border-top: 1px solid var(--sl-color-hairline-light);
+}
+
+.sl-markdown-content h2:first-child {
+	border-top: 0;
+	margin-top: 0;
+	padding-top: 0;
+}
+
+.sl-markdown-content h3 {
+	font-size: clamp(1.15rem, 1.05rem + 0.4vw, 1.35rem);
+}
+
+/* Links: thin underline that saturates on hover (gitbook). */
+.sl-markdown-content a:not(:where(.not-content *)) {
+	color: var(--w-link);
+	text-decoration-color: color-mix(in srgb, var(--sl-color-accent) 40%, transparent);
+	text-underline-offset: 0.2em;
+	transition: text-decoration-color var(--w-transition);
+}
+
+.sl-markdown-content a:not(:where(.not-content *)):hover {
+	text-decoration-color: var(--sl-color-accent);
+}
+
+/* ---------- 3. Header ---------------------------------------------------- */
+
+/* Mind the selector: Starlight uses the `header` class TWICE, on the fixed
+   `<header>` and on the `<div class="header sl-flex">` inside it.
+   A `.header { border-bottom }` also painted the rule of the inner div,
+   which has side padding: a horizontal line showed up halfway down the
+   header, crossing the logo and the search box, and the `backdrop-filter`
+   was duplicated on top of that. It is limited to the element. */
+header.header {
+	border-bottom: 1px solid var(--sl-color-hairline-light);
+	backdrop-filter: saturate(150%) blur(12px);
+	background-color: var(--sl-color-bg-nav);
+}
+
+.site-title {
+	font-weight: 700;
+	letter-spacing: -0.03em;
+	font-size: 1.25rem;
+}
+
+/* Social icons and header buttons: same touch size and same reaction,
+   instead of the loose underline they come with by default. */
+.header .social-icons a {
+	border-radius: var(--w-radius-md);
+	padding: var(--w-space-2);
+	transition: color var(--w-transition), background var(--w-transition);
+}
+
+.header .social-icons a:hover {
+	background: var(--w-surface);
+	color: var(--sl-color-text-accent);
+}
+
+.header .social-icons::after {
+	border-inline-end-color: var(--sl-color-hairline-light);
+}
+
+/* ---------- 4. Sidebar --------------------------------------------------- */
+
+.sidebar-pane {
+	border-inline-end: 1px solid var(--sl-color-hairline-light);
+	background-color: var(--sl-color-bg-sidebar);
+}
+
+.w-sidebar {
+	display: flex;
+	flex-direction: column;
+	gap: var(--w-space-8);
+	padding-block: var(--w-space-2) var(--w-space-12);
+}
+
+.w-group {
+	display: flex;
+	flex-direction: column;
+	gap: var(--w-space-1);
+}
+
+/* Group header: icon in a chip + uppercase micro-label + title. */
+.w-group__header {
+	display: flex;
+	align-items: center;
+	gap: var(--w-space-3);
+	padding: var(--w-space-2) var(--w-space-2) var(--w-space-3);
+}
+
+.w-group__icon {
+	display: grid;
+	place-items: center;
+	inline-size: 2.125rem;
+	block-size: 2.125rem;
+	flex: none;
+	border-radius: var(--w-radius-pill);
+	border: 1px solid var(--w-border);
+	background: var(--w-surface);
+	color: var(--sl-color-gray-2);
+	transition: color var(--w-transition), border-color var(--w-transition);
+}
+
+.w-group[data-current='true'] .w-group__icon {
+	color: var(--sl-color-accent);
+	border-color: color-mix(in srgb, var(--sl-color-accent) 45%, transparent);
+	background: color-mix(in srgb, var(--sl-color-accent) 10%, transparent);
+}
+
+.w-group__kicker {
+	display: block;
+	font-size: 0.625rem;
+	font-weight: 500;
+	letter-spacing: 0.11em;
+	text-transform: uppercase;
+	color: var(--w-kicker);
+	line-height: 1.4;
+}
+
+.w-group[data-current='true'] .w-group__kicker {
+	color: var(--sl-color-text-accent);
+}
+
+.w-group__label {
+	display: block;
+	font-size: 0.9375rem;
+	font-weight: 700;
+	letter-spacing: -0.01em;
+	color: var(--sl-color-white);
+	line-height: 1.3;
+}
+
+/* Page list: vertical rail that lights up on the active page. */
+.w-group__list {
+	list-style: none;
+	padding: 0;
+	margin: 0 0 0 1.0625rem;
+	border-inline-start: 1px solid var(--sl-color-hairline-light);
+}
+
+.w-group__link {
+	display: block;
+	padding: 0.4375rem var(--w-space-3);
+	margin-inline-start: -1px;
+	border-inline-start: 2px solid transparent;
+	font-size: 0.875rem;
+	line-height: 1.45;
+	color: var(--sl-color-gray-3);
+	text-decoration: none;
+	transition: color var(--w-transition), border-color var(--w-transition);
+}
+
+.w-group__link:hover {
+	color: var(--sl-color-white);
+}
+
+.w-group__link[aria-current='page'] {
+	color: var(--sl-color-text-accent);
+	font-weight: 600;
+	border-inline-start-color: var(--sl-color-accent);
+}
+
+/* ---------- 5. Page header + table of contents --------------------------- */
+
+.w-page-head {
+	display: flex;
+	flex-direction: column;
+	gap: var(--w-space-3);
+	margin-block-end: var(--w-space-6);
+}
+
+.w-breadcrumb {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--w-space-2);
+	font-size: 0.8125rem;
+	color: var(--sl-color-gray-3);
+}
+
+.w-breadcrumb__sep {
+	color: var(--sl-color-gray-4);
+}
+
+.w-breadcrumb__current {
+	color: var(--sl-color-text-accent);
+	font-weight: 500;
+}
+
+#_top {
+	font-size: clamp(2rem, 1.4rem + 2.6vw, 3rem);
+	font-weight: 700;
+	letter-spacing: -0.035em;
+	line-height: 1.08;
+}
+
+.w-page-head__tagline {
+	font-size: clamp(1rem, 0.95rem + 0.3vw, 1.125rem);
+	color: var(--sl-color-gray-3);
+	max-inline-size: 42rem;
+	margin: 0;
+}
+
+.right-sidebar h2 {
+	font-size: 0.6875rem;
+	letter-spacing: 0.11em;
+	text-transform: uppercase;
+	color: var(--w-kicker);
+	font-weight: 500;
+}
+
+/* ---------- 6. Content: code, tables, images ----------------------------- */
+
+.sl-markdown-content :not(pre) > code:not(:where(.not-content *)) {
+	border: 1px solid var(--sl-color-hairline);
+	border-radius: var(--w-radius-sm);
+	padding: 0.15em 0.4em;
+	font-size: 0.875em;
+}
+
+/* Code blocks. Expressive Code's frame came with the macOS traffic-light
+   bar (three grey dots and nothing else), exactly the kind of ornament that
+   dates a site. The bar stays, because the copy button is positioned
+   relative to it, but instead of the dots it carries the language label:
+   `src/ec/language-label.mjs` copies it onto the frame so it can be read
+   with `attr()` from here. */
+.expressive-code .frame {
+	--ec-frm-edBg: var(--w-surface);
+	--ec-frm-edActTabBg: var(--w-surface-raised);
+	--ec-brdCol: var(--w-border);
+	--ec-brdRad: var(--w-radius-md);
+	/* Title bar height. Shared by the bar's `min-block-size` and the
+	   position of the copy button, which is centred on it. */
+	--w-ec-bar: 2.75rem;
+	border-radius: var(--w-radius-md);
+	overflow: hidden;
+	box-shadow: var(--w-shadow-raised);
+}
+
+.expressive-code .frame pre {
+	border-radius: 0;
+	border: 0;
+}
+
+.expressive-code .frame .header {
+	display: flex;
+	align-items: center;
+	/* Terminal frames come with their content centred, for the macOS
+	   traffic lights; here everything starts on the left. */
+	justify-content: flex-start;
+	gap: var(--w-space-3);
+	block-size: auto;
+	/* The copy button owns the right-hand side: its slot is reserved. The
+	   height comes from it, since on touch screens Expressive Code enlarges it
+	   to 40 px so it can be tapped with a finger. */
+	min-block-size: var(--w-ec-bar);
+	padding-inline: var(--w-space-4) 3rem;
+	border-block-end: 1px solid var(--w-border);
+	background: var(--w-surface-raised);
+	font-family: var(--sl-font);
+	font-size: 0.75rem;
+	font-weight: 600;
+	letter-spacing: 0.02em;
+	color: var(--w-kicker);
+}
+
+/* The language label opens the bar, in uppercase.
+ *
+ * Expressive Code uses this same `::before` for two things of its own: the
+ * frame's decorative layer (`position: absolute; inset: 0`, with a border)
+ * and the macOS traffic lights on terminals (`line-height: 0` and opacity,
+ * which leave the text zero-height and invisible). Rather than switching
+ * properties off one by one, it is fully reset with `all: unset` and only
+ * what is needed is declared; `content` comes last because `all` clears it
+ * too. */
+.expressive-code .frame .header[data-code-lang]::before {
+	all: unset;
+	content: attr(data-code-lang);
+	flex: none;
+	font-family: var(--sl-font);
+	font-size: 0.6875rem;
+	font-weight: 600;
+	line-height: 1.4;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--w-kicker);
+}
+
+/* Frames with a title paint it in `.title`, after the language. */
+.expressive-code .frame .header .title {
+	all: unset;
+	min-inline-size: 0;
+	font-family: var(--sl-font-mono);
+	font-size: 0.75rem;
+	font-weight: 500;
+	color: var(--sl-color-gray-2);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.expressive-code .frame .header .title:not(:empty)::before {
+	content: '';
+	display: inline-block;
+	inline-size: 1px;
+	block-size: 0.875em;
+	margin-inline-end: var(--w-space-3);
+	vertical-align: -0.1em;
+	background: var(--w-border-strong);
+}
+
+.expressive-code .frame .header .title::after {
+	display: none;
+}
+
+/* The copy button moves up into the bar, in the usual corner. Expressive
+   Code pushes it down depending on the frame type (41 px with a title, 40 on
+   terminals, 7 on bare ones); here every block has the bar, so it is centred
+   on it and the button's size doesn't matter: on touch screens it is
+   enlarged to 40 px. `50%` doesn't work, because the containing block is the
+   whole frame. */
+.expressive-code .copy {
+	/* Expressive Code leaves the bar at `z-index: 1`. Without raising the
+	   button above it, the bar covers it and, worse, intercepts its clicks: the
+	   button is half hidden and copies nothing. */
+	z-index: 2;
+	inset-block-start: calc(var(--w-ec-bar) / 2);
+	inset-inline-end: 0.375rem;
+	transform: translateY(-50%);
+}
+
+.expressive-code .copy button {
+	border-radius: var(--w-radius-sm);
+	border: 1px solid var(--w-border);
+	background: var(--w-surface-raised);
+	backdrop-filter: blur(6px);
+	transition: border-color var(--w-transition), background var(--w-transition);
+}
+
+.expressive-code .copy button:hover {
+	border-color: var(--sl-color-accent);
+	background: var(--w-surface);
+}
+
+/* Every table scrolls inside its own box: without this a wide comparison
+   table breaks the layout on mobile. The scroll lives on the wrapper added by
+   `src/rehype/wrap-tables.mjs`, not on the table, so that the border and
+   radius always follow the content of the rows. */
+.w-table {
+	max-inline-size: 100%;
+	overflow-x: auto;
+	overscroll-behavior-x: contain;
+	border: 1px solid var(--sl-color-hairline);
+	border-radius: var(--w-radius-md);
+	background: var(--sl-color-bg);
+	margin-block: var(--w-space-6);
+	/* Side gradients while there is still table left to see: a hint that
+	   it can be dragged, without a scrollbar always on top. */
+	background-image: linear-gradient(
+			to right,
+			color-mix(in srgb, var(--sl-color-black) 12%, transparent),
+			transparent 2.5rem
+		),
+		linear-gradient(
+			to left,
+			color-mix(in srgb, var(--sl-color-black) 12%, transparent),
+			transparent 2.5rem
+		);
+	background-repeat: no-repeat;
+	background-size: 2.5rem 100%, 2.5rem 100%;
+	background-position: left center, right center;
+	background-attachment: local, local;
+}
+
+.w-table:focus-visible {
+	outline: 2px solid var(--sl-color-accent);
+	outline-offset: 2px;
+}
+
+/* Thin scrollbar instead of the system one. */
+.w-table {
+	scrollbar-width: thin;
+	scrollbar-color: var(--w-border-strong) transparent;
+}
+
+.w-table::-webkit-scrollbar {
+	height: 8px;
+}
+
+.w-table::-webkit-scrollbar-thumb {
+	border-radius: var(--w-radius-pill);
+	background: var(--w-border-strong);
+}
+
+.sl-markdown-content .w-table table:not(:where(.not-content *)),
+.sl-markdown-content table:not(:where(.not-content *)) {
+	display: table;
+	/* Full width with wrapping text: `max-content` laid every cell out on one line, so a long description pushed
+	   the table past the column and hid its first column behind a horizontal scroll. The box only scrolls when
+	   the cells can't get narrower (minimum width per cell, small screens). */
+	inline-size: 100%;
+	margin: 0;
+	border: 0;
+	border-collapse: collapse;
+	border-radius: 0;
+	font-size: 0.875rem;
+	overflow: visible;
+}
+
+.sl-markdown-content :is(th, td):not(:where(.not-content *)) {
+	border: 0;
+	border-block-end: 1px solid var(--sl-color-hairline-light);
+	padding: var(--w-space-2) var(--w-space-3);
+	vertical-align: top;
+	min-inline-size: 5.5rem;
+}
+
+/* Long identifiers (`-Ddev.davamu.filebotpro.archive.extractor=…`, `FILEBOT_PRO_APIKEY_…`) may break
+   anywhere instead of widening the whole table. */
+.sl-markdown-content td :is(code, a):not(:where(.not-content *)) {
+	overflow-wrap: anywhere;
+}
+
+.sl-markdown-content th:not(:where(.not-content *)) {
+	font-size: 0.6875rem;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--w-kicker);
+	font-weight: 600;
+	background: var(--w-surface);
+	border-block-end: 1px solid var(--sl-color-hairline);
+	text-align: start;
+}
+
+/* Very faint alternating rows: in a wide comparison table they are what
+   lets the eye follow a row while dragging horizontally. */
+.sl-markdown-content tbody tr:nth-child(even) :is(th, td):not(:where(.not-content *)) {
+	background: color-mix(in srgb, var(--w-surface) 55%, transparent);
+}
+
+.sl-markdown-content tbody tr:hover :is(th, td):not(:where(.not-content *)) {
+	background: var(--w-surface);
+}
+
+.sl-markdown-content tr:last-child :is(th, td):not(:where(.not-content *)) {
+	border-block-end: 0;
+}
+
+.sl-markdown-content img:not(:where(.not-content *)) {
+	border-radius: var(--w-radius-md);
+	border: 1px solid var(--sl-color-hairline-light);
+	max-inline-size: 100%;
+	height: auto;
+}
+
+/* Images with a transparent background. A logo's ink is a single colour
+   and doesn't change with the theme: a black logo got lost in the dark theme,
+   a near-white one got lost in the light theme. Instead of inverting the
+   image (which ruins any coloured logo), it gets the surface it was drawn
+   for placed underneath, the same in both themes, so the image reads the
+   same with either. It is marked from Markdown with `#plate-light` or
+   `#plate-dark` in the URL; src/rehype/image-plates.mjs translates that into
+   these classes. */
+.sl-markdown-content img.w-img-plate:not(:where(.not-content *)) {
+	padding: var(--w-space-4);
+	/* Without this the default `object-fit` stretches the logo inside the
+	   padded box instead of keeping its aspect ratio. */
+	object-fit: contain;
+}
+
+.sl-markdown-content img.w-img-plate--light:not(:where(.not-content *)) {
+	background: #f4f4f5;
+	border-color: rgb(0 0 0 / 0.12);
+}
+
+.sl-markdown-content img.w-img-plate--dark:not(:where(.not-content *)) {
+	background: #17171a;
+	border-color: rgb(255 255 255 / 0.14);
+}
+
+/* A standalone icon gains nothing from being stretched across the whole
+   column: it keeps its own size and is centred. It is marked with `small`
+   in the URL fragment. */
+.sl-markdown-content img.w-img--small:not(:where(.not-content *)) {
+	display: block;
+	margin-inline: auto;
+	inline-size: min(100%, 20rem);
+}
+
+.starlight-aside {
+	border-radius: var(--w-radius-md);
+	border-inline-start-width: 3px;
+	padding: var(--w-space-4);
+}
+
+/* ---------- 7. Custom pieces --------------------------------------------- */
+
+.w-grid {
+	display: grid;
+	gap: var(--w-space-4);
+	grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+	margin-block: var(--w-space-8);
+	padding: 0;
+	list-style: none;
+}
+
+/* The dotted background over a surface used to be the home page hero's;
+   when the hero was removed, the section cards kept it: they are the only
+   thing on the home page, and this way it doesn't look flat. */
+.w-card {
+	display: flex;
+	flex-direction: column;
+	gap: var(--w-space-2);
+	padding: var(--w-space-6);
+	border: 1px solid var(--w-border);
+	border-radius: var(--w-radius-lg);
+	background-color: var(--w-surface);
+	background-image: radial-gradient(var(--w-dot) 1px, transparent 1px);
+	background-size: 22px 22px;
+	background-position: center;
+	text-decoration: none !important;
+	color: inherit;
+	transition: transform var(--w-transition), border-color var(--w-transition),
+		box-shadow var(--w-transition);
+}
+
+.w-card:hover {
+	transform: translateY(-2px);
+	border-color: color-mix(in srgb, var(--sl-color-accent) 45%, transparent);
+	box-shadow: var(--w-shadow-float);
+}
+
+.w-card__icon {
+	display: grid;
+	place-items: center;
+	inline-size: 2.5rem;
+	block-size: 2.5rem;
+	border-radius: var(--w-radius-pill);
+	border: 1px solid var(--w-border);
+	background: var(--w-surface);
+	color: var(--sl-color-accent);
+	margin-block-end: var(--w-space-2);
+}
+
+.w-card__kicker {
+	font-size: 0.625rem;
+	font-weight: 500;
+	letter-spacing: 0.11em;
+	text-transform: uppercase;
+	color: var(--w-kicker);
+}
+
+.w-card__title {
+	font-size: 1.0625rem;
+	font-weight: 700;
+	letter-spacing: -0.015em;
+	color: var(--sl-color-white);
+	line-height: 1.3;
+}
+
+.w-card__text {
+	font-size: 0.875rem;
+	color: var(--sl-color-gray-3);
+	line-height: 1.55;
+	margin: 0;
+}
+
+/* Footer. */
+.w-footer {
+	border-block-start: 1px solid var(--sl-color-hairline-light);
+	margin-block-start: var(--w-space-12);
+	padding-block-start: var(--w-space-6);
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--w-space-3) var(--w-space-6);
+	align-items: center;
+	justify-content: space-between;
+	font-size: 0.8125rem;
+	color: var(--sl-color-gray-3);
+}
+
+.w-footer__meta {
+	font-family: var(--sl-font-mono);
+	font-size: 0.75rem;
+}
+
+/* ---------- 8. Responsive ------------------------------------------------ */
+
+/* On mobile the sidebar lives inside Starlight's drop-down panel, so it
+   is enough to loosen the vertical rhythm and avoid overflow. */
+@media (max-width: 50rem) {
+	:root {
+		--sl-nav-height: 3.5rem;
+	}
+
+	.w-sidebar {
+		gap: var(--w-space-6);
+		padding-block-end: var(--w-space-8);
+	}
+
+	.w-group__header {
+		padding-block: var(--w-space-1) var(--w-space-2);
+	}
+
+	.w-card {
+		padding: var(--w-space-4);
+	}
+
+	.w-steps > li {
+		padding-inline-start: 2.25rem;
+	}
+
+	.sl-markdown-content table:not(:where(.not-content *)) {
+		font-size: 0.8125rem;
+	}
+}
+
+/* The document never scrolls horizontally. */
+html,
+body {
+	overflow-x: clip;
+}
+
+/* Global transition switch. ThemeSelect.astro turns it on while the theme
+   changes: otherwise every surface that animates `background` or
+   `border-color` for hover drags itself to the new colour and the old
+   background shows for an instant. */
+.w-no-transitions,
+.w-no-transitions *,
+.w-no-transitions *::before,
+.w-no-transitions *::after {
+	transition: none !important;
+	animation: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		transition-duration: 0.01ms !important;
+		scroll-behavior: auto !important;
+	}
+}
+
+/* ---------- 9. Starlight components, restyled ---------------------------- */
+
+/* <Steps>: rail and accent-coloured dots, like the steps in GitBook's docs. */
+.sl-markdown-content .sl-steps {
+	--sl-steps-marker-size: 1.75rem;
+	border-inline-start: 1px solid color-mix(in srgb, var(--sl-color-accent) 28%, transparent);
+	padding-inline-start: 0;
+	margin-inline-start: 0.875rem;
+}
+
+.sl-markdown-content .sl-steps > li {
+	padding-inline-start: 2.5rem;
+	padding-block-end: var(--w-space-6);
+}
+
+.sl-markdown-content .sl-steps > li::before {
+	background: var(--w-accent-solid) !important;
+	color: var(--w-on-accent) !important;
+	border: 0 !important;
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+	box-shadow: 0 0 0 4px var(--sl-color-bg);
+}
+
+.sl-markdown-content .sl-steps > li:last-child {
+	padding-block-end: 0;
+}
+
+/* <Card> and <CardGrid>. */
+.sl-markdown-content .card-grid {
+	gap: var(--w-space-4);
+}
+
+.sl-markdown-content .card {
+	border: 1px solid var(--w-border);
+	border-radius: var(--w-radius-lg);
+	background: var(--w-surface-raised);
+	padding: var(--w-space-6);
+	box-shadow: none;
+	transition: border-color var(--w-transition), box-shadow var(--w-transition);
+}
+
+.sl-markdown-content .card:hover {
+	border-color: var(--w-border-strong);
+	box-shadow: var(--w-shadow-float);
+}
+
+.sl-markdown-content .card .title {
+	font-size: 1.0625rem;
+	font-weight: 700;
+	letter-spacing: -0.015em;
+	color: var(--sl-color-white);
+}
+
+.sl-markdown-content .card .icon {
+	color: var(--sl-color-accent);
+}
+
+/* <LinkCard>. */
+.sl-markdown-content .sl-link-card {
+	border-radius: var(--w-radius-lg);
+	border-color: var(--w-border);
+	background: var(--w-surface-raised);
+	box-shadow: none;
+	transition: border-color var(--w-transition), transform var(--w-transition),
+		box-shadow var(--w-transition);
+}
+
+.sl-markdown-content .sl-link-card:hover {
+	transform: translateY(-2px);
+	border-color: color-mix(in srgb, var(--sl-color-accent) 45%, transparent);
+	box-shadow: var(--w-shadow-float);
+	background: var(--w-surface-raised);
+}
+
+.sl-markdown-content .sl-link-card .title {
+	font-weight: 700;
+	letter-spacing: -0.015em;
+}
+
+.sl-markdown-content .sl-link-card .icon {
+	color: var(--sl-color-accent);
+}
+
+/* <LinkButton>: pill. */
+.sl-markdown-content .sl-link-button {
+	border-radius: var(--w-radius-pill);
+	font-weight: 700;
+	padding: 0.75rem 1.375rem;
+	transition: transform var(--w-transition), box-shadow var(--w-transition),
+		opacity var(--w-transition);
+}
+
+.sl-markdown-content .sl-link-button.primary {
+	background: var(--w-cta-bg);
+	color: var(--w-cta-fg);
+	border-color: transparent;
+}
+
+.sl-markdown-content .sl-link-button.primary:hover {
+	opacity: 0.88;
+	transform: translateY(-1px);
+}
+
+.sl-markdown-content .sl-link-button.secondary {
+	border-color: var(--w-border);
+	background: var(--w-surface-raised);
+	color: var(--sl-color-white);
+}
+
+.sl-markdown-content .sl-link-button.secondary:hover {
+	border-color: var(--w-border-strong);
+	transform: translateY(-1px);
+	box-shadow: var(--w-shadow-float);
+}
+
+/* <Tabs>. */
+.sl-markdown-content starlight-tabs .tablist-wrapper ul {
+	border-block-end-color: var(--sl-color-hairline-light);
+}
+
+.sl-markdown-content starlight-tabs [role='tab'][aria-selected='true'] {
+	border-block-end-color: var(--sl-color-accent);
+	color: var(--sl-color-text-accent);
+	font-weight: 700;
+}
+
+/* <Badge>. */
+.sl-markdown-content .sl-badge {
+	border-radius: var(--w-radius-pill);
+	font-weight: 600;
+	letter-spacing: 0.02em;
+}
+
+/* <FileTree>. */
+.sl-markdown-content starlight-file-tree {
+	border-radius: var(--w-radius-md);
+	border-color: var(--w-border);
+	background: var(--w-surface);
+}
+
+/* On the home page, PageTitle.astro renders nothing: Starlight still
+   leaves its panel with padding and a bottom rule, and an empty strip showed
+   above the hero. Any panel with neither a page header nor content is
+   hidden. */
+.content-panel:not(:has(.sl-markdown-content)):not(:has(.w-page-head)) {
+	display: none;
+}
+
+/* ---------- 10. Controls and floating surfaces --------------------------- */
+
+/* Theme switcher (src/components/ThemeSelect.astro). Replaces Starlight's
+   native `<select>`, whose drop-down was drawn by the operating system: no
+   radii, no accent, no dark theme, and the label got truncated to
+   "Auto…". */
+.w-theme {
+	position: relative;
+	display: flex;
+}
+
+.w-theme__trigger {
+	display: flex;
+	align-items: center;
+	gap: var(--w-space-2);
+	padding: 0.4rem 0.5rem 0.4rem 0.6rem;
+	border: 1px solid var(--w-border);
+	border-radius: var(--w-radius-pill);
+	background: var(--w-surface);
+	color: var(--sl-color-gray-2);
+	font: inherit;
+	font-size: 0.8125rem;
+	font-weight: 500;
+	line-height: 1;
+	cursor: pointer;
+	transition: border-color var(--w-transition), background var(--w-transition),
+		color var(--w-transition);
+}
+
+.w-theme__trigger:hover {
+	border-color: var(--w-border-strong);
+	background: var(--w-surface-raised);
+	color: var(--sl-color-white);
+}
+
+.w-theme__trigger:focus-visible {
+	outline: none;
+	border-color: var(--sl-color-accent);
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--sl-color-accent) 22%, transparent);
+}
+
+/* The three icons sit in the same slot and only the active theme's one
+   is shown: that way the pill's width doesn't jump when switching mode. */
+.w-theme__trigger-icon {
+	display: none;
+	color: var(--sl-color-text-accent);
+}
+
+.w-theme[data-theme-choice="auto"] .w-theme__trigger-icon[data-for="auto"],
+.w-theme[data-theme-choice="light"] .w-theme__trigger-icon[data-for="light"],
+.w-theme[data-theme-choice="dark"] .w-theme__trigger-icon[data-for="dark"] {
+	display: flex;
+}
+
+/* Without JS there is no `data-theme-choice` yet: the "Automatic" icon is
+   shown, since that is the default state. */
+.w-theme:not([data-theme-choice]) .w-theme__trigger-icon[data-for="auto"] {
+	display: flex;
+}
+
+.w-theme__trigger-label {
+	/* Reserves room for the longest label ("Automatic") so the pill
+	   doesn't change width when switching theme. */
+	min-inline-size: 5.25rem;
+	text-align: start;
+	white-space: nowrap;
+}
+
+.w-theme__caret {
+	display: flex;
+	color: var(--sl-color-gray-3);
+	transition: transform var(--w-transition);
+}
+
+.w-theme__trigger[aria-expanded="true"] .w-theme__caret {
+	transform: rotate(180deg);
+}
+
+.w-theme__menu {
+	position: absolute;
+	inset-block-start: calc(100% + var(--w-space-2));
+	inset-inline-end: 0;
+	z-index: 20;
+	min-inline-size: 11rem;
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	padding: var(--w-space-1);
+	border: 1px solid var(--w-border);
+	border-radius: var(--w-radius-md);
+	background: var(--w-surface-raised);
+	box-shadow: var(--w-shadow-float);
+	animation: w-menu-in 140ms cubic-bezier(0.4, 0, 0.2, 1);
+	transform-origin: top right;
+}
+
+/* The `display: flex` in the rule above beats the `display: none` the
+   browser applies for `[hidden]`: it has to be restored by hand or the menu
+   stays open forever. */
+.w-theme__menu[hidden] {
+	display: none;
+}
+
+@keyframes w-menu-in {
+	from {
+		opacity: 0;
+		transform: translateY(-4px) scale(0.97);
+	}
+}
+
+.w-theme__option {
+	display: flex;
+	align-items: center;
+	gap: var(--w-space-3);
+	padding: var(--w-space-2) var(--w-space-3);
+	border: 0;
+	border-radius: var(--w-radius-sm);
+	background: transparent;
+	color: var(--sl-color-gray-2);
+	font: inherit;
+	font-size: 0.8125rem;
+	text-align: start;
+	cursor: pointer;
+	transition: background var(--w-transition), color var(--w-transition);
+}
+
+.w-theme__option:hover,
+.w-theme__option:focus-visible {
+	outline: none;
+	background: var(--w-surface);
+	color: var(--sl-color-white);
+}
+
+.w-theme__option[aria-checked="true"] {
+	color: var(--sl-color-text-accent);
+}
+
+.w-theme__option-icon {
+	display: flex;
+	flex: none;
+}
+
+.w-theme__option-label {
+	flex: 1;
+}
+
+.w-theme__option-check {
+	display: flex;
+	flex: none;
+	opacity: 0;
+	color: var(--sl-color-accent);
+	transition: opacity var(--w-transition);
+}
+
+.w-theme__option[aria-checked="true"] .w-theme__option-check {
+	opacity: 1;
+}
+
+/* On mobile, no label: just the icon, as the header is already tight. */
+@media (max-width: 50rem) {
+	.w-theme__trigger-label {
+		display: none;
+	}
+
+	.w-theme__trigger {
+		padding: 0.4rem 0.45rem;
+	}
+}
+
+/* The second copy of the switcher lives at the end of the drop-down menu,
+   against its bottom edge: there the menu has to open upwards or it runs
+   off the screen. */
+.mobile-preferences .w-theme__menu {
+	inset-block-start: auto;
+	inset-block-end: calc(100% + var(--w-space-2));
+	transform-origin: bottom right;
+	animation-name: w-menu-in-up;
+}
+
+@keyframes w-menu-in-up {
+	from {
+		opacity: 0;
+		transform: translateY(4px) scale(0.97);
+	}
+}
+
+/* Page table of contents on mobile: Starlight's drop-down is a full-bleed
+   list with hard rules. It becomes the same floating card as the theme
+   menu. */
+mobile-starlight-toc nav summary {
+	border-radius: var(--w-radius-pill);
+	border: 1px solid var(--w-border);
+	background: var(--w-surface);
+	transition: border-color var(--w-transition), background var(--w-transition);
+}
+
+mobile-starlight-toc nav summary:hover {
+	border-color: var(--w-border-strong);
+	background: var(--w-surface-raised);
+}
+
+mobile-starlight-toc nav .dropdown {
+	margin-block-start: var(--w-space-2);
+	margin-inline: var(--w-space-3);
+	padding: var(--w-space-1);
+	border: 1px solid var(--w-border);
+	border-radius: var(--w-radius-md);
+	background: var(--w-surface-raised);
+	box-shadow: var(--w-shadow-float);
+	max-block-size: min(60vh, 24rem);
+	overflow-y: auto;
+	animation: w-menu-in 140ms cubic-bezier(0.4, 0, 0.2, 1);
+	transform-origin: top center;
+}
+
+mobile-starlight-toc nav .dropdown a {
+	border: 0;
+	border-radius: var(--w-radius-sm);
+	padding-block: var(--w-space-2);
+	transition: background var(--w-transition), color var(--w-transition);
+}
+
+mobile-starlight-toc nav .dropdown a:hover {
+	background: var(--w-surface);
+	color: var(--sl-color-white);
+}
+
+mobile-starlight-toc nav .dropdown a[aria-current="true"] {
+	background: color-mix(in srgb, var(--sl-color-accent) 12%, transparent);
+	color: var(--sl-color-text-accent);
+	font-weight: 600;
+}
+
+/* Mobile menu button: a pill in the same style as the other controls,
+   instead of the default grey circle. */
+starlight-menu-button button {
+	border-radius: var(--w-radius-md);
+	border: 1px solid var(--w-border);
+	background: var(--w-surface);
+	box-shadow: none;
+	color: var(--sl-color-gray-2);
+	transition: border-color var(--w-transition), background var(--w-transition),
+		color var(--w-transition);
+}
+
+starlight-menu-button button:hover {
+	border-color: var(--w-border-strong);
+	background: var(--w-surface-raised);
+	color: var(--sl-color-white);
+}
+
+starlight-menu-button[aria-expanded="true"] button {
+	border-color: color-mix(in srgb, var(--sl-color-accent) 45%, transparent);
+	color: var(--sl-color-text-accent);
+}
+
+/* ---------- 11. Search --------------------------------------------------- */
+
+/* Starlight's header is an `auto 1fr auto` grid: the title takes more
+   room than the right-hand group, so the middle column doesn't sit in the
+   centre of the page and the bar looked off-centre. With both side columns
+   equal, the middle one is truly centred. The side columns never get
+   narrower than their content, so on medium screens the search bar gives
+   way instead of the site name being cut down to its first letter. */
+@media (min-width: 50rem) {
+	.header > .header {
+		grid-template-columns: minmax(max-content, 1fr) minmax(0, 42rem) minmax(max-content, 1fr);
+	}
+
+	/* And the right-hand group hugs its edge, as it now has room to spare. */
+	.header > .header > :last-child {
+		justify-content: flex-end;
+	}
+}
+
+.w-search {
+	position: relative;
+	display: block;
+	inline-size: 100%;
+}
+
+.w-search__bar {
+	display: flex;
+	align-items: center;
+	gap: var(--w-space-2);
+	block-size: 2.5rem;
+	padding-inline: var(--w-space-3);
+	border: 1px solid var(--w-border);
+	border-radius: var(--w-radius-pill);
+	background: var(--w-surface);
+	transition: border-color var(--w-transition), background var(--w-transition),
+		box-shadow var(--w-transition);
+}
+
+.w-search__bar:hover {
+	border-color: var(--w-border-strong);
+}
+
+.w-search:focus-within .w-search__bar {
+	border-color: var(--sl-color-accent);
+	background: var(--w-surface-raised);
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--sl-color-accent) 18%, transparent);
+}
+
+.w-search__icon {
+	display: flex;
+	flex: none;
+	color: var(--sl-color-gray-3);
+}
+
+.w-search__input {
+	flex: 1;
+	min-inline-size: 0;
+	border: 0;
+	background: transparent;
+	color: var(--sl-color-white);
+	font: inherit;
+	font-size: 0.9375rem;
+}
+
+.w-search__input::placeholder {
+	color: var(--sl-color-gray-3);
+}
+
+.w-search__input:focus {
+	outline: none;
+}
+
+.w-search__kbd {
+	display: flex;
+	flex: none;
+	gap: 2px;
+	background: none;
+	border: 0;
+}
+
+.w-search__kbd kbd {
+	border: 1px solid var(--w-border);
+	border-radius: var(--w-radius-sm);
+	background: var(--sl-color-bg);
+	color: var(--sl-color-gray-3);
+	font-family: var(--sl-font-mono);
+	font-size: 0.6875rem;
+	line-height: 1.4;
+	padding-inline: 0.35em;
+}
+
+/* With the bar focused the shortcut is superfluous: room is what's needed. */
+.w-search:focus-within .w-search__kbd {
+	display: none;
+}
+
+.w-search__clear {
+	display: flex;
+	flex: none;
+	align-items: center;
+	justify-content: center;
+	inline-size: 1.5rem;
+	block-size: 1.5rem;
+	padding: 0;
+	border: 0;
+	border-radius: var(--w-radius-pill);
+	background: transparent;
+	color: var(--sl-color-gray-3);
+	cursor: pointer;
+	transition: background var(--w-transition), color var(--w-transition);
+}
+
+/* The <svg> sits inside an inline <span>: without this it rests on the
+   baseline and the cross ends up a hair above the centre of the bar. */
+.w-search__clear > span {
+	display: flex;
+}
+
+.w-search__clear:hover {
+	background: var(--sl-color-bg);
+	color: var(--sl-color-text-accent);
+}
+
+/* Same thing again: a class's `display` beats the browser's `[hidden]`,
+   and the cross also showed with the bar empty. */
+.w-search__clear[hidden] {
+	display: none;
+}
+
+/* Suggestions panel: hangs from the bar, doesn't cover the page. */
+.w-search__panel {
+	position: absolute;
+	inset-block-start: calc(100% + var(--w-space-2));
+	inset-inline: 0;
+	z-index: 30;
+	max-block-size: min(70vh, 32rem);
+	overflow-y: auto;
+	overscroll-behavior: contain;
+	padding: var(--w-space-2);
+	border: 1px solid var(--w-border);
+	border-radius: var(--w-radius-lg);
+	background: var(--w-surface-raised);
+	box-shadow: var(--w-shadow-float);
+	animation: w-menu-in 140ms cubic-bezier(0.4, 0, 0.2, 1);
+	transform-origin: top center;
+	scrollbar-width: thin;
+	scrollbar-color: var(--w-border-strong) transparent;
+}
+
+/* Same as in the theme menu: a class's `display` beats `[hidden]`. */
+.w-search__panel[hidden] {
+	display: none;
+}
+
+.w-search__summary,
+.w-search__empty {
+	margin: 0;
+	padding: var(--w-space-2) var(--w-space-3);
+	font-size: 0.6875rem;
+	font-weight: 600;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--w-kicker);
+}
+
+.w-search__empty {
+	text-transform: none;
+	letter-spacing: 0;
+	font-size: 0.875rem;
+	font-weight: 400;
+	color: var(--sl-color-text);
+}
+
+.w-search__group + .w-search__group {
+	margin-block-start: var(--w-space-1);
+	padding-block-start: var(--w-space-1);
+	border-block-start: 1px solid var(--sl-color-hairline-light);
+}
+
+.w-search__page {
+	display: block;
+	padding: var(--w-space-2) var(--w-space-3);
+	border-radius: var(--w-radius-sm);
+	color: var(--sl-color-white);
+	font-weight: 700;
+	letter-spacing: -0.015em;
+	text-decoration: none;
+	transition: background var(--w-transition), color var(--w-transition);
+}
+
+.w-search__sub {
+	display: block;
+	margin-inline-start: var(--w-space-3);
+	padding: var(--w-space-2) var(--w-space-3);
+	border-inline-start: 1px solid var(--w-border);
+	border-radius: 0 var(--w-radius-sm) var(--w-radius-sm) 0;
+	color: var(--sl-color-text);
+	text-decoration: none;
+	transition: background var(--w-transition), border-color var(--w-transition);
+}
+
+.w-search__sub-title {
+	display: block;
+	color: var(--sl-color-gray-1);
+	font-size: 0.875rem;
+	font-weight: 600;
+}
+
+.w-search__excerpt {
+	display: block;
+	margin-block-start: 2px;
+	font-size: 0.8125rem;
+	line-height: 1.45;
+	color: var(--sl-color-gray-3);
+	/* A long excerpt can't stretch the panel. */
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
+	overflow: hidden;
+}
+
+.w-search__panel mark {
+	background: color-mix(in srgb, var(--sl-color-accent) 18%, transparent);
+	border-radius: 3px;
+	padding: 0 0.15em;
+	color: var(--sl-color-white);
+	font-weight: 600;
+}
+
+/* Mouse and keyboard highlight alike: there is one way to be selected. */
+.w-search__page:hover,
+.w-search__page.is-active {
+	background: var(--w-surface);
+	color: var(--sl-color-text-accent);
+}
+
+.w-search__sub:hover,
+.w-search__sub.is-active {
+	background: var(--w-surface);
+	border-inline-start-color: var(--sl-color-accent);
+}
+
+/* --- The header on mobile ---------------------------------------------- */
+
+/* Logo, bar taking all the remaining space, and menu. The site name goes:
+   at 412 px the bar needs that room more than the name does, which is
+   already in the logo and in the tab title. */
+@media (max-width: 50rem) {
+	.site-title > span {
+		display: none;
+	}
+
+	.header > .header {
+		gap: var(--w-space-3);
+	}
+
+	/* The search wrapper is what shares out the width in the flex. */
+	.header > .header > .sl-flex:has(.w-search) {
+		flex: 1;
+		min-inline-size: 0;
+	}
+
+	.w-search {
+		max-inline-size: none;
+	}
+
+	.w-search__kbd {
+		display: none;
+	}
+
+	/* The panel is anchored to the viewport, not to the bar: on a narrow
+	   phone a suggestion needs all the width there is. */
+	.w-search__panel {
+		position: fixed;
+		inset-block-start: calc(var(--sl-nav-height) + var(--w-space-2));
+		inset-inline: var(--w-space-3);
+		max-block-size: calc(100vh - var(--sl-nav-height) - var(--w-space-8));
+	}
+}
+
+/* Language selector (src/components/LanguageSelect.astro): a link to the
+   same page in the other language, with the same pill as the theme one. */
+.w-lang {
+	display: flex;
+	align-items: center;
+	gap: var(--w-space-2);
+	padding: 0.4rem 0.7rem 0.4rem 0.6rem;
+	border: 1px solid var(--w-border);
+	border-radius: var(--w-radius-pill);
+	background: var(--w-surface);
+	color: var(--sl-color-gray-2);
+	font-size: 0.8125rem;
+	font-weight: 500;
+	line-height: 1;
+	text-decoration: none;
+	white-space: nowrap;
+	transition: border-color var(--w-transition), background var(--w-transition),
+		color var(--w-transition);
+}
+
+.w-lang:hover {
+	border-color: var(--w-border-strong);
+	background: var(--w-surface-raised);
+	color: var(--sl-color-white);
+}
+
+.w-lang:focus-visible {
+	outline: none;
+	border-color: var(--sl-color-accent);
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--sl-color-accent) 22%, transparent);
+}
+
+.w-lang__icon {
+	display: flex;
+	color: var(--sl-color-text-accent);
+}
+
+/* In the desktop header, no label below 72rem: the centred search box
+   needs the room. In the mobile menu it does fit. */
+@media (max-width: 72rem) {
+	header .w-lang__label {
+		display: none;
+	}
+
+	header .w-lang {
+		padding: 0.4rem 0.45rem;
+	}
+}
+
+/* Home page: entry buttons, above the section grid. */
+.w-home-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--w-space-3);
+	margin-block-end: var(--w-space-8);
+}
+
+.sl-markdown-content .w-home-actions .sl-link-button {
+	margin: 0;
+}

@@ -1,0 +1,3 @@
+moduleName=filebot-pro-format
+moduleVersion=1.0.0
+extensionClasses=dev.davamu.filebotpro.cli.ScriptShellMethods,dev.davamu.filebotpro.cli.MetadataMethods,dev.davamu.filebotpro.format.ExpressionFormatMethods,dev.davamu.filebotpro.format.ExpressionFormatFunctions

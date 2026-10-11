@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Replaces the os-condition.wxf template of jpackage (resource dir override): it is the only WiX fragment that main.wxs
+    always references, so it also carries the branded WixUI bitmaps. Keep the OS condition in sync with the JDK template.
+
+    @{installerDir} is replaced with the absolute path of packaging/windows/installer by the prepareJpackageResources task.
+    The bitmaps are rendered by generateIcons.
+-->
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+    <Fragment>
+        <Condition Message="!(loc.OsConditionMessage)">
+            <![CDATA[Installed OR (VersionNT >= $(var.JpExecutableOSVersion))]]>
+        </Condition>
+
+        <!-- welcome / finish dialog (493x312) and top banner of the other dialogs (493x58) -->
+        <WixVariable Id="WixUIDialogBmp" Value="@{installerDir}\installer-dialog.bmp"/>
+        <WixVariable Id="WixUIBannerBmp" Value="@{installerDir}\installer-banner.bmp"/>
+
+        <!-- fragment contents must be referenced, main.wxs references this component group -->
+        <ComponentGroup Id="FragmentOsCondition"/>
+    </Fragment>
+</Wix>

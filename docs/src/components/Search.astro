@@ -1,0 +1,315 @@
+---
+/**
+ * Search box: replaces Starlight's, which opens a full-screen `<dialog>` with
+ * Pagefind's default UI.
+ *
+ * Here the bar lives in the header and the results drop into a panel hanging
+ * right below it, without covering the page. We talk directly to the Pagefind
+ * API (`/pagefind/pagefind.js`), which the build publishes next to the site,
+ * instead of `@pagefind/default-ui`: that way the markup is ours and is styled
+ * with the theme tokens.
+ *
+ * The index is heavy, so it is loaded the first time someone focuses the bar,
+ * not on every visit.
+ */
+import { icon } from './icons.mjs'
+
+const { t } = Astro.locals
+
+// The strings the script renders travel in attributes: the client has no
+// access to Starlight's translations.
+const texts = {
+	needsBuild: t('fp.search.needsBuild'),
+	none: t('fp.search.none'),
+	one: t('fp.search.one'),
+	many: t('fp.search.many'),
+	some: t('fp.search.some'),
+}
+---
+
+<docs-search class="w-search" data-texts={JSON.stringify(texts)}>
+	<div class="w-search__bar">
+		<span class="w-search__icon" aria-hidden="true" set:html={icon('search', 18)} />
+
+		<input
+			class="w-search__input"
+			type="text"
+			role="combobox"
+			aria-expanded="false"
+			aria-controls="w-search-panel"
+			aria-autocomplete="list"
+			aria-label={t('fp.search.label')}
+			placeholder={t('fp.search.placeholder')}
+			autocomplete="off"
+			spellcheck="false"
+		/>
+
+		<kbd class="w-search__kbd" aria-hidden="true"><kbd>Ctrl</kbd><kbd>K</kbd></kbd>
+
+		<button class="w-search__clear" type="button" aria-label={t('fp.search.clear')} hidden>
+			<span set:html={icon('close', 16)} />
+		</button>
+	</div>
+
+	<div class="w-search__panel" id="w-search-panel" role="listbox" aria-label={t('fp.search.results')} hidden>
+	</div>
+</docs-search>
+
+<script>
+	interface SubResult {
+		title: string
+		url: string
+		excerpt: string
+	}
+
+	interface Result {
+		url: string
+		excerpt: string
+		meta: { title?: string }
+		sub_results?: SubResult[]
+	}
+
+	interface Pagefind {
+		init(): Promise<void>
+		debouncedSearch(
+			term: string,
+			options?: unknown,
+			delay?: number
+		): Promise<{ results: { data(): Promise<Result> }[] } | null>
+	}
+
+	/** How many pages are rendered and, for each one, how many sections. */
+	const MAX_PAGES = 6
+	const MAX_SECTIONS = 3
+
+	const escapeHtml = (text: string) =>
+		text.replace(
+			/[&<>"']/g,
+			(c) =>
+				({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!
+		)
+
+	/**
+	 * Pagefind returns the excerpt with `<mark>` around the matches. Everything
+	 * is escaped and then only those two tags are restored: highlighting works
+	 * without opening the door to HTML injection from the index.
+	 */
+	const excerpt = (html: string) =>
+		escapeHtml(html).replace(/&lt;mark&gt;/g, '<mark>').replace(/&lt;\/mark&gt;/g, '</mark>')
+
+	class DocsSearch extends HTMLElement {
+		#input = this.querySelector<HTMLInputElement>('.w-search__input')!
+		#panel = this.querySelector<HTMLDivElement>('.w-search__panel')!
+		#clear = this.querySelector<HTMLButtonElement>('.w-search__clear')!
+		#pagefind: Pagefind | null = null
+		#loading: Promise<Pagefind | null> | null = null
+		/** Request counter: discards responses that arrive late. */
+		#request = 0
+		/** Translated strings sent by the server (see `texts` above). */
+		#texts = JSON.parse(this.dataset.texts ?? '{}') as Record<string, string>
+
+		connectedCallback() {
+			this.#input.addEventListener('focus', () => {
+				void this.#loadPagefind()
+				if (this.#input.value.trim()) this.#setOpen(true)
+			})
+
+			this.#input.addEventListener('input', () => {
+				this.#clear.hidden = !this.#input.value
+				void this.#search()
+			})
+
+			this.#input.addEventListener('keydown', (event) => this.#onKeydown(event))
+
+			this.#clear.addEventListener('click', () => {
+				// Invalidate any search still in flight: a late response would
+				// otherwise reopen the panel right after clearing it.
+				this.#request++
+				this.#input.value = ''
+				this.#clear.hidden = true
+				this.#panel.replaceChildren()
+				this.#setOpen(false)
+				this.#input.focus()
+			})
+
+			// Click outside: the panel closes but the typed text is kept.
+			document.addEventListener('click', (event) => {
+				if (!this.contains(event.target as Node)) this.#setOpen(false)
+			})
+
+			// Ctrl/⌘+K and "/" move focus to the bar from anywhere.
+			document.addEventListener('keydown', (event) => {
+				const inField =
+					document.activeElement instanceof HTMLInputElement ||
+					document.activeElement instanceof HTMLTextAreaElement
+				const shortcut = (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k'
+				if (shortcut || (event.key === '/' && !inField)) {
+					event.preventDefault()
+					this.#input.focus()
+					this.#input.select()
+				}
+			})
+		}
+
+		get isOpen() {
+			return !this.#panel.hidden
+		}
+
+		#setOpen(open: boolean) {
+			this.#panel.hidden = !open
+			this.#input.setAttribute('aria-expanded', String(open))
+			if (!open) this.#highlight(null)
+		}
+
+		async #loadPagefind() {
+			if (this.#pagefind) return this.#pagefind
+			if (this.#loading) return this.#loading
+
+			this.#loading = (async () => {
+				try {
+					// Absolute path, resolved at runtime: the index does not exist
+					// until the site is built, so Vite must leave it alone.
+					const module = (await import(
+						/* @vite-ignore */ `${import.meta.env.BASE_URL}pagefind/pagefind.js`
+					)) as unknown as Pagefind
+					await module.init()
+					this.#pagefind = module
+					return module
+				} catch {
+					// Happens under `npm run dev`: the index is only generated on build.
+					this.#notice(this.#texts.needsBuild!)
+					return null
+				}
+			})()
+
+			return this.#loading
+		}
+
+		async #search() {
+			const term = this.#input.value.trim()
+
+			if (!term) {
+				this.#panel.replaceChildren()
+				this.#setOpen(false)
+				return
+			}
+
+			const pagefind = await this.#loadPagefind()
+			if (!pagefind) return
+
+			const mine = ++this.#request
+			const response = await pagefind.debouncedSearch(term, undefined, 200)
+
+			// `debouncedSearch` returns null if it was cancelled, and a slow
+			// response must not overwrite a more recent one.
+			if (!response || mine !== this.#request) return
+
+			const pages = await Promise.all(
+				response.results.slice(0, MAX_PAGES).map((r) => r.data())
+			)
+			if (mine !== this.#request) return
+
+			this.#render(term, pages, response.results.length)
+		}
+
+		#notice(text: string) {
+			this.#panel.replaceChildren()
+			const p = document.createElement('p')
+			p.className = 'w-search__empty'
+			p.textContent = text
+			this.#panel.append(p)
+			this.#setOpen(true)
+		}
+
+		#render(term: string, pages: Result[], total: number) {
+			if (total === 0) {
+				this.#notice(this.#texts.none!.replace('{term}', term))
+				return
+			}
+
+			const markup = pages
+				.map((page) => {
+					const sections = (page.sub_results ?? [])
+						.filter((s) => s.url !== page.url)
+						.slice(0, MAX_SECTIONS)
+						.map(
+							(s) => `
+								<a class="w-search__sub" href="${escapeHtml(s.url)}" role="option">
+									<span class="w-search__sub-title">${escapeHtml(s.title)}</span>
+									<span class="w-search__excerpt">${excerpt(s.excerpt)}</span>
+								</a>`
+						)
+						.join('')
+
+					return `
+						<div class="w-search__group">
+							<a class="w-search__page" href="${escapeHtml(page.url)}" role="option">
+								${escapeHtml(page.meta.title ?? page.url)}
+							</a>
+							${sections}
+						</div>`
+				})
+				.join('')
+
+			const summary = (
+				total > pages.length
+					? this.#texts.some!
+					: total === 1
+						? this.#texts.one!
+						: this.#texts.many!
+			)
+				.replace('{total}', String(total))
+				.replace('{shown}', String(pages.length))
+
+			this.#panel.innerHTML = `<p class="w-search__summary">${summary}</p>${markup}`
+			this.#setOpen(true)
+		}
+
+		get #options() {
+			return [...this.#panel.querySelectorAll<HTMLAnchorElement>('[role="option"]')]
+		}
+
+		#highlight(element: HTMLAnchorElement | null) {
+			for (const option of this.#options) option.classList.remove('is-active')
+			if (!element) return
+			element.classList.add('is-active')
+			element.scrollIntoView({ block: 'nearest' })
+		}
+
+		#onKeydown(event: KeyboardEvent) {
+			if (event.key === 'Escape') {
+				if (this.isOpen) this.#setOpen(false)
+				else this.#input.blur()
+				return
+			}
+
+			if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp' && event.key !== 'Enter') {
+				return
+			}
+
+			const options = this.#options
+			if (options.length === 0) return
+
+			const active = options.findIndex((o) => o.classList.contains('is-active'))
+
+			if (event.key === 'Enter') {
+				if (active === -1) return
+				event.preventDefault()
+				options[active]!.click()
+				return
+			}
+
+			event.preventDefault()
+			const step = event.key === 'ArrowDown' ? 1 : -1
+			const next =
+				active === -1
+					? step === 1
+						? 0
+						: options.length - 1
+					: (active + step + options.length) % options.length
+			this.#highlight(options[next]!)
+		}
+	}
+
+	customElements.define('docs-search', DocsSearch)
+</script>

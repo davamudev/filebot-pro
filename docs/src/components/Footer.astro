@@ -1,0 +1,30 @@
+---
+/** Page footer: Starlight's pagination plus our own metadata line. */
+import LastUpdated from 'virtual:starlight/components/LastUpdated'
+import Pagination from 'virtual:starlight/components/Pagination'
+// The image viewer hangs off the footer because it is the only override that
+// Starlight renders on every content page, and exactly once.
+import Lightbox from './Lightbox.astro'
+
+const year = new Date().getFullYear()
+---
+
+<footer class="sl-flex w-page-footer">
+	<Pagination />
+
+	<div class="w-footer">
+		<span>FileBot Pro · {year}</span>
+		<span class="w-footer__meta">
+			<LastUpdated />
+		</span>
+	</div>
+</footer>
+
+<Lightbox />
+
+<style>
+	.w-page-footer {
+		flex-direction: column;
+		gap: 1.5rem;
+	}
+</style>

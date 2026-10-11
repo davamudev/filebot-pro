@@ -1,0 +1,51 @@
+---
+title: Preguntas frecuentes
+description: Respuestas cortas a las dudas más habituales.
+---
+
+## ¿Tengo que instalar Java?
+
+No. La versión portable y los instaladores llevan su propio Java.
+
+## ¿Por qué no encuentra películas?
+
+Las películas se buscan en TheMovieDB por el título y el año del nombre del archivo o de la carpeta. Si no
+encuentra una, renombra el archivo para que empiece por el título y el año (`Inception (2010).mkv`) o prueba el
+[modo de coincidencia](/es/tools/rename/#nombres-nuevos) *Opportunistic*. Consulta el
+[diagnóstico](/es/help/troubleshooting/) para más comprobaciones.
+
+Un id en la ruta o en un archivo NFO junto a la película también se busca: un id de IMDb (`tt0133093`), un
+enlace o etiqueta de TheMovieDB (`themoviedb.org/movie/603`, `{tmdb-603}`) o un `<uniqueid type="tmdb">` de Kodi.
+En una carpeta con varias películas solo se leen `movie.nfo` y el NFO con el mismo nombre que la película.
+
+## ¿Puedo deshacer un renombrado?
+
+Sí. Abre el historial en el panel Rename, selecciona la sesión o los archivos y usa **Revert Selection**. Desde
+la línea de comandos usa `filebot-pro -revert`.
+
+## ¿Por qué hay filas atenuadas?
+
+No tienen pareja en la otra lista. Revisa el nombre del archivo, prueba otra fuente o el otro
+[modo de emparejado](/es/tools/rename/#nombres-nuevos), o quítalas antes de renombrar.
+
+## ¿Por qué `{vf}`, `{ac}` o `{minutes}` salen vacíos?
+
+Se leen con MediaInfo. Consulta [herramientas nativas](/es/reference/configuration/#herramientas-nativas) y
+comprueba el resultado con `filebot-pro -script fn:sysinfo`.
+
+## ¿Funciona desde un USB?
+
+Sí. Usa la versión portable y añade `-Dapplication.dir=$APPDIR/data` a sus
+[opciones de arranque](/es/reference/configuration/#opciones-de-arranque) para guardar ajustes y caché a su
+lado.
+
+## ¿Cambia el contenido de mis archivos?
+
+No. Solo los mueve, copia o enlaza. Puede guardar pequeños atributos en el archivo (el nombre original y los
+datos emparejados) para que los siguientes renombrados sean más rápidos; `-DuseExtendedFileAttributes=false`
+lo desactiva.
+
+## ¿Necesito una licencia para renombrar?
+
+No, ni licencia ni cuenta: FileBot Pro es gratis, también para renombrar, y las bases de datos en línea están
+listas para usar.

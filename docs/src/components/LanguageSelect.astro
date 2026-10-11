@@ -1,0 +1,32 @@
+---
+/**
+ * Language switcher: replaces Starlight's, which is a native `<select>` with
+ * the same problem the theme picker had (the operating system draws it).
+ *
+ * With two languages there is no need for a menu: it is a link to the same
+ * page in the other language. Untranslated pages still exist under both paths
+ * (Starlight serves the original with a notice), so the link never breaks.
+ */
+import { langOf, stripLocale } from '../sidebar.mjs'
+import { icon } from './icons.mjs'
+
+const { locale } = Astro.locals.starlightRoute
+const { t } = Astro.locals
+
+const current = langOf(locale)
+const target = current === 'en' ? 'es' : 'en'
+const path = stripLocale(Astro.url.pathname)
+const href = target === 'es' ? `/es${path}` : path
+---
+
+<a
+	class="w-lang"
+	href={href}
+	hreflang={target}
+	lang={target}
+	aria-label={t('fp.lang.label')}
+	title={t('fp.lang.label')}
+>
+	<span class="w-lang__icon" set:html={icon('translate', 16)} />
+	<span class="w-lang__label">{target === 'en' ? 'English' : 'Español'}</span>
+</a>

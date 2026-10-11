@@ -1,0 +1,56 @@
+---
+/**
+ * Page header: breadcrumb + display title + tagline.
+ *
+ * The breadcrumb is derived from the section the current URL belongs to
+ * (without the language prefix), so it does not have to be declared in each
+ * page's frontmatter.
+ *
+ * The home page renders the same header, but without a breadcrumb: there is no
+ * path to show when you are already at the root.
+ */
+import { langOf, prefixOf, sections, stripLocale } from '../sidebar.mjs'
+
+// Starlight does not export its constants, so the <h1> id is hard-coded. It is
+// the SkipLink target and the anchor of the "back to top" link.
+const PAGE_TITLE_ID = '_top'
+
+const { entry, locale } = Astro.locals.starlightRoute
+const { t } = Astro.locals
+const { title, description } = entry.data
+
+const lang = langOf(locale)
+const prefix = prefixOf(locale)
+const path = stripLocale(Astro.url.pathname)
+const isHome = path === '/'
+
+const section = sections.find((candidate) =>
+	candidate.items.some((item) => item.link === path)
+)
+---
+
+<div class="w-page-head">
+	{
+		!isHome && (
+			<nav class="w-breadcrumb" aria-label={t('fp.breadcrumb.label')}>
+				<a href={`${prefix}/`}>FileBot Pro</a>
+				{section && (
+					<>
+						<span class="w-breadcrumb__sep" aria-hidden="true">
+							/
+						</span>
+						<a href={`${prefix}${section.items[0].link}`}>{section.label[lang]}</a>
+					</>
+				)}
+				<span class="w-breadcrumb__sep" aria-hidden="true">
+					/
+				</span>
+				<span class="w-breadcrumb__current">{title}</span>
+			</nav>
+		)
+	}
+
+	<h1 id={PAGE_TITLE_ID}>{title}</h1>
+
+	{description && <p class="w-page-head__tagline">{description}</p>}
+</div>

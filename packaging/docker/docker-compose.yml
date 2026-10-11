@@ -1,0 +1,20 @@
+# FileBot Pro watching a downloads folder and moving renamed files into the media library.
+# Adjust the paths on the left of each volume, and PUID / PGID to the owner of the media folders (run `id` on the NAS).
+services:
+  filebot-pro:
+    image: ghcr.io/davamudev/filebot-pro:latest
+    container_name: filebot-pro
+    restart: unless-stopped
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - UMASK=022
+      # optional API keys (otherwise the embedded keys are used)
+      # - FILEBOT_PRO_APIKEY_THEMOVIEDB=...
+    volumes:
+      - ./data:/data
+      - /volume1/downloads/complete:/input
+      - /volume1/media:/output
+    # default: watch /input and move renamed files into /output with the Plex naming scheme
+    # network shares (SMB / NFS mounts) do not send file system events, scan every 60 seconds instead:
+    # command: ["-script", "fn:watcher", "/input", "--output", "/output", "--format", "{plex}", "--action", "move", "-rename", "-non-strict", "--def", "poll=60"]

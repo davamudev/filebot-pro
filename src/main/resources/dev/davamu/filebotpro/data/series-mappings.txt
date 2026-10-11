@@ -1,0 +1,27 @@
+# Abbreviations that cannot be detected as series names automatically.
+# One mapping per line: <regular expression> TAB <series name>
+
+11.22.63	11/22/63
+^227\P{Alnum}{1,3}[s]?\d{1,2}[ex]\d{2,4}	227
+^24\P{Alnum}{1,3}[s]?\d{1,2}[ex]\d{2,4}	24
+at.midnight	@midnight
+BSG	Battlestar Galactica
+BeCaSa|BeCaSau|BeCaSaul|BCallS|Be.Cll.Sl|btr.cs	Better Call Saul
+CSI\P{Alnum}{1,3}[s]?\d{1,2}[ex]\d{2,4}	CSI: Crime Scene Investigation
+^Episodes\P{Alnum}{1,3}[s]?\d{1,2}[ex]\d{2,4}	Episodes
+^Extras\P{Alnum}{1,3}[s]?\d{1,2}[ex]\d{2,4}	Extras
+tv.{0,2}got	Game of Thrones
+greysana	Grey's Anatomy
+^Home.Movies\P{Alnum}{1,3}[s]?\d{1,2}[ex]\d{2,4}	Home Movies
+Hml8p	Homeland
+L.U.C.A.	L.U.C.A.: The Beginning
+tv.{0,2}shield	Marvel's Agents of S.H.I.E.L.D.
+tv.{0,2}poi|poid	Person of Interest
+Sex.and.Life.2021	Sex/Life
+tv.{0,2}soa	Sons of Anarchy
+SuiG7p	Suits
+^The.100\P{Alnum}{1,3}[s]?\d{1,2}[ex]\d{2,4}	The 100
+^Stephen.Colbert\P{Alnum}{1,3}\d{4}\D\d{2}\D\d{2}	The Late Show with Stephen Colbert
+UndG7p	Underemployed
+^Upload\P{Alnum}{1,3}[s]?\d{1,2}[ex]\d{2,4}	Upload
+^V\P{Alnum}{1,3}[s]?\d{1,2}[ex]\d{2,4}	V (2009)

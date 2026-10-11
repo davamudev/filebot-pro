@@ -1,0 +1,35 @@
+---
+/**
+ * Grid of section cards for the home page. It is generated from
+ * src/sidebar.mjs, so adding a section to the menu publishes it here too:
+ * there are no two lists to keep in sync.
+ */
+import { langOf, prefixOf, sections } from '../sidebar.mjs'
+import { icon } from './icons.mjs'
+
+interface Props {
+	/** Labels to leave out, in English. By default every section is shown. */
+	exclude?: string[]
+}
+
+const { exclude = [] } = Astro.props
+const { locale } = Astro.locals.starlightRoute
+const lang = langOf(locale)
+const prefix = prefixOf(locale)
+const visible = sections.filter((section) => !exclude.includes(section.label.en))
+---
+
+<ul class="w-grid not-content">
+	{
+		visible.map((section) => (
+			<li>
+				<a class="w-card" href={`${prefix}${section.items[0].link}`}>
+					<span class="w-card__icon" set:html={icon(section.icon, 22)} />
+					<span class="w-card__kicker">{section.kicker[lang]}</span>
+					<span class="w-card__title">{section.label[lang]}</span>
+					<p class="w-card__text">{section.summary[lang]}</p>
+				</a>
+			</li>
+		))
+	}
+</ul>

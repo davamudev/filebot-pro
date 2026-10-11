@@ -1,0 +1,299 @@
+# Release pipeline, started by a version tag (v1.2.3) that must point to a commit of master and match app.version in
+# gradle.properties. Builds every package with the API keys of the repository secret API_KEYS (contents of
+# api-keys.properties, embedded at build time and never committed), publishes the Docker images to GHCR and attaches
+# all packages and their SHA-256 checksums to the GitHub release. The builds are not signed.
+#
+#   git checkout master && git tag v1.2.3 && git push origin v1.2.3
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+
+      - name: Tag is on master
+        run: |
+          git fetch --no-tags origin master
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/master; then
+            echo "::error::$GITHUB_REF_NAME does not point to a commit of master. Releases are only tagged from master."
+            exit 1
+          fi
+
+      - name: Tag matches app.version
+        id: version
+        run: |
+          version=$(sed -n 's/^app\.version=//p' gradle.properties | tr -d '\r')
+          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match app.version=$version in gradle.properties."
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      # only checks that the keys are there, the values are never printed
+      - name: API keys
+        env:
+          API_KEYS: ${{ secrets.API_KEYS }}
+        run: |
+          if [ -z "$API_KEYS" ]; then
+            echo "::error::The repository secret API_KEYS is not set, releases must embed the API keys."
+            exit 1
+          fi
+          for name in themoviedb thetvdb fanart.tv acoustid anidb opensubtitles; do
+            printf '%s\n' "$API_KEYS" | grep -Eq "^[[:space:]]*${name//./\\.}[[:space:]]*[=:][[:space:]]*[^[:space:]]" \
+              || echo "::warning::API key '$name' is missing in API_KEYS, the release builds will not embed it."
+          done
+
+  linux:
+    needs: verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0 # the build revision is the number of commits
+
+      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
+        with:
+          distribution: temurin
+          java-version: "25"
+
+      - name: API keys
+        env:
+          API_KEYS: ${{ secrets.API_KEYS }}
+        run: printf '%s' "$API_KEYS" > api-keys.properties
+
+      - name: Packaging tools
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends fakeroot rpm
+
+      # jpackage empties the installer folder on every run, so each package is moved out before the next one
+      - name: Build
+        run: |
+          mkdir dist
+          revision=$(git rev-list --count HEAD)
+          ./gradlew --no-daemon -Papp.revision=$revision portableZip
+          mv build/distributions/*-portable.zip dist/
+          for type in deb rpm; do
+            ./gradlew --no-daemon -Papp.revision=$revision -PinstallerType=$type jpackage
+            mv build/jpackage/installer/* dist/
+          done
+          for arch in x86_64 armv8; do
+            ./gradlew --no-daemon -Papp.revision=$revision -PsynologyArch=$arch synologyPackage
+          done
+          mv build/distributions/*.spk dist/
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: linux
+          path: dist/*
+          if-no-files-found: error
+
+  windows:
+    needs: verify
+    strategy:
+      matrix:
+        include:
+          - runner: windows-2022
+            arch: x64
+            java: x64
+          - runner: windows-11-arm
+            arch: arm64
+            java: aarch64
+    runs-on: ${{ matrix.runner }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
+        with:
+          distribution: temurin
+          java-version: "25"
+          architecture: ${{ matrix.java }}
+
+      - name: API keys
+        env:
+          API_KEYS: ${{ secrets.API_KEYS }}
+        run: printf '%s' "$API_KEYS" > api-keys.properties
+
+      # MediaInfo matches the architecture, the other native tools run through x64 emulation on arm64
+      - name: Native tools
+        run: ./gradlew --no-daemon downloadNativeTools
+
+      - name: Portable zip
+        run: |
+          mkdir dist
+          ./gradlew --no-daemon -Papp.revision=$(git rev-list --count HEAD) portableZip
+          mv build/distributions/*-portable.zip dist/
+
+      # the msi needs WiX 3 (packaging/windows/installer uses the WiX 3 schema), x64 only
+      - name: WiX Toolset
+        if: matrix.arch == 'x64'
+        run: |
+          wix="/c/Program Files (x86)/WiX Toolset v3.14/bin"
+          [ -f "$wix/candle.exe" ] || choco install wixtoolset --version=3.14.1 -y --no-progress
+          cygpath -w "$wix" >> "$GITHUB_PATH"
+
+      - name: Installer
+        if: matrix.arch == 'x64'
+        run: |
+          ./gradlew --no-daemon -Papp.revision=$(git rev-list --count HEAD) jpackage
+          for f in build/jpackage/installer/*.msi; do mv "$f" "dist/$(basename "$f" | tr ' ' '-')"; done
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: windows-${{ matrix.arch }}
+          path: dist/*
+          if-no-files-found: error
+
+  # jpackage bundles the runtime of the build JDK, so each architecture needs its own runner
+  macos:
+    needs: verify
+    strategy:
+      matrix:
+        include:
+          - runner: macos-14
+            arch: arm64
+          - runner: macos-15-intel
+            arch: x64
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
+        with:
+          distribution: temurin
+          java-version: "25"
+
+      - name: API keys
+        env:
+          API_KEYS: ${{ secrets.API_KEYS }}
+        run: printf '%s' "$API_KEYS" > api-keys.properties
+
+      - name: Build
+        run: |
+          mkdir dist
+          ./gradlew --no-daemon -Papp.revision=$(git rev-list --count HEAD) portableZip jpackage
+          mv build/distributions/*-portable.zip dist/
+          for f in build/jpackage/installer/*.dmg; do
+            name=$(basename "$f" .dmg | tr ' ' '-')
+            mv "$f" "dist/$name-${{ matrix.arch }}.dmg"
+          done
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: macos-${{ matrix.arch }}
+          path: dist/*
+          if-no-files-found: error
+
+  # headless and gui images for linux/amd64 and linux/arm64: ghcr.io/<owner>/filebot-pro:1.2.3, :latest, :1.2.3-gui, :gui
+  docker:
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+
+      - uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+
+      - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - id: meta
+        uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/filebot-pro
+          tags: |
+            type=semver,pattern={{version}}
+            type=raw,value=latest
+
+      # .git is not part of the build context
+      - id: revision
+        run: echo "revision=$(git rev-list --count HEAD)" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            REVISION=${{ steps.revision.outputs.revision }}
+          secrets: |
+            apikeys=${{ secrets.API_KEYS }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=min
+
+      - id: meta-gui
+        uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/filebot-pro
+          tags: |
+            type=semver,pattern={{version}},suffix=-gui
+            type=raw,value=gui
+
+      - uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        with:
+          context: .
+          target: gui
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta-gui.outputs.tags }}
+          labels: ${{ steps.meta-gui.outputs.labels }}
+          build-args: |
+            REVISION=${{ steps.revision.outputs.revision }}
+          secrets: |
+            apikeys=${{ secrets.API_KEYS }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=min
+
+  release:
+    needs: [verify, linux, windows, macos, docker]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Checksums
+        working-directory: dist
+        run: sha256sum * > SHA256SUMS.txt && cat SHA256SUMS.txt
+
+      # release notes: the section of this version in CHANGELOG.md
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.verify.outputs.version }}
+        run: |
+          awk -v v="$VERSION" '/^## \[/ { if (found) exit; found = index($0, "[" v "]") > 0; next } found' CHANGELOG.md > notes.md
+          [ -s notes.md ] || echo "FileBot Pro $VERSION" > notes.md
+          gh release create "$GITHUB_REF_NAME" dist/* --verify-tag --title "FileBot Pro $VERSION" --notes-file notes.md

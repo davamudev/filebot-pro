@@ -1,0 +1,48 @@
+---
+title: FAQ
+description: Short answers to the questions that come up most often.
+---
+
+## Do I need to install Java?
+
+No. The portable build and the installers include their own Java runtime.
+
+## Why are movies not found?
+
+Movies are looked up on TheMovieDB by the title and year in the file or folder name. If one is not found, rename
+the file so it starts with the title and year (`Inception (2010).mkv`) or try the *Opportunistic*
+[match mode](/tools/rename/#new-names). See [troubleshooting](/help/troubleshooting/) for more checks.
+
+An id in the path or in an NFO file next to the movie is looked up too: an IMDb id (`tt0133093`), a TheMovieDB link
+or tag (`themoviedb.org/movie/603`, `{tmdb-603}`) or a Kodi `<uniqueid type="tmdb">`. In a folder with several
+movies only `movie.nfo` and the NFO file with the same name as the movie are read.
+
+## Can I undo a rename?
+
+Yes. Open the history in the Rename panel, select the session or the files and use **Revert Selection**.
+From the command line use `filebot-pro -revert`.
+
+## Why are some rows dimmed?
+
+They have no counterpart in the other list. Check the name of the file, try another source or the other
+[match mode](/tools/rename/#new-names), or remove them before renaming.
+
+## Why do `{vf}`, `{ac}` or `{minutes}` stay empty?
+
+They are read with MediaInfo. See [native tools](/reference/configuration/#native-tools) and check the result
+with `filebot-pro -script fn:sysinfo`.
+
+## Can it run from a USB stick?
+
+Yes. Use the portable build and add `-Dapplication.dir=$APPDIR/data` to its
+[start options](/reference/configuration/#start-options) to keep settings and cache next to it.
+
+## Does it change the content of my files?
+
+No. It only moves, copies or links them. It can store small attributes on the file (the original name and the
+matched data) so that later renames are faster; `-DuseExtendedFileAttributes=false` turns that off.
+
+## What do I need to rename files?
+
+Nothing else: FileBot Pro is free, renaming included, needs no license or account, and the online databases are
+ready to use.

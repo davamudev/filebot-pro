@@ -1,0 +1,151 @@
+---
+title: Renombrar
+description: Empareja archivos con bases de datos en línea y renómbralos con tu propio esquema.
+---
+
+El panel Rename tiene dos listas: **Original Files** a la izquierda y **New Names** a la derecha. Cada fila de
+la izquierda se renombra con la fila que tiene al lado.
+
+## Archivos originales
+
+| Botón | Acción |
+| --- | --- |
+| ↓ ↑ | Baja o sube las filas seleccionadas para alinearlas con los nombres nuevos |
+| ✕ | Quita las filas seleccionadas (`Supr`) |
+| **Load** | Añade archivos o carpetas (también arrastrando) |
+| Limpiar | Vacía las dos listas |
+| Historial | Abre el [historial](#historial) |
+| Presets | Aplica o edita [presets](#presets) |
+
+## Nombres nuevos
+
+**Fetch Data** busca cada archivo:
+
+| Modo | Fuentes |
+| --- | --- |
+| Episode mode | TheTVDB, AniDB, TheMovieDB::TV, TVmaze |
+| Movie mode | TheMovieDB, OMDb |
+| Music mode | AcoustID (huella de audio), etiquetas ID3. Los archivos con el mismo nombre que una canción (letras `.lrc`, carátulas, ...) se renombran con ella |
+| Smart mode | **Autodetect**: episodios, películas y música a la vez. **Attributes**: los datos guardados en los propios archivos (renombrados anteriores, Exif de las fotos, etiquetas ID3 de la música, etiquetas de serie y episodio de los vídeos) |
+
+El mismo menú tiene **Edit Format** (la [expresión de formato](/es/formats/syntax/) de los nombres nuevos) y
+**Preferences**:
+
+- **Match Mode**: *Opportunistic* se esfuerza más y adivina más, *Strict* solo acepta coincidencias fiables.
+- **Language**: idioma de títulos y nombres.
+- **Episode Order**: Airdate, Official, DVD, Absolute, AbsoluteAirdate, Digital, StoryArc o Production (con TheTVDB, Official es el Aired Order, Digital el Alternate Order, StoryArc el Alternate DVD Order y Production el Regional Order, y Airdate sigue el orden por defecto de la serie; con TheMovieDB, Digital, StoryArc y Production son grupos de episodios. Las series sin ese orden usan el orden por defecto).
+
+El botón del engranaje de al lado guarda las opciones de renombrado:
+
+- **Extension**: *Preserve* conserva la extensión original, *Override* deja que decida el formato.
+- **Action**: Rename (mover), Copy, Keeplink, Symlink, Hardlink o Clone (solo macOS y Linux). Copy ya hace un clon
+  (copy-on-write) cuando el sistema de archivos lo admite (APFS, Btrfs, XFS, ReFS / Dev Drive), así que es inmediato
+  y no ocupa espacio extra.
+
+Si no consigue identificar una serie o una película, FileBot Pro te pide su nombre. También puedes escribir su id:
+`tt0133093` (IMDb) o el número de la serie o la película en la fuente elegida (p. ej. `81189` en TheTVDB).
+
+Si algunos vídeos se quedan sin coincidencia, FileBot Pro ofrece volver a intentarlo solo con esos archivos: en modo
+*Opportunistic* si se usó *Strict*, en orden *Absolute* si se usó *Airdate*, y eligiendo la serie o la película a mano
+si se detectó automáticamente.
+
+Los ripeos de discos con nombres de MakeMKV como `title_t01.mkv` o `Disc_1_t01.mkv` no dicen qué contienen. En las
+series y películas que están en [TheDiscDB](https://thediscdb.com), FileBot Pro identifica cada title por su duración,
+y por el número de disco (del nombre del archivo o de la carpeta, p. ej. `Season 1 Disc 2`), el número de title y el
+tamaño cuando varios titles duran lo mismo:
+
+- **Series** (TheTVDB, TheMovieDB o AniDB): el episodio de cada title. La serie se sigue detectando por el nombre de
+  la carpeta o se pregunta.
+- **Películas**: la película principal y los extras, que nunca se tratan como partes (CD1, CD2) de la película. Si el
+  nombre de la carpeta no dice nada (p. ej. `DISC1`), la película se identifica solo por la duración y el tamaño de
+  sus titles.
+- **Extras** (featurettes, escenas eliminadas, tráileres, entrevistas, ...) de películas y series: `{plex}`,
+  `{jellyfin}`, `{emby}` y `{kodi}` los ponen en la carpeta de extras de la película, la temporada o la serie (p. ej.
+  `Featurettes/Behind The Story`), y [`{disc}`](/es/formats/bindings/#servidores-multimedia-y-listas) los distingue en
+  tus propios formatos.
+
+Los titles "Play All" y los que no están en TheDiscDB se emparejan como siempre.
+
+Para emparejar o volver a emparejar solo algunos archivos, selecciónalos y haz clic derecho sobre la selección (o usa
+**Match …** en el menú de un solo archivo). Los demás archivos conservan su coincidencia.
+
+Con clic derecho sobre un nombre nuevo:
+
+- **Edit Format**: abre el editor de formato con ese archivo como ejemplo.
+- **Edit Match**: vuelve a buscar ese archivo, por nombre o id, si la coincidencia no es la buena. Escribe sobre la
+  lista de resultados para filtrarla.
+- **Edit Name**: escribe el nombre nuevo a mano. Mientras escribes aparecen sugerencias (el nombre actual y el
+  original, los demás nombres nuevos y lo que escribiste antes).
+- **Edit All Names …** (`Ctrl`+`Shift`+`N`): edita todos los nombres nuevos a la vez (o solo los seleccionados, si
+  seleccionaste varias filas), uno por línea, con **Find** y **Replace** (texto o expresiones regulares) para los
+  cambios que se repiten en todos los nombres. Con **Column Edit** (activado cuando todos los nombres empiezan igual),
+  un cambio dentro de ese comienzo común, como el nombre de la serie, se aplica a todos los nombres. Los nombres que
+  no toques conservan su coincidencia.
+
+Con clic derecho sobre un archivo original puedes abrirlo (**Open**), mostrarlo en su carpeta (**Reveal**),
+emparejar solo ese archivo (**Match …**), renombrarlo en el disco (**Rename**), guardar su coincidencia en sus
+atributos (**Set Attributes**) o moverlo a la papelera (**Move to Trash**).
+
+Pasa el ratón por un nombre nuevo para ver los detalles de su coincidencia. Haz clic en el indicador de carga o pulsa
+`Esc` para cancelar **Fetch Data**.
+
+## Detalles del emparejado
+
+`F6` o `Espacio` (o **Fetch Data** › **Match Details**) muestra debajo de las listas los valores de las variables más usadas
+para la fila seleccionada y, en la pestaña **Media**, todas las propiedades MediaInfo del archivo.
+
+**Match** vuelve a alinear las dos listas cuando añades, quitas o reordenas filas a mano. `F2` usa los nombres de
+archivo tal cual y `F3` los datos guardados en renombrados anteriores, sin buscar nada.
+
+## Presets
+
+Un preset guarda un formato, una fuente, un idioma, un orden de episodios y una acción con un nombre. Créalos en
+**Presets** › **Edit Presets** y aplícalos desde el mismo menú o con las teclas `1` a `9`. Cada preset puede tener
+su propio **Shortcut**: una tecla fija, **None** (ninguna) o **Automatic**, que le da el siguiente número libre en
+orden alfabético. El menú **Presets** agrupa los presets por modo (episodios, películas, música, archivos, solo
+formato) y muestra la tecla de cada preset. Las teclas numéricas nunca aplican un preset
+mientras escribes en un campo de texto.
+
+**File Order** ordena los archivos antes de emparejarlos: `name`, `path`, `date` (los más nuevos primero), `size`
+(los más grandes primero), `resolution` (la mejor calidad de vídeo primero) o una `{expresión}` que da a cada archivo
+una clave de orden, p. ej. `{-bytes}`. También decide qué archivo gana cuando dos archivos reciben el mismo nombre
+nuevo.
+
+### Presets para empezar
+
+FileBot Pro no trae presets. Estos cubren las bibliotecas habituales: crea cada uno en **Edit Presets** con los
+valores de la tabla y pon la carpeta de tu biblioteca delante de la expresión (p. ej. `D:/Media/{plex.id}`).
+
+| Nombre | Datasource | Episode Order | Expression | Rename Action |
+| --- | --- | --- | --- | --- |
+| Plex · Series | TheTVDB | Airdate | `{plex.id}` | Move |
+| Plex · Películas | TheMovieDB | | `{plex.id}` | Move |
+| Jellyfin · Series | TheTVDB | Airdate | `{jellyfin.id}` | Move |
+| Jellyfin · Películas | TheMovieDB | | `{jellyfin.id}` | Move |
+| Kodi · Series | TheTVDB | Airdate | `{kodi}` | Move |
+| Anime | AniDB | Absolute | `{plex.id}` | Move |
+| Música | ID3 tags | | `Music/{artist}/{album}/{pi.pad(2)} - {t}` | Move |
+| Descargas · Copiar | TheMovieDB::TV | Airdate | `{plex.id}` | Copy |
+
+`{plex.id}` y `{jellyfin.id}` añaden el id de TheTVDB o TheMovieDB a la carpeta de la serie o película, para que el
+servidor multimedia nunca elija la equivocada. Usa primero la acción **Test** si quieres revisar los nombres nuevos
+sin tocar los archivos, y consulta [Ejemplos](/es/formats/examples/) para formatos con etiquetas de calidad
+(`[{vf} {hd} {acf}]`).
+
+## Conflictos y validación
+
+Antes de renombrar, FileBot Pro revisa los nombres nuevos:
+
+- Los **caracteres no válidos** para tu sistema de archivos se señalan y se pueden sustituir con **Validate**.
+- Los **conflictos** (un archivo que ya existe, dos archivos con el mismo nombre nuevo, una extensión que
+  falta) se listan con su motivo y los archivos implicados: el origen, el nombre y la carpeta nuevos, el archivo
+  que se sobrescribiría, o qué duplicado se renombra (el de mayor calidad) y cuál se omite. **Override** mueve
+  los archivos existentes a la papelera (o los borra si no hay papelera) y los sustituye, y **Skip** mantiene el
+  nombre de los archivos en conflicto y renombra todos los demás. El diálogo indica cuántos archivos se saltarán y
+  cuántos se renombrarán.
+
+## Historial
+
+Cada renombrado queda en el historial (botón del historial). Fíltralo, selecciona una sesión o archivos
+sueltos y usa **Revert Selection** para devolverlos a su sitio. **Export** e **Import** guardan el historial en
+un archivo y lo vuelven a cargar.

@@ -1,0 +1,179 @@
+---
+title: Línea de comandos
+description: Todas las opciones del comando filebot-pro y ejemplos para scripts y automatización.
+---
+
+Todas las descargas incluyen `filebot-pro`: `filebot-pro.exe` en Windows, un comando en el `PATH` con los paquetes
+`.deb` y `.rpm` y `bin/filebot-pro` en la carpeta portable de Linux (consulta la [instalación](/es/getting-started/installation/#línea-de-comandos)
+para cada sistema).
+
+## Ejemplos
+
+```bash
+# previsualizar los nombres nuevos sin tocar los archivos
+filebot-pro -rename "/media/TV" --db TVmaze --action test --format "{n} - {s00e00} - {t}"
+
+# renombrar películas dentro de una biblioteca
+filebot-pro -rename "/downloads" --db TheMovieDB --output "/media" --format "Movies/{n} ({y})/{n} ({y})"
+
+# listar los episodios de una serie
+filebot-pro -list --q "Firefly" --db TVmaze --format "{n} - {s00e00} - {t}"
+
+# comprobar sumas, extraer comprimidos, mostrar propiedades multimedia
+filebot-pro -check "/media/Movies"
+filebot-pro -find "/media" -r --file-filter "vf == '2160p'" -exec echo "{f}"
+filebot-pro -extract "/downloads/archive.rar" --output "/downloads"
+filebot-pro -mediainfo "/media/Movies" --format "{fn} {vf} {ac}"
+
+# ejecutar un script integrado
+filebot-pro -script fn:sysinfo
+
+# ordenar las descargas terminadas en una biblioteca
+filebot-pro -script fn:amc "/downloads/complete" --output "/media" --action move -non-strict --lang es --def clean=y
+```
+
+## Comandos
+
+| Opción | Hace |
+| --- | --- |
+| `-rename` | Renombra archivos multimedia |
+| `-get-subtitles` | Descarga subtítulos |
+| `-check` | Crea o comprueba archivos de sumas |
+| `-list` | Muestra una lista de episodios |
+| `-mediainfo` | Muestra propiedades multimedia |
+| `-find` | Muestra los archivos que cumplen `--file-filter` (con `-r` también dentro de las subcarpetas), o ejecuta `-exec` para cada uno |
+| `-extract` | Extrae archivos comprimidos |
+| `-revert` | Deshace renombrados anteriores: sin rutas, la última operación; con rutas, todo lo renombrado desde o hacia ellas |
+| `-script` | Ejecuta un script Groovy: `fn:nombre` para un [script integrado](#scripts-integrados) o un archivo `.groovy` |
+| `-version`, `-help` | Versión y resumen de opciones |
+
+## Scripts integrados
+
+Estos scripts vienen dentro de la aplicación, así que no se descarga nada. Tienen licencia GPL-3.0.
+
+| Script | Hace |
+| --- | --- |
+| `fn:amc` | Ordena las descargas en tu biblioteca: episodios, películas, anime y música, con subtítulos, carátulas, limpieza y avisos opcionales |
+| `fn:cleaner` | Borra archivos sobrantes y carpetas vacías |
+| `fn:watcher` | Vigila una carpeta y renombra los archivos nuevos |
+| `fn:extract` | Extrae los comprimidos en su sitio |
+| `fn:suball` | Descarga los subtítulos que faltan |
+| `fn:artwork`, `fn:nfo` | Carátulas y archivos NFO para centros multimedia, de archivos renombrados con FileBot Pro (leen sus metadatos guardados) |
+| `fn:artwork.tmdb`, `fn:artwork.tvdb` | Carátulas y archivos NFO de carpetas completas de películas o series, buscadas por el nombre de la carpeta (o `--q`) en TheMovieDB o TheTVDB |
+| `fn:miss`, `fn:duplicates` | Lista episodios que faltan o archivos duplicados (`--mode binary --action hardlink` sustituye las copias idénticas por enlaces duros, así ocupan espacio una sola vez) |
+| `fn:history` | Muestra el historial de renombrados |
+| `fn:configure` | Guarda el usuario de OpenSubtitles |
+| `fn:sysinfo` | Versiones, herramientas nativas y carpeta de datos |
+
+### Automatizar las descargas con amc
+
+`amc` recibe los archivos descargados (o una carpeta), detecta si son episodios, películas, anime o música y los mueve
+a `--output`. Las opciones se pasan con `--def nombre=valor`:
+
+| Opción | Uso |
+| --- | --- |
+| `seriesFormat`, `movieFormat`, `animeFormat`, `musicFormat` | [Formato](/es/formats/syntax/) de cada tipo (por defecto `{plex}`) |
+| `seriesDB`, `movieDB`, `animeDB` | Fuentes (por defecto `TheMovieDB::TV`, `TheMovieDB`, `AniDB`) |
+| `subtitles=es` | Descarga subtítulos en estos idiomas |
+| `artwork=y` | Descarga carátulas y archivos NFO |
+| `clean=y` | Borra los archivos sobrantes y las carpetas vacías después de mover |
+| `music=y`, `unsorted=y` | Procesa también la música, mueve lo no reconocido a `Unsorted` |
+| `excludeList=amc.txt` | Recuerda los archivos procesados para no repetirlos nunca |
+| `kodi=host`, `plex=host:token`, `emby=host:apikey` | Actualiza tu centro multimedia |
+| `pushover=usuario:token`, `pushbullet=apikey`, `discord=webhook` | Envía un aviso (Pushover necesita el token de tu propia aplicación) |
+| `minFileSize` | Omite los archivos más pequeños que este número de bytes (por defecto `50000000`, 50 MB) |
+| `minLengthMS` | Omite los vídeos más cortos que este número de milisegundos (por defecto `600000`, 10 minutos); `0` desactiva la comprobación |
+| `minFileAge` | Omite los archivos modificados hace menos de este número de días (por defecto `0`, desactivado) |
+| `ignore` | Omite los archivos cuya ruta coincide con este patrón |
+| `excludeLink=y` | Omite los archivos que son enlaces simbólicos o tienen más de un enlace duro |
+| `extractFolder`, `skipExtract=y`, `deleteAfterExtract=y` | Dónde se extraen los comprimidos (por defecto, la carpeta del comprimido), no tocar los comprimidos, o borrarlos después de extraer |
+| `storeReport=carpeta` | Guarda en esta carpeta un informe HTML de cada ejecución |
+| `ut_label` | Etiqueta del cliente de descargas que fuerza el tipo: Movie, TV series, Anime, Music o Unsorted para juegos, libros y otros |
+| `musicDB`, `unsortedFormat` | Fuente de música (por defecto `ID3`) y [formato](/es/formats/syntax/) de los archivos sin clasificar (por defecto `Unsorted/{f.structurePathTail}`) |
+| `exec` | Ejecuta un programa por cada archivo nuevo, por ejemplo `exec="notify.bat {n}"` (ver la advertencia de abajo) |
+
+:::caution
+`exec` no se ejecuta a través de una shell. La plantilla se divide por espacios en argumentos y cada argumento se
+rellena por separado, así que un título con espacios sigue siendo un solo argumento, pero las tuberías, las
+redirecciones y `&&` no funcionan. Entrecomilla un argumento que contenga espacios, por ejemplo
+`exec="\"C:\Tools\notify.bat\" {n}"`.
+:::
+
+Los clientes de torrent pueden llamarlo al terminar una descarga. En qBittorrent, *Opciones › Descargas › Ejecutar
+programa externo al finalizar el torrent*:
+
+```bash
+filebot-pro -script fn:amc --output "D:/Media" --action move -non-strict --lang es --log-file amc.log --def excludeList=amc.txt clean=y ut_dir="%F" ut_kind=multi ut_title="%N" ut_label="%L"
+```
+
+## Opciones
+
+| Opción | Valores | Uso |
+| --- | --- | --- |
+| `--db` | TheTVDB, AniDB, TheMovieDB::TV, TVmaze, TheMovieDB, OMDb, OpenSubtitles, Shooter, AnimeLists, FanartTV, AcoustID, ID3, xattr, exif, file | Fuente (OpenSubtitles identifica las películas primero por el hash del archivo y después por el nombre). `Shooter` es una fuente de subtítulos y `FanartTV` una fuente de carátulas. `AnimeLists` es el nombre en `--db` de la fuente AnimeList que usa `--mapper` (el binding se llama `AnimeList`). Con `-list`, solo funcionan TheTVDB, AniDB, TheMovieDB::TV y TVmaze, y `TheMovieDB` equivale a `TheMovieDB::TV`; un nombre desconocido da error |
+| `--format` | expresión, `formato.groovy` o `@formato.txt` | [Formato](/es/formats/syntax/) de los nombres nuevos |
+| `--action` | move, copy, keeplink, symlink, hardlink, clone, duplicate, test | Acción (`test` solo previsualiza). `clone` hace un clon copy-on-write (APFS, Btrfs, XFS, bcachefs; ReFS / Dev Drive en Windows 11 24H2 o posterior) y una copia normal donde el sistema de archivos no lo admite. `duplicate` crea un enlace duro y copia el archivo donde no se puede enlazar. También puede ser un programa, indicado por su ruta (`C:\Tools\accion.bat`, `/usr/local/bin/accion`) o por su nombre si está en el `PATH` (`accion` encuentra `accion.exe`, `accion.cmd`, ...; los scripts `.ps1` se ejecutan con PowerShell), al que se le pasan la ruta de origen y el destino, o un closure de Groovy o un archivo `.groovy` que recibe `from` y `to` |
+| `--file-order` | name, path, date, size, resolution, o una expresión | Orden en que se renombran los archivos, que decide cuál gana cuando varios van a la misma ruta (`--conflict skip` se queda con el primero): `date` es el más reciente primero, `size` el más grande primero y `resolution` la mejor calidad de vídeo primero. Una expresión da una clave de orden para cada archivo, de menor a mayor: `--file-order "{-bytes}"` |
+| `--conflict` | skip, override, auto, index, fail, o un closure de Groovy o un archivo `.groovy` | Qué hacer si el destino ya existe. Un closure recibe el archivo y el destino existente y devuelve otro archivo de destino, una de las acciones, o `true` (override) / `false` (skip): `--conflict "{ from, to -> from.length() > to.length() ? 'override' : 'skip' }"` |
+| `--order` | Airdate, Official, DVD, Absolute, AbsoluteAirdate, Digital, StoryArc, Production | Orden de los episodios (con TheTVDB, Official es el Aired Order, Digital el Alternate Order, StoryArc el Alternate DVD Order y Production el Regional Order, y Airdate sigue el orden por defecto de la serie; con TheMovieDB, Digital, StoryArc y Production son grupos de episodios. Las series sin ese orden usan el orden por defecto) |
+| `--lang` | código de idioma | Idioma de los datos |
+| `--q` | texto | Fuerza la serie o película: un nombre, un id (`id:1399`, `tvdb:73255`, `tmdb:603`, un id de serie de 5 a 9 cifras, un id de IMDb como `tt0133093`) o varios separados por `\|` (cada archivo se empareja con el más parecido) |
+| `--filter` | expresión | Solo conserva las coincidencias para las que la expresión es `true` |
+| `--mapper` | expresión | Empareja los episodios con otra numeración, p. ej. `db.AniDB` o `AnimeList.AniDB`; los nombres nuevos siguen usando los datos originales del episodio |
+| `--apply` | artwork, cover, thumbnail, nfo, url, srt, metadata (o tag), finder, date, touch, chmod, import, prune, o un closure de Groovy o un archivo `.groovy` | Tras renombrar: descarga carátulas, escribe un `cover.jpg` por carpeta (reutiliza primero un póster local, y usa `<nombre>-cover.jpg` si la carpeta tiene otras películas o temporadas), crea miniaturas de vídeo a partir del póster para NAS Synology (`@eaDir/<archivo>/SYNOVIDEO_VIDEO_SCREENSHOT.jpg`) y QNAP (`.@__thumb`), para que File Station, DS File, Qfile y los servidores multimedia las muestren (`thumbnail`, cuando se ejecuta en el NAS o la carpeta ya tiene una carpeta `@eaDir` o `.@__thumb`), escribe archivos NFO, crea accesos `.url` a la ficha de la película o serie, convierte a SRT en UTF-8 los subtítulos renombrados y los que están junto a los vídeos renombrados (los de otros formatos, como ASS, y los subtítulos `.txt` TMPlayer y MPL2, se conservan junto al nuevo `.srt`), escribe título, serie, temporada, episodio y fecha dentro de los mkv y mp4 y les adjunta la portada (reducida a 1000 píxeles de alto), añade etiquetas de Finder con el tipo, el formato de vídeo y HDR (macOS), pone la fecha de estreno como fecha de modificación, pone la fecha actual como fecha de modificación (`touch`), aplica permisos POSIX (`chmod`, o `chmod=644` para otros permisos distintos de los `664` por defecto; Linux y macOS), se lleva los extras junto a los vídeos renombrados (`import`: archivos como `Pelicula-trailer.mkv`, renombrados según el nombre nuevo, y las carpetas de extras de Plex como `Trailers` o `Featurettes` de las carpetas con un solo vídeo) y, tras mover, borra las carpetas de origen que queden realmente vacías (`--apply artwork nfo`). `srt`, `finder`, `touch` y `chmod` también funcionan con archivos renombrados sin datos en línea. Un closure (`--apply "{ f, m -> println f }"`) o un archivo `.groovy` que lo contenga se ejecuta para cada archivo renombrado, con el archivo y, si recibe dos parámetros, sus datos de coincidencia. Con `--apply`, `-exec` se ejecuta después de estos pasos. `prune` nunca borra las carpetas pasadas como argumento, y una carpeta con archivos ocultos no cuenta como vacía, salvo las carpetas de miniaturas de los NAS como `@eaDir` |
+| `--file-filter` | expresión | Solo procesa los archivos para los que la expresión es `true` (con `-script`, el script recibe los archivos elegidos en lugar de las carpetas) |
+| `--output` | ruta | Carpeta de destino |
+| `--encoding` | UTF-8, Windows-1252 | Codificación de los archivos de texto que se escriben |
+| `-r` | | Recorre las carpetas de forma recursiva (con `-script`, el script recibe todos los archivos de las carpetas) |
+| `-d` | | Modo carpeta: renombra las carpetas indicadas como un todo (p. ej. una carpeta por película) en lugar de los archivos que contienen |
+| `-non-strict` | | Emparejado más agresivo |
+| `-exec` | `echo {f}` | Ejecuta un comando por cada archivo procesado |
+| `--def` | `nombre=valor` | Variables para scripts |
+| `--mode` | interactive, binary | Confirma las coincidencias en la terminal (preguntas numeradas en cmd.exe y PowerShell, un diálogo a pantalla completa en el resto). `binary` se pasa a los scripts como `_args.mode`; `fn:duplicates` lo necesita para encontrar duplicados binarios (`--mode binary --action hardlink`) |
+| `-unixfs` | | Permite cualquier carácter en los nombres |
+| `-no-xattr`, `-no-history` | | No guarda datos en los archivos ni en el historial |
+| `-no-probe` | | Empareja sin leer el contenido de los archivos (sin MediaInfo) |
+| `-no-index` | | No carga las listas locales de series, películas y anime (usa menos memoria, para NAS y equipos con poca memoria) |
+| `--log` | all, fine, info, warning | Nivel del registro |
+| `--log-file`, `--log-lock` | archivo, yes/no | Escribe el registro en un archivo |
+| `-clear-cache`, `-clear-prefs`, `-clear-history` | | Borra la caché, los ajustes o el historial. `-clear-cache` debe ejecutarse desde una consola interactiva; en un script falla con un error |
+| `-export-data`, `-import-data` | archivo zip | [Copia o restaura](/es/reference/configuration/#copia-de-seguridad-y-restauración) los ajustes, los presets, el historial y las claves de API |
+
+## Archivos de argumentos
+
+Los comandos largos se pueden guardar en un archivo de texto y pasar como `@archivo`. Cada línea es un argumento,
+así que los valores con espacios no necesitan comillas. Se ignoran las líneas en blanco y las que empiezan por `#`, y
+el archivo puede guardarse con o sin BOM.
+
+```bash
+filebot-pro @peliculas.txt "/descargas"
+```
+
+```text title="peliculas.txt"
+# películas a la biblioteca
+-rename
+--db
+TheMovieDB
+--format
+Movies/{n} ({y})/{n} ({y})
+```
+
+Los valores de las opciones nunca se leen como archivos de argumentos, así que `--format @formato.groovy` sigue
+cargando un formato desde un archivo.
+
+`--` termina las opciones: todos los argumentos que van detrás son archivos o carpetas, aunque empiecen por `-` o
+`@`.
+
+```bash
+filebot-pro -rename --db TheMovieDB -- "-nombre raro-.mkv"
+```
+
+## Códigos de salida
+
+| Código | Significado |
+| --- | --- |
+| `0` | Hecho |
+| `1` | Error |
+| `3` | Fallo |
+| `4` | Cancelado |
+| `100` | Nada que hacer |

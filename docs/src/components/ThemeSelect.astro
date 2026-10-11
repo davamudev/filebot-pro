@@ -1,0 +1,200 @@
+---
+/**
+ * Theme switcher: replaces Starlight's, which is a native `<select>`.
+ *
+ * The native one had three problems: the drop-down is drawn by the operating
+ * system (no radios, no accent, no dark theme), the label was clipped to
+ * "Auto…" because its width was fixed in `em`, and there was no way to mark
+ * the active option with the site's accent.
+ *
+ * Here we use our own menu: a trigger pill + a floating card with the three
+ * options and a check mark on the active one. Starlight's contract is kept —the
+ * `starlight-theme` localStorage key and `document.documentElement.dataset
+ * .theme`— so the `ThemeProvider` in the `<head>` still applies the theme before
+ * the first paint and there is no flash.
+ */
+import { icon } from './icons.mjs'
+
+const { t } = Astro.locals
+
+const OPTIONS = [
+	{ value: 'auto', label: t('fp.theme.auto'), icon: 'monitor' },
+	{ value: 'light', label: t('fp.theme.light'), icon: 'sun' },
+	{ value: 'dark', label: t('fp.theme.dark'), icon: 'moon' },
+]
+---
+
+<docs-theme-select class="w-theme">
+	<button
+		class="w-theme__trigger"
+		type="button"
+		aria-expanded="false"
+		aria-haspopup="menu"
+		aria-label={t('fp.theme.label')}
+	>
+		{
+			OPTIONS.map((option) => (
+				<span
+					class="w-theme__trigger-icon"
+					data-for={option.value}
+					set:html={icon(option.icon, 16)}
+				/>
+			))
+		}
+		<span class="w-theme__trigger-label">{t('fp.theme.short')}</span>
+		<span class="w-theme__caret" aria-hidden="true" set:html={icon('chevron', 14)} />
+	</button>
+
+	<div class="w-theme__menu" role="menu" hidden>
+		{
+			OPTIONS.map((option) => (
+				<button
+					class="w-theme__option"
+					type="button"
+					role="menuitemradio"
+					aria-checked="false"
+					data-theme-choice={option.value}
+				>
+					<span class="w-theme__option-icon" set:html={icon(option.icon, 16)} />
+					<span class="w-theme__option-label">{option.label}</span>
+					<span class="w-theme__option-check" aria-hidden="true" set:html={icon('check', 14)} />
+				</button>
+			))
+		}
+	</div>
+</docs-theme-select>
+
+<script>
+	type Theme = 'auto' | 'light' | 'dark'
+
+	const IS_THEME = (value: string | null): value is Theme =>
+		value === 'auto' || value === 'light' || value === 'dark'
+
+	/** What is stored. Starlight writes '' when the theme is automatic. */
+	function storedTheme(): Theme {
+		try {
+			const value = localStorage.getItem('starlight-theme')
+			return IS_THEME(value) ? value : 'auto'
+		} catch {
+			return 'auto'
+		}
+	}
+
+	function save(theme: Theme) {
+		try {
+			localStorage.setItem('starlight-theme', theme === 'auto' ? '' : theme)
+		} catch {
+			/* Private browsing: the theme applies to this tab and that's it. */
+		}
+	}
+
+	const systemScheme = () =>
+		matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'
+
+	class DocsThemeSelect extends HTMLElement {
+		#trigger = this.querySelector<HTMLButtonElement>('.w-theme__trigger')!
+		#menu = this.querySelector<HTMLDivElement>('.w-theme__menu')!
+		#options = [...this.querySelectorAll<HTMLButtonElement>('.w-theme__option')]
+		#theme: Theme = storedTheme()
+
+		connectedCallback() {
+			this.#apply(this.#theme, { persist: false })
+
+			this.#trigger.addEventListener('click', () => this.#toggle(!this.isOpen))
+
+			this.#options.forEach((option) => {
+				option.addEventListener('click', () => {
+					this.#apply(option.dataset.themeChoice as Theme)
+					this.#toggle(false)
+					this.#trigger.focus()
+				})
+			})
+
+			// Arrow keys move through the menu; Escape and Tab close it.
+			this.addEventListener('keydown', (event) => {
+				if (event.key === 'Escape' && this.isOpen) {
+					event.stopPropagation()
+					this.#toggle(false)
+					this.#trigger.focus()
+					return
+				}
+				if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+					event.preventDefault()
+					if (!this.isOpen) return this.#toggle(true)
+					const step = event.key === 'ArrowDown' ? 1 : -1
+					const current = this.#options.indexOf(
+						document.activeElement as HTMLButtonElement
+					)
+					const next =
+						(current + step + this.#options.length) % this.#options.length
+					this.#options[current === -1 ? 0 : next]!.focus()
+				}
+			})
+
+			this.addEventListener('focusout', () => {
+				// `focusout` fires before focus lands, so check afterwards.
+				requestAnimationFrame(() => {
+					if (!this.contains(document.activeElement)) this.#toggle(false)
+				})
+			})
+
+			document.addEventListener('click', (event) => {
+				if (this.isOpen && !this.contains(event.target as Node)) this.#toggle(false)
+			})
+
+			// With the automatic theme, follow the system for as long as the page lives.
+			matchMedia('(prefers-color-scheme: light)').addEventListener('change', () => {
+				if (this.#theme === 'auto') this.#apply('auto', { persist: false })
+			})
+		}
+
+		get isOpen() {
+			return this.#trigger.getAttribute('aria-expanded') === 'true'
+		}
+
+		#toggle(open: boolean) {
+			this.#trigger.setAttribute('aria-expanded', String(open))
+			this.#menu.hidden = !open
+			if (open) {
+				const active = this.#options.find((o) => o.dataset.themeChoice === this.#theme)
+				;(active ?? this.#options[0])!.focus()
+			}
+		}
+
+		#apply(theme: Theme, { persist = true } = {}) {
+			this.#theme = theme
+			const resolved = theme === 'auto' ? systemScheme() : theme
+
+			// Many surfaces animate `background` and `border-color` on hover.
+			// When the theme changes those same transitions fire and the cards
+			// take a while to reach the new colour, so the switch happens with
+			// transitions turned off and they are turned back on a couple of
+			// frames later, once the final colour has been painted.
+			const root = document.documentElement
+			root.classList.add('w-no-transitions')
+			root.dataset.theme = resolved
+			requestAnimationFrame(() =>
+				requestAnimationFrame(() => root.classList.remove('w-no-transitions'))
+			)
+
+			this.dataset.themeChoice = theme
+			this.#options.forEach((option) =>
+				option.setAttribute('aria-checked', String(option.dataset.themeChoice === theme))
+			)
+			const chosen = this.#options.find((o) => o.dataset.themeChoice === theme)
+			const text = chosen?.querySelector('.w-theme__option-label')?.textContent
+			const target = this.#trigger.querySelector('.w-theme__trigger-label')
+			if (target && text) target.textContent = text
+
+			if (persist) save(theme)
+
+			// Starlight keeps its own pickers in sync through this.
+			const provider = (window as unknown as {
+				StarlightThemeProvider?: { updatePickers?: (theme: string) => void }
+			}).StarlightThemeProvider
+			provider?.updatePickers?.(theme)
+		}
+	}
+
+	customElements.define('docs-theme-select', DocsThemeSelect)
+</script>

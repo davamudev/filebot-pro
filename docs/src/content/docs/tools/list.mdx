@@ -1,0 +1,17 @@
+---
+title: List
+description: Generate numbered lists of names from a format expression.
+---
+
+Write a **Pattern** with `{i}` (the index), choose the range with **From** and **To** and click **Sequence**.
+
+```groovy title="Pattern"
+Sequence - {i.pad(2)}
+```
+
+produces `Sequence - 01`, `Sequence - 02`, … The pattern is a full [format expression](/formats/syntax/).
+
+Dropping files, a folder or a torrent onto the list lists their names instead, ready to be reshaped with the
+pattern.
+
+Right click the list to **Send to** › **Rename** (as new names), **Copy** it or **Save as ...** a text file.

@@ -1,0 +1,50 @@
+package dev.davamu.filebotpro.media;
+
+import static java.util.Comparator.*;
+import static dev.davamu.filebotpro.Logging.*;
+import static dev.davamu.filebotpro.media.MediaDetection.*;
+import static dev.davamu.filebotpro.util.StringUtilities.*;
+
+import java.io.File;
+import java.util.Comparator;
+import java.util.regex.Pattern;
+
+import dev.davamu.filebotpro.format.MediaBindingBean;
+
+public class VideoQuality implements Comparator<File> {
+
+	public static final Comparator<File> DESCENDING_ORDER = new VideoQuality().reversed();
+
+	public static boolean isBetter(File f1, File f2) {
+		return DESCENDING_ORDER.compare(f1, f2) < 0;
+	}
+
+	private final Comparator<File> chain = comparingInt(this::getRepack).thenComparingDouble(this::getScore).thenComparingLong(File::length);
+
+	@Override
+	public int compare(File f1, File f2) {
+		return chain.compare(f1, f2);
+	}
+
+	private final Pattern repack = releaseInfo.getRepackPattern();
+
+	private int getRepack(File f) {
+		return find(f.getName(), repack) ? 1 : 0;
+	}
+
+	private double getScore(File f) {
+		// use primary video file when checking video resolution of subtitle files or disk folders
+		f = new MediaBindingBean(f, f).getInferredMediaFile();
+
+		if (MediaCharacteristicsParser.DEFAULT.acceptVideoFile(f)) {
+			try (MediaCharacteristics mi = MediaCharacteristicsParser.DEFAULT.open(f)) {
+				return mi.getWidth() * mi.getHeight() * mi.getBitRate();
+			} catch (Exception e) {
+				debug.warning(message("Failed to read video resolution or bitrate", e));
+			}
+		}
+
+		return 0;
+	}
+
+}

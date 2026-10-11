@@ -1,0 +1,184 @@
+---
+title: Instalación
+description: Instala FileBot Pro en Windows, Ubuntu, Debian, Fedora o macOS, ábrelo y usa la línea de comandos.
+---
+
+import { Steps, Tabs, TabItem } from '@astrojs/starlight/components'
+
+## Requisitos
+
+| | |
+| --- | --- |
+| **Sistema operativo** | Windows 10/11, Linux (Ubuntu, Debian, Fedora y otras) o macOS, de 64 bits |
+| **Java** | Incluido en todas las descargas |
+| **Internet** | Para buscar películas, episodios, subtítulos e imágenes |
+
+## Instalar
+
+Descarga el archivo de tu sistema desde la [página de versiones](https://github.com/davamudev/FileBot-Pro/releases).
+
+<Tabs syncKey="os">
+<TabItem label="Windows">
+
+**Portable (recomendado)**: no se instala nada y no se escribe nada fuera de la
+[carpeta de datos](/es/reference/configuration/#datos-de-usuario).
+
+<Steps>
+
+1. Descomprime `FileBot-Pro-1.0.0-windows-portable.zip` (`FileBot-Pro-1.0.0-windows-arm64-portable.zip` en equipos
+   ARM, como los portátiles Snapdragon) donde quieras: el escritorio, `Archivos de programa` o un USB.
+
+2. Abre **FileBot Pro.exe**. En la misma carpeta está `filebot-pro.exe`, la versión de línea de comandos.
+
+</Steps>
+
+**Instalador**: ejecuta `FileBot Pro-1.0.0.msi` y abre **FileBot Pro** desde el menú de inicio o el acceso
+directo del escritorio.
+
+MediaInfo y fpcalc vienen incluidos en los dos.
+
+</TabItem>
+<TabItem label="Ubuntu / Debian">
+
+<Steps>
+
+1. Instala el paquete con `apt` desde la carpeta donde lo descargaste:
+
+   ```bash
+   sudo apt install ./filebot-pro_1.0.0-1_amd64.deb
+   ```
+
+   `apt` instala también MediaInfo y fpcalc, los paquetes recomendados, así que las propiedades multimedia y el
+   reconocimiento de música funcionan desde el principio.
+
+2. Abre **FileBot Pro** desde el menú de aplicaciones o escribe `filebot-pro` en una terminal.
+
+</Steps>
+
+La aplicación se instala en `/opt/filebot-pro` y el comando `filebot-pro` en `/usr/bin`, con autocompletado
+para bash. Funciona en Ubuntu 22.04 o posterior, Debian 12 o posterior y derivadas como Linux Mint, Pop!_OS o elementary OS.
+
+</TabItem>
+<TabItem label="Fedora / RPM">
+
+<Steps>
+
+1. Instala el paquete con `dnf` (o `zypper` en openSUSE):
+
+   ```bash
+   sudo dnf install ./filebot-pro-1.0.0-1.x86_64.rpm
+   ```
+
+2. Abre **FileBot Pro** desde el menú de aplicaciones o escribe `filebot-pro` en una terminal.
+
+</Steps>
+
+`dnf` instala también MediaInfo (`libmediainfo`) y fpcalc (`chromaprint-tools`) si están disponibles. El comando `filebot-pro` tiene autocompletado para bash.
+
+</TabItem>
+<TabItem label="Otro Linux">
+
+<Steps>
+
+1. Descomprime `FileBot-Pro-1.0.0-linux-portable.zip` donde quieras, por ejemplo en `~/Applications`.
+
+2. Ejecuta `FileBot Pro/bin/FileBot Pro` para la aplicación de escritorio o `FileBot Pro/bin/filebot-pro` para
+   la línea de comandos.
+
+3. Opcional: enlaza el comando en tu `PATH`:
+
+   ```bash
+   ln -s "$HOME/Applications/FileBot Pro/bin/filebot-pro" ~/.local/bin/filebot-pro
+   ```
+
+4. Instala MediaInfo y fpcalc con tu gestor de paquetes: consulta
+   [herramientas nativas](/es/reference/configuration/#herramientas-nativas).
+
+</Steps>
+
+</TabItem>
+<TabItem label="macOS">
+
+<Steps>
+
+1. Abre `FileBot Pro-1.0.0-arm64.dmg` (Apple Silicon, M1 y posteriores) o `FileBot Pro-1.0.0-x64.dmg` (Intel) y
+   arrastra **FileBot Pro** a **Aplicaciones**.
+
+2. Las versiones todavía no están firmadas. Si macOS no deja abrir la aplicación la primera vez, ve a
+   **Ajustes del Sistema → Privacidad y seguridad** y pulsa **Abrir igualmente**.
+
+3. Instala MediaInfo y fpcalc con [Homebrew](https://brew.sh):
+
+   ```bash
+   brew install libmediainfo chromaprint
+   ```
+
+</Steps>
+
+Los archivos de vídeo y subtítulos muestran **FileBot Pro** en el menú **Abrir con** del Finder (nunca pasa a ser
+la aplicación predeterminada para ellos).
+
+</TabItem>
+</Tabs>
+
+En Linux, los archivos de vídeo y subtítulos también muestran **FileBot Pro** en **Abrir con**, y la aplicación usa
+el diálogo de archivos de tu escritorio si está instalado `zenity` (GNOME y la mayoría) o `kdialog` (KDE).
+
+Para compilar FileBot Pro tú mismo, consulta [compilar desde el código](/es/development/building/).
+
+En el primer arranque aparece la pantalla de bienvenida. Ciérrala o sigue el enlace a
+[tu primer renombrado](/es/getting-started/first-rename/).
+
+## Línea de comandos
+
+Todas las descargas incluyen el comando `filebot-pro` para scripts, servidores y automatización. Sin argumentos
+abre la aplicación de escritorio.
+
+| Sistema | Comando |
+| --- | --- |
+| Windows | `filebot-pro.exe` en la carpeta portable o en la de instalación (`C:\Program Files\FileBot Pro`) |
+| Ubuntu, Debian, Fedora | `filebot-pro`, ya está en el `PATH` |
+| Otro Linux | `FileBot Pro/bin/filebot-pro` |
+| macOS | `"/Applications/FileBot Pro.app/Contents/MacOS/FileBot Pro"` |
+
+```bash
+filebot-pro -script fn:sysinfo                        # versiones, herramientas nativas y carpeta de datos
+filebot-pro -rename "/media/TV" --db TVmaze --action test --format "{n} - {s00e00} - {t}"
+filebot-pro -script fn:amc "/downloads/complete" --output "/media" --action move -non-strict
+```
+
+En Linux la línea de comandos no necesita una sesión de escritorio, así que también funciona por SSH y en
+servidores. Consulta la [referencia de la línea de comandos](/es/reference/command-line/) para ver todas las
+opciones.
+
+## Lista para el primer arranque
+
+- **Bases de datos en línea**: listas para usar. Solo OMDb y la ubicación de las fotos necesitan tu
+  propia clave gratuita, consulta [claves API](/es/reference/configuration/#claves-api).
+- **Propiedades multimedia**: comprueba con `filebot-pro -script fn:sysinfo` que se han encontrado MediaInfo y
+  fpcalc. Si no, consulta [herramientas nativas](/es/reference/configuration/#herramientas-nativas).
+- **Tema**: FileBot Pro sigue el modo claro u oscuro del sistema. Cámbialo con el botón **Appearance** de la
+  parte inferior de la navegación.
+
+:::note[Sin licencia]
+Todo es gratis, también renombrar: FileBot Pro no necesita licencia ni cuenta, y las bases de datos en línea
+están listas para usar.
+:::
+
+## Actualizar
+
+Sustituye la carpeta portable o instala el paquete nuevo encima del anterior (`sudo apt install ./<nuevo>.deb`,
+`sudo dnf install ./<nuevo>.rpm`). Los ajustes, el historial y los presets viven en la
+[carpeta de datos](/es/reference/configuration/#datos-de-usuario) y se conservan.
+
+## Desinstalar
+
+| Sistema | Cómo |
+| --- | --- |
+| Windows | **Configuración → Aplicaciones**, o borra la carpeta portable |
+| Ubuntu, Debian | `sudo apt remove filebot-pro` |
+| Fedora | `sudo dnf remove filebot-pro` |
+| macOS | Mueve **FileBot Pro** de **Aplicaciones** a la papelera |
+
+La [carpeta de datos](/es/reference/configuration/#datos-de-usuario) se conserva; bórrala también para eliminar
+los ajustes, el historial y las cachés.

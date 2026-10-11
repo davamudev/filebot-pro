@@ -1,0 +1,145 @@
+---
+title: Configuración
+description: Claves API opcionales, herramientas nativas, la carpeta de datos y las opciones de arranque.
+---
+
+## Claves API
+
+Las bases de datos en línea funcionan sin configurar nada: FileBot Pro incluye las claves de TheMovieDB, TheTVDB,
+AniDB, fanart.tv, AcoustID y OpenSubtitles, y TVmaze y las fuentes locales no necesitan ninguna.
+
+Dos fuentes opcionales vinculan su cuota, licencia o facturación a quien las usa, así que necesitan tu propia clave
+gratuita:
+
+| Fuente | Clave | Dónde conseguirla |
+| --- | --- | --- |
+| OMDb (valoraciones de IMDb) | `omdb` | [omdbapi.com](https://www.omdbapi.com/apikey.aspx) |
+| Google Geocoding (ubicación de las fotos) | `google.geocode` | [Google Cloud](https://developers.google.com/maps/documentation/geocoding) |
+
+Para añadir una, crea `api-keys.properties` en la [carpeta de datos](#datos-de-usuario) con una línea por clave y
+reinicia FileBot Pro:
+
+```properties title="api-keys.properties"
+omdb = tu-clave
+```
+
+El mismo archivo puede sustituir una clave incluida por la tuya, por ejemplo `themoviedb = tu-clave`. La opción de
+arranque `-Dapikey.<nombre>=<clave>` y la variable de entorno `FILEBOT_PRO_APIKEY_<NOMBRE>` (con guiones bajos en
+lugar de puntos) hacen lo mismo y tienen prioridad sobre el archivo.
+
+OpenSubtitles tiene un límite diario de descargas: inicia sesión con **Login** en el panel **Subtitles** para
+ampliarlo.
+
+Este producto usa la API de TMDB, pero TMDB no lo respalda ni lo certifica ([TMDB](https://www.themoviedb.org)).
+Todas las fuentes de datos aparecen en la aplicación en **Help → About FileBot Pro**.
+
+## Herramientas nativas
+
+| Herramienta | Activa | Windows | macOS | Linux (Debian, Ubuntu) |
+| --- | --- | --- | --- | --- |
+| MediaInfo | Las [propiedades multimedia](/es/formats/bindings/#propiedades-multimedia) y la pestaña **MediaInfo** | Incluida | `brew install libmediainfo` | `apt install libmediainfo0v5` |
+| fpcalc | Reconocimiento de música con AcoustID | Incluida | `brew install chromaprint` | `apt install libchromaprint-tools` |
+| 7-Zip | Archivos comprimidos | Incluida | Incluida | Incluida |
+| mkvpropedit, AtomicParsley | `--apply metadata` (etiquetas y portada dentro de los mkv y mp4) | Incluidas | `brew install mkvtoolnix atomicparsley` | `apt install mkvtoolnix atomicparsley` |
+| ffprobe, 7z, unrar | Alternativas opcionales | `PATH` | Homebrew | gestor de paquetes |
+
+Los paquetes `.deb` y `.rpm` instalan MediaInfo, fpcalc, mkvpropedit y AtomicParsley como paquetes recomendados. En
+Fedora se llaman `libmediainfo`, `chromaprint-tools`, `mkvtoolnix` y `AtomicParsley`.
+
+Las herramientas se buscan en la carpeta `native` de la aplicación, en la carpeta `native` de la
+[carpeta de datos](#datos-de-usuario), en las rutas de instalación habituales y en el `PATH`.
+`filebot-pro -script fn:sysinfo` muestra lo que se ha encontrado.
+
+## Datos de usuario
+
+| Sistema | Carpeta |
+| --- | --- |
+| Windows | `%APPDATA%\FileBot Pro` |
+| macOS | `~/Library/Application Support/FileBot Pro` |
+| Linux | `~/.filebot-pro` |
+
+Guarda la caché, el historial de renombrados, los registros, la licencia y `api-keys.properties`. Las
+preferencias, como el tema, se guardan en el almacén de preferencias del sistema.
+
+### Copia de seguridad y restauración
+
+**Help** › **Export user data…** guarda los ajustes, los presets, el historial de renombrados,
+`api-keys.properties` y `system.properties` en un único zip, y **Restore user data…** los recupera, por ejemplo en
+otro ordenador. Al restaurar se sustituyen los ajustes y los presets, el historial se combina con el actual y se
+guarda una copia `.bak` de los archivos que se sobrescriben; reinicia la aplicación después. Desde la línea de
+comandos:
+
+```bash
+filebot-pro -export-data "FileBot-Pro-copia.zip"
+filebot-pro -import-data "FileBot-Pro-copia.zip"
+```
+
+:::caution
+La copia incluye tus claves de API (`api-keys.properties`), `system.properties` y el usuario y la contraseña de
+OpenSubtitles guardados en los ajustes. La contraseña va cifrada con tu cuenta de Windows (DPAPI) en Windows, y solo
+en base64 en macOS y Linux, así que guarda el archivo en un sitio privado y no lo compartas.
+:::
+
+## Opciones de arranque
+
+Los lanzadores leen sus opciones de los archivos `.cfg` de la carpeta `app` de la instalación (`lib/app` en
+Linux, por ejemplo `/opt/filebot-pro/lib/app`, y `Contents/app` en macOS):
+`FileBot Pro.cfg` para la aplicación de escritorio y `filebot-pro.cfg` para la línea de comandos. Añade una
+línea `java-options` por opción debajo de `[JavaOptions]`:
+
+```ini title="app/FileBot Pro.cfg"
+[JavaOptions]
+java-options=-Ddev.davamu.filebotpro.theme=dark
+```
+
+O ponlas en `system.properties` en la [carpeta de datos de usuario](#datos-de-usuario), una por línea como
+`nombre=valor` y sin `-D` (`dev.davamu.filebotpro.theme=dark`). Vale para la aplicación de escritorio y para la
+línea de comandos, se conserva al actualizar y se edita en **Help** › **System properties…**. Reinicia la
+aplicación tras un cambio. `application.dir` solo funciona como opción de arranque, porque el archivo está dentro
+de esa carpeta.
+
+Para una sola ejecución, por ejemplo desde un script o una tarea programada, usa la variable de entorno
+`FILEBOT_PRO_OPTS`. Sus opciones `-D` tienen prioridad sobre el archivo `.cfg` y `system.properties`; pon entre
+comillas los valores con espacios:
+
+```sh
+FILEBOT_PRO_OPTS='-Dapplication.dir="/mnt/media/FileBot Pro" -DuseExtendedFileAttributes=false' filebot-pro -script fn:sysinfo
+```
+
+Las opciones de la JVM como `-Xmx4g` solo funcionan en el archivo `.cfg` o en la variable de entorno
+`JAVA_TOOL_OPTIONS` (los lanzadores instalados las ignoran en `FILEBOT_PRO_OPTS`; la imagen de Docker y el paquete
+de Synology no).
+
+| Opción | Efecto |
+| --- | --- |
+| `-Ddev.davamu.filebotpro.theme=dark` | Arranca con `light`, `dark` o `system` |
+| `-Dflatlaf.animation=false` | Desactiva las animaciones de botones, navegación y notificaciones |
+| `-Ddev.davamu.filebotpro.UserFiles.fileChooser=Swing` | Diálogos de archivos: `Windows` (el diálogo del Explorador, por defecto en Windows), `COCOA` (por defecto en macOS), `Linux` (el diálogo de tu escritorio mediante zenity o kdialog, por defecto en Linux; Swing si no hay ninguno), `AWT` o `Swing`. El diálogo de Windows elige archivos o carpetas, no ambos: los diálogos que aceptan las dos cosas eligen carpetas, y con Mayús o Alt pulsado eligen archivos |
+| `-Dflatlaf.animatedLafChange=false` | Desactiva el fundido al cambiar de tema |
+| `-Ddev.davamu.filebotpro.logging.color=false` | Colores en la consola: activados por defecto en un terminal (también en cmd.exe, PowerShell y Windows Terminal en Windows 10 y posteriores). Las variables de entorno `NO_COLOR` y `FORCE_COLOR` también los desactivan o activan |
+| `-Dapplication.dir=$APPDIR/data` | Guarda todos los datos junto a la aplicación, para una instalación portable |
+| `-Dapikey.<nombre>=<clave>` | [Clave API](#claves-api) |
+| `-Ddev.davamu.filebotpro.AcoustID.fpcalc=<ruta>` | Ruta de fpcalc |
+| `-Ddev.davamu.filebotpro.media.ffprobe=<ruta>` | Ruta de ffprobe |
+| `-Ddev.davamu.filebotpro.archive.extractor=ShellExecutables` | Extrae con `7z` y `unrar` en lugar del 7-Zip integrado |
+| `-DuseExtendedFileAttributes=false` | No guarda datos en los archivos renombrados |
+| `-Dapplication.update=skip` | Omite la comprobación de actualizaciones al arrancar |
+| `-Dcloud.google.geocode=<clave>` | Clave de Google Geocoding para la ubicación de las fotos; sustituye la clave `google.geocode` |
+| `-Dapplication.rename.history=false` | No guarda el historial de renombrados en el disco |
+| `-Dapplication.single.instance=false` | Permite una segunda instancia en ejecución (una sola instancia está activada por defecto) |
+| `-DuseMediaParser=false` | Desactiva el analizador multimedia, igual que `-no-probe` |
+| `-DuseLocalIndex=false` | No usa los índices multimedia locales, igual que `-no-index` |
+| `-DuseGVFS=true` | Lee los archivos arrastrados desde ubicaciones GVFS en Linux |
+| `-Ddev.davamu.filebotpro.media.parser=ffprobe` | Lee las propiedades multimedia con `ffprobe` en lugar de `libmediainfo` (por defecto) |
+| `-Ddev.davamu.filebotpro.archive.7z=<ruta>` | Ruta de `7z` cuando el extractor es `ShellExecutables` |
+| `-Ddev.davamu.filebotpro.archive.unrar=<ruta>` | Ruta de `unrar` cuando el extractor es `ShellExecutables` |
+| `-Ddev.davamu.filebotpro.xattr.store=<carpeta>` | Guarda los atributos extendidos en una carpeta (por defecto `.xattr`) en lugar de en los archivos |
+| `-Ddev.davamu.filebotpro.logging.debug=FINE` | Nivel del registro de depuración (por defecto `WARNING`) |
+| `-Ddev.davamu.filebotpro.logging.anonymize=<regex>` | Sustituye en el registro el texto que coincide con la expresión regular, para compartir registros |
+| `-Ddev.davamu.filebotpro.logging.time=true` | Marca de tiempo en la salida de la consola, con el formato de `dev.davamu.filebotpro.logging.time.format` (un patrón de `DateTimeFormatter`) |
+| `-DthreadPool=<n>` | Hilos para las sumas de verificación y la detección de tipos de archivo (por defecto: número de procesadores) |
+| `-Ddev.davamu.filebotpro.native.dir=<ruta>` | Carpeta que se busca primero para las herramientas nativas; `gradlew run` la define para compilaciones de desarrollo |
+
+La comprobación de actualizaciones busca una versión más nueva al arrancar la aplicación. Solo se ejecuta si
+`app.updateUrl` en `gradle.properties` tiene un valor; en este árbol de código está vacío, así que las compilaciones
+hechas a partir de él no comprueban actualizaciones.

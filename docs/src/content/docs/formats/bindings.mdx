@@ -1,0 +1,182 @@
+---
+title: Bindings
+description: Every value available in a format expression, grouped by kind.
+---
+
+## Episodes
+
+| Binding | Value | Example |
+| --- | --- | --- |
+| `n` | Series name | `Breaking Bad` |
+| `y` | Year of the first episode | `2008` |
+| `decade` | Decade of the first episode | `2000` |
+| `ny` | Series name with the year | `Breaking Bad (2008)` |
+| `s` | Season number | `2` |
+| `e` | Episode number | `3` |
+| `es` | Episode numbers of multi-episode files | `[3, 4]` |
+| `sxe` | Season and episode | `2x03` |
+| `s00e00` | Season and episode | `S02E03` |
+| `e00` | Episode, two digits | `03` |
+| `t` | Episode title | `Bit by a Dead Bee` |
+| `d` | Airdate | `2009-03-22` |
+| `airdate` | Airdate, same as `d` | `2009-03-22` |
+| `absolute` | Absolute episode number | `10` |
+| `special` | Special number | `1` |
+| `sc` | Number of seasons | `5` |
+| `sn` | Season name (TheMovieDB, TheTVDB) | `The Final Season` |
+| `sy` | Years of the season | `[2009]` |
+| `startdate` | Date of the first episode | `2008-01-20` |
+| `age` | Days since the airdate | `5800` |
+| `regular` | `true` for regular episodes, `false` for specials | `true` |
+| `anime` | `true` for anime: AniDB data, TheTVDB series listed in the anime mapping, the Anime genre, or animation in Japanese | `false` |
+| `episodelist` | Every episode of the series | |
+| `episode`, `episodes` | The episode, and every episode of a multi-episode file | |
+| `series` | Series information | `{series.name}` |
+| `seasonize` | AniDB episodes with TheTVDB season numbers | `{seasonize.s00e00}` |
+
+## Movies
+
+| Binding | Value | Example |
+| --- | --- | --- |
+| `n` | Movie name | `Inception` |
+| `y` | Year | `2010` |
+| `decade` | Decade | `2010` |
+| `ny` | Name with the year | `Inception (2010)` |
+| `anime` | `true` for Japanese animated movies | `false` |
+| `primaryTitle` | Original title; for anime on TheTVDB, the romanized AniDB title | `Inception`, `Shingeki no Kyojin` |
+| `alias` | Alternative titles | |
+| `collection` | Collection name | `The Matrix Collection` |
+| `ci` | Position in the collection | `1` |
+| `cy` | Years of the collection | `[1999, 2003]` |
+| `genres`, `genre` | Genres, first genre | `Action` |
+| `director` | Director | |
+| `actors` | Main actors | |
+| `certification` | Age rating (movies and series); `{info.certifications.DE}` for another country | `PG-13` |
+| `country` | First production country (ISO code; movies and series) | `US` |
+| `rating`, `votes` | User rating and number of votes | `8.4` |
+| `runtime` | Runtime in minutes (of the episode if the source has it, otherwise the typical runtime of the series) | `148` |
+| `languages` | Spoken languages | `[eng]` |
+| `language` | Original language (movies and series) | `jpn` |
+| `localize` | Names in another language | `{localize.spa.n}` |
+| `az` | First letter for A–Z folders | `I` |
+| `movie` | The movie | |
+
+## Identifiers and source
+
+| Binding | Value |
+| --- | --- |
+| `id` | Id in the source database |
+| `tmdbid`, `imdbid` | TheMovieDB and IMDb ids |
+| `tvdbid` | TheTVDB series id, also for series matched with TheMovieDB or AniDB (looked up through TheMovieDB or the anime lists) |
+| `info` | Every field of the source as an object (`{info.overview}`). `{info.status}` is the release status (`Released` for movies, `Ended` or `Continuing` for series) and `{info.video}` is `true` for direct-to-video movies on TheMovieDB |
+| `omdb` | Extra data from OMDb |
+| `order` | The episode in another order (`{order.DVD.sxe}`) |
+| `AnimeList` | The episode mapped between AniDB and TheTVDB with the anime lists (`{AnimeList.TheTVDB.sxe}`) |
+| `XEM` | The episode mapped with TheXEM to AniDB, TheTVDB or scene numbering (`{XEM.Scene.sxe}`) |
+| `db` | The episode mapped to another database: tries the anime lists first and TheXEM after that, and maps between TheTVDB and TheMovieDB with the TheMovieDB external ids (`{db.AniDB.n}`, `{db.TheTVDB.s00e00}`, `{db.TheMovieDB.id}`) |
+| `object` | The matched episode, movie or track |
+| `json` | The matched data as JSON |
+
+## Media properties
+
+Read from the file with [MediaInfo](/reference/configuration/#native-tools). The result is cached (as is the output of ffprobe), so a file is only read again when it changes.
+
+| Binding | Value | Example |
+| --- | --- | --- |
+| `vf` | Video format | `1080p` |
+| `hpi` | Exact height with scan type | `1080i` |
+| `dim` | Width and height | `[1920, 1080]` |
+| `resolution`, `width`, `height` | Resolution | `1920x1080` |
+| `hd` | Definition: `UHD` (2160p), `QHD` (1440p), `FHD` (1080p), `HD` (720p) or `SD` | `FHD` |
+| `vk` | `4K` (2160p) or `8K` (4320p) tag, undefined for lower resolutions | `4K` |
+| `ws` | Widescreen | `WS` |
+| `ar` | Display aspect ratio | `16∶9`, `2.39∶1` |
+| `vc` | Video codec | `x265` |
+| `vcf` | Video compression format | `HEVC` |
+| `hdr` | HDR format: `DV`, `DV HDR10`, `DV HDR10+`, `DV HLG`, `HDR10+`, `HDR10`, `HLG`, or `HDR` for 10-bit BT.2020 video without HDR metadata | `HDR10` |
+| `dovi` | `DV` for Dolby Vision video | `DV` |
+| `bitdepth` | Bit depth | `10` |
+| `fps` | Frame rate (`{fps.format()}` = `23.976 fps`) | `23.976` |
+| `ac` | Audio codec | `AAC` |
+| `af` | Audio channels | `6ch` |
+| `channels` | Audio channel layout | `5.1` |
+| `acf` | Audio codec and channel layout, as in release names | `DD5.1`, `DDP5.1`, `AAC2.0` |
+| `aco` | Audio codec profile | |
+| `cf` | Container format | `mkv` |
+| `bitrate`, `kbps`, `mbps` | Overall bit rate. `bitrate` is in bits per second: `{bitrate.Mbps}` = `4.5`, `{bitrate.kbps}` = `4500`, `{bitrate.format()}` = `4.5 Mbps` | `4.5 Mbps`, `4500 kbps` |
+| `vbr`, `abr` | Video and audio bit rate, same units as `bitrate` (`{vbr.format()}`) | `4.1 Mbps` |
+| `khz` | Audio sample rate | `48.0 kHz` |
+| `duration`, `minutes`, `seconds` | Duration. `{minutes}` and `{seconds}` are numbers; `{duration}` alone prints ISO-8601 (`PT2H28M`) | `148` (`{minutes}`) |
+| `hours` | Duration in hours and minutes, with a ratio sign (∶) instead of a colon, which file names don't allow | `2∶28` |
+| `audioLanguages`, `textLanguages` | Audio and subtitle languages | `[eng, spa]` |
+| `media`, `video`, `audio`, `text`, `menu`, `chapters` | Every MediaInfo field | `{video.codecID}` |
+| `image` | Every MediaInfo field of an image | `{image.width}` |
+| `mediaTitle` | Title stored in the file | |
+| `mediaTags` | Tags stored in the file (title, comment, genre, ...) | `{mediaTags.Comment}` |
+| `encodedDate` | Date the file was encoded | `2010-07-16` |
+| `ffprobe` | Every field reported by ffprobe (needs ffprobe on the `PATH`) | |
+
+## Release information
+
+Guessed from the original file name and folder.
+
+| Binding | Value | Example |
+| --- | --- | --- |
+| `source` | Source as written in the name | `BDRip`, `WEB.DL` |
+| `vs` | Standard source tag | `BluRay`, `WEB-DL`, `WEBRip`, `HDTV`, `DVD` |
+| `group` | Release group | |
+| `tags` | Edition tags | `[Extended, Unrated]` |
+| `s3d` | 3D format | `SBS` |
+| `subt` | Language and tags of a subtitle file | `.eng.forced` |
+| `lang` | Language of a subtitle file | `eng` |
+| `crc32` | CRC32 checksum | `A1B2C3D4` |
+
+## Files
+
+| Binding | Value |
+| --- | --- |
+| `fn` | Original file name without extension |
+| `ext` | Extension |
+| `mediaFileName` | Name of the video file without extension: for subtitles, nfo or artwork, the video they belong to |
+| `f` | The file itself (`{f.parent}`) |
+| `folder` | Folder of the file |
+| `files` | Files inside a folder, or the contents of an archive as relative paths (`{files.size()}`) |
+| `original` | Name before the first rename |
+| `history` | Original path from the rename history |
+| `bytes`, `megabytes`, `gigabytes` | File size. `bytes` also has units: `{bytes.GB}`, `{bytes.GiB}`, `{bytes.format()}` = `4.8 GB` |
+| `drive` | Drive letter, network share or mount point of the file (`D:\`, `\\server\share`, `/Volumes/Media`) |
+| `ct`, `mt` | Creation and last modification date of the file (`{ct.format('yyyy-MM-dd')}`) |
+| `dt` | Date the photo was taken (EXIF), or the file's creation date when it has no EXIF date |
+| `today` | Today's date |
+| `home` | Your home folder |
+| `mime`, `type` | Media type |
+| `file` | The file as it was added, before any lookup |
+| `mediaPath`, `relativeFile` | Path of the file inside its media library folder |
+| `xattr` | Match data saved in the file's extended attributes by an earlier rename |
+| `output` | Output folder given with `--output` (command line) |
+| `defines`, `label` | Values given with `--def name=value`; `label` is the first one whose name ends in `label` (`ut_label`) |
+
+## Music and photos
+
+| Binding | Value |
+| --- | --- |
+| `artist`, `albumArtist`, `album` | Music tags |
+| `pi`, `pn` | Track number and track count (also part number and count of multi-part movies) |
+| `medium`, `mediumCount` | Disc number and disc count of multi-disc albums |
+| `exif`, `camera`, `location` | Photo data |
+| `music`, `photo` | The music track and the photo metadata |
+
+## Media servers and lists
+
+| Binding | Value |
+| --- | --- |
+| `plex` | Standard Plex path: `TV Shows/Breaking Bad/Season 02/Breaking Bad - S02E03 - Bit by a Dead Bee` |
+| `kodi` | Standard Kodi path, with the year in the series folder: `TV Shows/Breaking Bad (2008)/Season 02/Breaking Bad - 2x03 - Bit by a Dead Bee` |
+| `emby` | Standard Emby path |
+| `jellyfin` | Standard Jellyfin path, with the year in the series folder |
+| `plex.id`, `kodi.id`, `emby.id`, `jellyfin.id` | The same path with the database id in the movie or series folder, so the media server does not have to guess: `Movies/The Matrix (1999) {tmdb-603}/The Matrix (1999)`, with Kodi `{tmdb=603}` and with Emby and Jellyfin `[tmdbid-603]` |
+| `plex.year`, `kodi.year`, `emby.year`, `jellyfin.year` | The same path with Series Name (Year) in the series folder and episode names: `TV Shows/Doctor Who (2005)/Season 01/Doctor Who (2005) - S01E01 - Rose`. Combine it with ids as `{plex.year.id}` |
+| `disc` | Title of a disc rip identified with TheDiscDB (e.g. `title_t01.mkv` by MakeMKV): `{disc.type}` (`Episode`, `MainMovie`, `Extra`, `Featurette`, `DeletedScene`, `Trailer`, `Interview`, ...), `{disc.title}`, `{disc.extra}`, `{disc.folder}` (Plex extras folder, e.g. `Featurettes`), `{disc.disc}`, `{disc.index}`, `{disc.release}`. With `{plex}`, `{jellyfin}`, `{emby}` and `{kodi}`, extras go to the extras folder of the movie, season or series: `Movies/The Matrix (1999)/Featurettes/The Burly Man Chronicles` |
+| `i` | Position of the item in the list |
+| `di`, `dc` | Duplicate index and count, for items that appear more than once |
+| `self`, `model` | The whole data object and every item being renamed |

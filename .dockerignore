@@ -1,0 +1,12 @@
+# only the build scripts, sources and packaging files are needed (see Dockerfile)
+**
+!gradlew
+!settings.gradle.kts
+!build.gradle.kts
+!gradle.properties
+!gradle/
+!src/
+!packaging/
+
+# never send API keys to the build context (use docker build --secret instead)
+api-keys.properties

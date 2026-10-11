@@ -1,0 +1,13 @@
+[Desktop Entry]
+Name=APPLICATION_NAME
+GenericName=Media Renamer
+Comment=APPLICATION_DESCRIPTION
+Exec=APPLICATION_LAUNCHER %F
+Icon=APPLICATION_ICON
+Terminal=false
+Type=Application
+Categories=DEPLOY_BUNDLE_CATEGORY
+Keywords=rename;movies;tv;episodes;anime;subtitles;media;
+StartupWMClass=@{wmClass}
+# "Open With" for video and subtitle files (no file associations, so never the default application)
+MimeType=video/x-matroska;video/mp4;video/x-m4v;video/x-msvideo;video/quicktime;video/x-ms-wmv;video/mpeg;video/mp2t;video/webm;video/x-flv;video/ogg;application/x-subrip;text/x-ssa;text/x-microdvd;

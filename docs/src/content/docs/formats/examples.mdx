@@ -1,0 +1,65 @@
+---
+title: Examples
+description: Ready-to-copy formats for TV shows, movies, anime and music.
+---
+
+## TV shows
+
+```groovy title="Plex or Jellyfin"
+TV Shows/{n}/Season {s.pad(2)}/{n} - {s00e00} - {t}
+```
+
+```groovy title="Year in the folder name"
+{n} ({y})/Season {s}/{n} - {s00e00} - {t}
+```
+
+```groovy title="With quality"
+{n}/Season {s}/{n} - {s00e00} - {t} [{vf} {vc} {ac}]
+```
+
+## Movies
+
+```groovy title="One folder per movie"
+Movies/{n} ({y})/{n} ({y})
+```
+
+```groovy title="Collections"
+Movies/{collection + '/'}{n} ({y})/{n} ({y})
+```
+
+Movies that are not part of a collection simply skip that folder.
+
+```groovy title="With edition and quality"
+{n} ({y}){' ' + tags.join(' ')} [{vf}{' ' + hdr}]
+```
+
+```groovy title="Release style audio and definition"
+Movies/{n} ({y})/{n} ({y}) [{hd} {vc} {acf}]
+```
+
+For a 1080p HEVC movie with Dolby Digital Plus 5.1 audio this gives `The Matrix (1999) [FHD x265 DDP5.1]`.
+
+## Anime
+
+```groovy title="Absolute numbering"
+Anime/{n}/{n} - {absolute.pad(3)} - {t}
+```
+
+```groovy title="Season numbering for AniDB"
+Anime/{n}/Season {seasonize.s}/{n} - {seasonize.s00e00} - {t}
+```
+
+## Music
+
+```groovy title="Artist and album"
+Music/{albumArtist}/{album} ({y})/{pi.pad(2)} - {t}
+```
+
+## Subtitles next to their video
+
+```groovy
+{n} - {s00e00} - {t}{subt}
+```
+
+`{subt}` adds the language and the `forced` or `sdh` tag of the subtitle (`.eng.forced`), so players still
+recognize it.

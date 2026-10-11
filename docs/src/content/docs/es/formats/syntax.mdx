@@ -1,0 +1,84 @@
+---
+title: Sintaxis
+description: Cómo una expresión de formato convierte los datos de una película o episodio en un nombre de archivo.
+---
+
+Una expresión de formato es texto normal con **variables** entre llaves. El texto se copia tal cual y cada
+`{…}` se sustituye por su valor:
+
+```groovy
+{n} - {s00e00} - {t}
+```
+
+```text
+Breaking Bad - S02E03 - Bit by a Dead Bee
+```
+
+## El editor de formato
+
+Ábrelo desde el panel Rename con **Fetch Data** › **Edit Format**. La vista previa de arriba muestra el resultado
+para un episodio o una película de ejemplo mientras escribes, y un mensaje bajo el campo señala cualquier error.
+
+![El editor de formato en modo oscuro](/img/format-editor-dark.png)
+
+- Haz clic en un ejemplo para partir de él. `F1` muestra u oculta la ayuda de sintaxis.
+- Los botones de la derecha abren los formatos recientes, insertan la ruta de una carpeta y cambian los datos de
+  ejemplo.
+- **Switch to Movie Format** (o Episode Format) edita el otro tipo de formato; **Use Format** lo aplica.
+
+## Carpetas
+
+Una `/` empieza una carpeta nueva, relativa al archivo original. Empieza con una ruta absoluta para mover los
+archivos a otro sitio:
+
+```groovy
+D:/Media/TV Shows/{n}/Season {s}/{n} - {s00e00} - {t}
+```
+
+`{plex}` y `{kodi}` generan de una vez la estructura estándar de los servidores multimedia.
+
+## Expresiones
+
+El código entre llaves es [Groovy](https://groovy-lang.org/), así que los valores se pueden transformar:
+
+| Expresión | Resultado |
+| --- | --- |
+| `{n.upper()}` | `BREAKING BAD` |
+| `{n.space('.')}` | `Breaking.Bad` |
+| `{e.pad(3)}` | `003` |
+| `{t.replaceAll(/[?]/, '')}` | título sin signos de interrogación |
+| `{n.colon(' - ')}` | `Star Wars - The Clone Wars` en vez de `Star Wars: The Clone Wars` |
+| `{y}` | `2008` |
+
+Métodos habituales:
+
+| Método | Hace |
+| --- | --- |
+| `lower()`, `upper()`, `upperInitial()`, `lowerTrail()` | cambian mayúsculas y minúsculas |
+| `space(' ')`, `colon(' - ')`, `slash('-')` | sustituyen espacios, dos puntos o barras |
+| `pad(n)` | añade ceros a la izquierda |
+| `ascii()`, `transliterate('Any-Latin')` | convierten a caracteres simples |
+| `ascii(Locale.GERMAN)` | caracteres simples con las reglas del alemán (`Mädchen` › `Maedchen`) |
+| `sortName()`, `sortInitial()` | quitan un *The*, *A* o *An* inicial (`Simpsons`), primera letra (`S`) |
+| `acronym()`, `initialName()` | `BB`, `B. Bad` |
+| `replaceAll(patrón, texto)`, `removeAll(patrón)` | expresiones regulares |
+| `match(patrón)`, `findMatch(patrón)` | extraen parte de un valor |
+| `truncate(n)` | acorta a `n` caracteres |
+| `before(patrón)`, `after(patrón)` | cortan un valor |
+| `roman()` | números romanos |
+
+## Valores que faltan
+
+Una variable sin valor (por ejemplo `{vf}` en un archivo sin vídeo) hace desaparecer sus llaves. Estas
+funciones controlan qué pasa en su lugar:
+
+| Función | Ejemplo |
+| --- | --- |
+| `any{…}{…}` | `{any{vf}{'SD'}}`: el primer valor que exista |
+| `allOf{…}{…}` | `{allOf{vf}{vc}{ac}.join(' ')}`: todos los valores que existan |
+| `{if (…) …}` | `{if (vf == '2160p') 'UHD'}` |
+| `{' [' + group + ']'}` | texto que solo aparece junto con el valor |
+
+## Desde un archivo
+
+Un formato puede vivir en un archivo: escribe `@/ruta/al/formato.groovy` en el editor o pásalo a `--format`.

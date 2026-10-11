@@ -1,0 +1,30 @@
+---
+title: SFV
+description: Create and verify SFV, MD5 and SHA checksum files.
+---
+
+## Verify
+
+Drop a checksum file (`.sfv`, `.md5`, `.sha1`, `.sha256`, `.sha3`) or a whole folder onto the table. Every file
+is hashed and compared, and the **State** column shows the result for each one.
+
+A CRC32 in a file name (for example `[A1B2C3D4]`) is checked too, so a release can be verified without a
+checksum file.
+
+## Create
+
+Drop the files to protect, choose the hash type below the table and click **Save as ...**.
+
+| Toggle | Algorithm | File |
+| --- | --- | --- |
+| SFV | CRC32 | `.sfv` |
+| MD5 | MD5 | `.md5` |
+| SHA1 | SHA-1 | `.sha1` |
+| SHA2 | SHA-256 | `.sha256` |
+| SHA3 | SHA3-384 | `.sha3` |
+
+The paths in the saved file are relative to the folder you save it in, so it can be saved anywhere (files on
+another drive keep their full path). SFV files use Windows line endings, MD5 and SHA files use Unix line endings
+like `md5sum`. Files whose hash is still being calculated are left out, with a warning.
+
+Changing the hash type recalculates the table. **Clear** empties it; `Delete` removes the selected rows.

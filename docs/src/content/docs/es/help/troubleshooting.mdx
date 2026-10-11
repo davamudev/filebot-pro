@@ -1,0 +1,65 @@
+---
+title: Diagnóstico
+description: Qué revisar cuando un archivo no se reconoce, una fuente falla o falta una herramienta.
+---
+
+import { Steps } from '@astrojs/starlight/components'
+
+## Un archivo no se empareja
+
+<Steps>
+
+1. **¿Es la fuente correcta?** Los episodios necesitan una fuente de episodios (TheTVDB, AniDB, TheMovieDB::TV,
+   TVmaze) y las películas una de películas (TheMovieDB, OMDb).
+
+2. **¿El nombre contiene la serie o la película?** `Breaking.Bad.S02E03.mkv` funciona, `video_0123.mkv` no.
+   Renómbralo a mano o fuerza el nombre con `--q` en la línea de comandos.
+
+3. **¿Es el idioma correcto?** Algunos títulos solo se encuentran en el idioma de la serie.
+
+4. **Prueba el otro modo de emparejado.** *Opportunistic* adivina más, *Strict* descarta las coincidencias
+   dudosas.
+
+5. **¿Los números siguen otro orden?** El anime y algunas series usan orden absoluto o de DVD: cambia el
+   **Episode Order**.
+
+</Steps>
+
+## Mensajes habituales
+
+OMDb y la ubicación de las fotos necesitan tu propia clave. Sin ella, el mensaje indica la clave y el
+archivo donde ponerla:
+
+```text
+OMDb API key is missing. Add omdb = YOUR_KEY to C:\Users\tu-usuario\AppData\Roaming\FileBot Pro\api-keys.properties
+```
+
+Consigue una clave gratuita en la web del servicio, añade esa línea al archivo y vuelve a intentarlo, o usa otra
+fuente como TVmaze:
+
+```properties title="api-keys.properties"
+omdb = tu-clave
+```
+
+| Mensaje | Causa y solución |
+| --- | --- |
+| *… API key is missing* | La fuente necesita tu propia clave: añádela a `api-keys.properties` como indica el mensaje. Consulta [claves API](/es/reference/configuration/#claves-api). |
+| *… rejected the request (HTTP 401)* | La clave es incorrecta o ha caducado. Revísala en la web del servicio. |
+| *Unable to load … native library mediainfo* | MediaInfo no está instalado. Consulta [herramientas nativas](/es/reference/configuration/#herramientas-nativas). |
+| *Failed to load 7z-JBinding* | El 7-Zip integrado no funciona en este sistema. Instala `7z` y usa `-Ddev.davamu.filebotpro.archive.extractor=ShellExecutables`. |
+
+## Registros y diagnóstico
+
+- Los errores se escriben en `error.log` dentro de la [carpeta de datos](/es/reference/configuration/#datos-de-usuario).
+- `Ctrl`+`Mayús`+`Supr` borra los datos en caché de las fuentes en línea.
+
+Desde una terminal:
+
+```bash
+filebot-pro -script fn:sysinfo   # versiones, herramientas nativas y carpeta de datos
+filebot-pro -clear-cache         # borra la caché
+```
+
+:::caution
+Revisa los registros antes de compartirlos: contienen rutas y nombres de tus archivos.
+:::

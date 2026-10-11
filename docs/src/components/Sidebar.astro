@@ -1,0 +1,155 @@
+---
+/**
+ * Sidebar: replaces Starlight's so each section can be rendered with an icon
+ * chip + small-caps micro-label (aprendesql.dev) and a vertical rail marking
+ * the active page (gitbook).
+ *
+ * Starlight hands over the already-resolved tree in `starlightRoute.sidebar`;
+ * our own metadata (icon, kicker) is looked up by label —in either language—
+ * from src/sidebar.mjs, the single source of truth for navigation.
+ */
+import MobileMenuFooter from 'virtual:starlight/components/MobileMenuFooter'
+import { langOf, sectionMeta } from '../sidebar.mjs'
+import { icon } from './icons.mjs'
+
+const { sidebar, locale } = Astro.locals.starlightRoute
+const { t } = Astro.locals
+const lang = langOf(locale)
+
+/** Walks a group to find out whether any of its pages is the current one. */
+function hasCurrent(entries) {
+	return entries.some((entry) =>
+		entry.type === 'group' ? hasCurrent(entry.entries) : entry.isCurrent
+	)
+}
+---
+
+<nav class="w-sidebar" aria-label={t('fp.sidebar.label')}>
+	{
+		sidebar.map((entry) => {
+			if (entry.type !== 'group') {
+				return (
+					<div class="w-group">
+						<ul class="w-group__list">
+							<li>
+								<a
+									class="w-group__link"
+									href={entry.href}
+									aria-current={entry.isCurrent ? 'page' : undefined}
+								>
+									{entry.label}
+								</a>
+							</li>
+						</ul>
+					</div>
+				)
+			}
+
+			const meta = sectionMeta[entry.label] ?? {}
+			const current = hasCurrent(entry.entries)
+
+			return (
+				<div class="w-group" data-current={String(current)}>
+					<div class="w-group__header">
+						<span class="w-group__icon" set:html={icon(meta.icon ?? 'book')} />
+						<span>
+							{meta.kicker && <span class="w-group__kicker">{meta.kicker[lang]}</span>}
+							<span class="w-group__label">{entry.label}</span>
+						</span>
+					</div>
+					<ul class="w-group__list">
+						{entry.entries.map((item) => (
+							<li>
+								<a
+									class="w-group__link"
+									href={item.href}
+									aria-current={item.isCurrent ? 'page' : undefined}
+								>
+									{item.label}
+								</a>
+							</li>
+						))}
+					</ul>
+				</div>
+			)
+		})
+	}
+</nav>
+
+<div class="md:sl-hidden">
+	<MobileMenuFooter />
+</div>
+
+{/*
+ * The docs are static HTML: every click in the sidebar is a full page load,
+ * and the browser only restores the document's scroll, not that of a panel
+ * with `overflow`. The sidebar is taller than its panel, so opening one of the
+ * pages further down —API, help— sent the navigation back to the top and you
+ * had to scroll down again to keep browsing from there.
+ *
+ * The position is saved in `sessionStorage` and restored before the page is
+ * shown. It is `is:inline` so it runs during parsing, without waiting for any
+ * module: if it is deferred, the jump from the top to the right position is
+ * visible.
+ */}
+<script is:inline>
+	;(() => {
+		const STORAGE_KEY = 'w-sidebar-scroll'
+		const panel = document.querySelector('.sidebar-pane')
+		if (!panel) return
+
+		/** Only counts when the panel is visible and has something to scroll. */
+		const scrollable = () =>
+			panel.clientHeight > 0 && panel.scrollHeight > panel.clientHeight
+
+		const restore = () => {
+			if (!scrollable()) return
+			const saved = Number(sessionStorage.getItem(STORAGE_KEY))
+			if (Number.isFinite(saved) && saved > 0) panel.scrollTop = saved
+
+			// If the current page ends up outside the visible area —it was
+			// reached through a link in the content, not through the sidebar—
+			// the active link wins: restoring a stale position would hide it.
+			const active = panel.querySelector('[aria-current="page"]')
+			if (!active) return
+			const box = panel.getBoundingClientRect()
+			const own = active.getBoundingClientRect()
+			if (own.top < box.top || own.bottom > box.bottom) {
+				active.scrollIntoView({ block: 'center' })
+			}
+		}
+
+		let pending = false
+		panel.addEventListener(
+			'scroll',
+			() => {
+				if (pending || !scrollable()) return
+				pending = true
+				requestAnimationFrame(() => {
+					pending = false
+					sessionStorage.setItem(STORAGE_KEY, String(panel.scrollTop))
+				})
+			},
+			{ passive: true }
+		)
+
+		restore()
+		// The first attempt runs with the panel half-built and the browser clamps
+		// `scrollTop` to the height available at that moment; the two later ones
+		// put it where it belongs.
+		document.addEventListener('DOMContentLoaded', restore)
+		window.addEventListener('load', restore)
+
+		// On mobile the sidebar lives in the drop-down panel: while it is closed
+		// it has no height and cannot scroll, so the position is restored when
+		// it opens.
+		const toggle = document.querySelector('starlight-menu-button')
+		if (toggle) {
+			new MutationObserver(() => {
+				if (toggle.getAttribute('aria-expanded') === 'true') {
+					requestAnimationFrame(restore)
+				}
+			}).observe(toggle, { attributeFilter: ['aria-expanded'] })
+		}
+	})()
+</script>

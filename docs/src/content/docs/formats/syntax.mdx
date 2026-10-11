@@ -1,0 +1,83 @@
+---
+title: Syntax
+description: How a format expression turns movie or episode data into a file name.
+---
+
+A format expression is plain text with **bindings** in braces. The text is copied as is and every `{…}` is
+replaced by its value:
+
+```groovy
+{n} - {s00e00} - {t}
+```
+
+```text
+Breaking Bad - S02E03 - Bit by a Dead Bee
+```
+
+## The format editor
+
+Open it from the Rename panel with **Fetch Data** › **Edit Format**. The preview at the top shows the result for a
+sample episode or movie while you type, and a message under the field points at any mistake.
+
+![The format editor in dark mode](/img/format-editor-dark.png)
+
+- Click an example to start from it. `F1` shows or hides the syntax help.
+- The buttons on the right open the recent formats, insert a folder path and change the sample data.
+- **Switch to Movie Format** (or Episode Format) edits the other kind of format; **Use Format** applies it.
+
+## Folders
+
+A `/` starts a new folder, relative to the original file. Start with an absolute path to move files
+somewhere else:
+
+```groovy
+D:/Media/TV Shows/{n}/Season {s}/{n} - {s00e00} - {t}
+```
+
+`{plex}` and `{kodi}` produce the standard media server layout in one go.
+
+## Expressions
+
+The code in braces is [Groovy](https://groovy-lang.org/), so values can be transformed:
+
+| Expression | Result |
+| --- | --- |
+| `{n.upper()}` | `BREAKING BAD` |
+| `{n.space('.')}` | `Breaking.Bad` |
+| `{e.pad(3)}` | `003` |
+| `{t.replaceAll(/[?]/, '')}` | title without question marks |
+| `{n.colon(' - ')}` | `Star Wars - The Clone Wars` instead of `Star Wars: The Clone Wars` |
+| `{y}` | `2008` |
+
+Common methods:
+
+| Method | Does |
+| --- | --- |
+| `lower()`, `upper()`, `upperInitial()`, `lowerTrail()` | change case |
+| `space(' ')`, `colon(' - ')`, `slash('-')` | replace spaces, colons or slashes |
+| `pad(n)` | add leading zeros |
+| `ascii()`, `transliterate('Any-Latin')` | convert to plain characters |
+| `ascii(Locale.GERMAN)` | plain characters with German rules (`Mädchen` › `Maedchen`) |
+| `sortName()`, `sortInitial()` | drop a leading *The*, *A* or *An* (`Simpsons`), first letter (`S`) |
+| `acronym()`, `initialName()` | `BB`, `B. Bad` |
+| `replaceAll(pattern, text)`, `removeAll(pattern)` | regular expressions |
+| `match(pattern)`, `findMatch(pattern)` | extract part of a value |
+| `truncate(n)` | shorten to `n` characters |
+| `before(pattern)`, `after(pattern)` | cut a value |
+| `roman()` | Roman numerals |
+
+## Missing values
+
+A binding without a value (for example `{vf}` for a file without video) makes its braces disappear. Use these
+helpers to control what happens instead:
+
+| Helper | Example |
+| --- | --- |
+| `any{…}{…}` | `{any{vf}{'SD'}}`: the first value that exists |
+| `allOf{…}{…}` | `{allOf{vf}{vc}{ac}.join(' ')}`: every value that exists |
+| `{if (…) …}` | `{if (vf == '2160p') 'UHD'}` |
+| `{' [' + group + ']'}` | text that only appears together with the value |
+
+## From a file
+
+A format can live in a file: write `@/path/to/format.groovy` in the editor or pass it to `--format`.

@@ -1,0 +1,119 @@
+---
+title: Compilar desde el código
+description: Compila FileBot Pro, sus instaladores y esta documentación, e incluye las claves API.
+---
+
+Esta página es para quien quiere compilar FileBot Pro por su cuenta. Para usar la aplicación, descárgala desde la
+página de [instalación](/es/getting-started/installation/).
+
+## Requisitos
+
+- JDK 25 (Gradle descarga uno si falta).
+- El código fuente: `git clone https://github.com/davamudev/FileBot-Pro.git`
+
+En Windows usa `gradlew.bat` en lugar de `./gradlew`.
+
+## Compilar y ejecutar
+
+```bash
+./gradlew run             # abre la aplicación de escritorio
+./gradlew installDist     # línea de comandos en build/install/filebot-pro/bin/filebot-pro
+./gradlew portableZip     # zip portable con Java incluido, en build/distributions/
+./gradlew jpackage        # instalador para este sistema: msi, dmg o deb (-PinstallerType=exe|pkg|rpm)
+./gradlew synologyPackage # paquete para Synology DSM 7 con Java incluido (-PsynologyArch=x86_64|armv8), desde cualquier sistema
+```
+
+Cada instalador solo se puede generar en su propio sistema: el `.exe` y el `.msi` en Windows, el `.deb` y el `.rpm`
+en Linux, el `.dmg` y el `.pkg` en macOS. Las versiones de macOS incluyen el Java del JDK con el que se compilan, así
+que hay que compilar en un Mac con Apple Silicon para `arm64` y en uno con Intel para `x64`; el
+[workflow de versiones](#versiones) compila las dos.
+
+`./gradlew downloadNativeTools` descarga MediaInfo y fpcalc para Windows, para que los paquetes de Windows los
+incluyan. En macOS y Linux vienen del gestor de paquetes del sistema. Compilados en Windows 11 arm64, los paquetes son
+para arm64 (con el MediaInfo de arm64; las herramientas de línea de comandos funcionan con la emulación x64).
+
+Las [opciones de arranque](/es/reference/configuration/#opciones-de-arranque) de una compilación de `installDist`
+van en la variable de entorno `FILEBOT_PRO_OPTS` (o `JAVA_OPTS`).
+
+## Claves API
+
+Las compilaciones incluyen las claves de los servicios que permiten una sola clave para todos los usuarios de una
+aplicación. Sin ellas la compilación funciona, pero esas fuentes avisan de que falta la clave.
+
+| Clave | La usa | Dónde conseguirla |
+| --- | --- | --- |
+| `themoviedb` | TheMovieDB y TheMovieDB::TV | [themoviedb.org](https://www.themoviedb.org/settings/api) |
+| `thetvdb` | TheTVDB (clave de proyecto API v4) | [thetvdb.com](https://thetvdb.com/api-information) |
+| `fanart.tv` | Imágenes | [fanart.tv](https://fanart.tv/get-an-api-key/) |
+| `acoustid` | Huellas de audio | [acoustid.org](https://acoustid.org/new-application) |
+| `anidb` | AniDB (nombre del cliente) | [anidb.net](https://anidb.net/software/add) |
+| `opensubtitles` | Subtítulos (clave de la API REST, una por aplicación) | [opensubtitles.com](https://www.opensubtitles.com/en/consumers) |
+
+Copia `api-keys.properties.example` a `api-keys.properties` en la carpeta del proyecto (git lo ignora) y rellénalas,
+o define las variables de entorno `FILEBOT_PRO_APIKEY_<NOMBRE>` (con guiones bajos en lugar de puntos, por ejemplo
+`FILEBOT_PRO_APIKEY_FANART_TV`) en la máquina que compila. No subas nunca `api-keys.properties` al repositorio.
+
+`omdb` y `google.geocode` nunca se incluyen: su cuota, licencia o facturación es de cada usuario.
+
+Al ejecutarse, FileBot Pro busca cada clave en este orden: `-Dapikey.<nombre>`, `FILEBOT_PRO_APIKEY_<NOMBRE>`,
+`api-keys.properties` en la [carpeta de datos](/es/reference/configuration/#datos-de-usuario) y, por último, la
+clave incluida.
+
+## Imagen Docker
+
+El `Dockerfile` construye la [imagen Docker](/es/getting-started/docker/) desde el código. Pasa
+`api-keys.properties` como secreto de build para incluir las claves (nunca queda en una capa de la imagen), y la
+revisión de git como argumento:
+
+```bash
+docker build -t filebot-pro --secret id=apikeys,src=api-keys.properties --build-arg REVISION=$(git rev-list --count HEAD) .
+docker buildx build --platform linux/amd64,linux/arm64 -t filebot-pro .   # las dos arquitecturas
+docker build --target gui -t filebot-pro:gui .                            # aplicación de escritorio en el navegador
+```
+
+El [workflow de versiones](#versiones) construye las dos arquitecturas y las publica en `ghcr.io/<owner>/filebot-pro`.
+
+## Versiones
+
+`develop` es la rama por defecto; `master` contiene el código publicado. El workflow `Build`
+(`.github/workflows/build.yml`) compila el código y la web de documentación con cada push a `develop` o `master` y con
+cada pull request.
+
+Una versión empieza con una etiqueta en `master` que coincide con `app.version` de `gradle.properties`:
+
+```bash
+git checkout master
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+El workflow `Release` (`.github/workflows/release.yml`) rechaza las etiquetas que no apuntan a un commit de `master` o
+no coinciden con la versión. Después genera el `.deb`, el `.rpm` y el zip portable de Linux, los paquetes de Synology,
+el `.msi` y los zips portables de Windows (x64 y arm64), los `.dmg` y los zips portables de macOS (Apple Silicon e
+Intel) y las imágenes Docker, y adjunta todos los paquetes con un archivo `SHA256SUMS.txt` a la versión de GitHub. Las
+notas de la versión son su sección de `CHANGELOG.md`.
+
+Todas las compilaciones de versión incluyen las claves API del secreto del repositorio `API_KEYS` (el contenido de
+`api-keys.properties`); el workflow se detiene si falta el secreto y avisa de cada clave que falte.
+
+## Otras tareas
+
+| Tarea | Qué hace |
+| --- | --- |
+| `./gradlew generateIcons` | Genera los iconos de la aplicación, las imágenes del instalador y los logos internos a partir de `packaging/icons/logo*.png` (exportados de los originales `logo*.svg` que hay junto a ellos) |
+| `./gradlew updateData` | Regenera los índices de películas, series y anime incluidos (descarga muchos datos) |
+| `./gradlew bashCompletion` | Genera un script de autocompletado de bash para la línea de comandos |
+
+## Esta documentación
+
+El sitio se genera con Astro y Starlight desde la carpeta `docs/`:
+
+```bash
+cd docs
+npm install
+npm run dev       # http://localhost:4321
+npm run build     # sitio estático en docs/dist/
+```
+
+Las páginas en inglés están en `src/content/docs/` y sus gemelas en español, con la misma ruta, en
+`src/content/docs/es/`. La navegación de los dos idiomas está en `src/sidebar.mjs`.

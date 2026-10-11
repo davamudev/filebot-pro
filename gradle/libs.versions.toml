@@ -1,0 +1,72 @@
+[versions]
+flatlaf = "3.7.2"
+groovy = "4.0.33"
+jna = "5.19.1"
+sevenzipjbinding = "23.01-2.2"
+slf4j = "2.0.17"
+
+[libraries]
+# User interface
+flatlaf = { module = "com.formdev:flatlaf", version.ref = "flatlaf" }
+flatlaf-extras = { module = "com.formdev:flatlaf-extras", version.ref = "flatlaf" }
+flatlaf-fonts-inter = { module = "com.formdev:flatlaf-fonts-inter", version = "4.1" }
+flatlaf-fonts-jetbrains-mono = { module = "com.formdev:flatlaf-fonts-jetbrains-mono", version = "2.304" }
+# 11.5.x throws a NullPointerException in Grid.clearGroupLinkBounds (breaks the format editor)
+miglayout-swing = { module = "com.miglayout:miglayout-swing", version = "11.4.2" }
+glazedlists = { module = "com.glazedlists:glazedlists", version = "1.11.0" }
+rsyntaxtextarea = { module = "com.fifesoft:rsyntaxtextarea", version = "3.6.3" }
+imgscalr = { module = "org.imgscalr:imgscalr-lib", version = "4.2" }
+
+# Scripting (format expressions and CLI scripts)
+groovy-bom = { module = "org.apache.groovy:groovy-bom", version.ref = "groovy" }
+groovy = { module = "org.apache.groovy:groovy" }
+groovy-jsr223 = { module = "org.apache.groovy:groovy-jsr223" }
+groovy-xml = { module = "org.apache.groovy:groovy-xml" }
+groovy-json = { module = "org.apache.groovy:groovy-json" }
+groovy-templates = { module = "org.apache.groovy:groovy-templates" }
+groovy-dateutil = { module = "org.apache.groovy:groovy-dateutil" }
+groovy-datetime = { module = "org.apache.groovy:groovy-datetime" }
+groovy-nio = { module = "org.apache.groovy:groovy-nio" }
+
+# Command line interface
+args4j = { module = "args4j:args4j", version = "2.37" }
+picocli = { module = "info.picocli:picocli", version = "4.7.7" }
+lanterna = { module = "com.googlecode.lanterna:lanterna", version = "3.1.3" }
+
+# Core
+guava = { module = "com.google.guava:guava", version = "33.7.2-jre" }
+streamex = { module = "one.util:streamex", version = "0.9.0" }
+caffeine = { module = "com.github.ben-manes.caffeine:caffeine", version = "3.3.0" }
+json-io = { module = "com.cedarsoftware:json-io", version = "4.14.1" }
+jaxb-api = { module = "jakarta.xml.bind:jakarta.xml.bind-api", version = "4.0.5" }
+jaxb-runtime = { module = "org.glassfish.jaxb:jaxb-runtime", version = "4.0.9" }
+jsoup = { module = "org.jsoup:jsoup", version = "1.23.2" }
+icu4j = { module = "com.ibm.icu:icu4j", version = "78.3" }
+simmetrics = { module = "com.github.mpkorstanje:simmetrics-core", version = "4.1.1" }
+language-detector = { module = "com.optimaize.languagedetector:language-detector", version = "0.6" }
+
+# Media, archives and files
+metadata-extractor = { module = "com.drewnoakes:metadata-extractor", version = "2.21.0" }
+bencode = { module = "com.dampcake:bencode", version = "1.4.2" }
+xz = { module = "org.tukaani:xz", version = "1.12" }
+commons-io = { module = "commons-io:commons-io", version = "2.22.0" }
+commons-vfs2 = { module = "org.apache.commons:commons-vfs2", version = "2.10.0" }
+sevenzipjbinding = { module = "net.sf.sevenzipjbinding:sevenzipjbinding", version.ref = "sevenzipjbinding" }
+sevenzipjbinding-natives = { module = "net.sf.sevenzipjbinding:sevenzipjbinding-all-platforms", version.ref = "sevenzipjbinding" }
+
+# Native platform integration
+jna = { module = "net.java.dev.jna:jna", version.ref = "jna" }
+jna-platform = { module = "net.java.dev.jna:jna-platform", version.ref = "jna" }
+objc-bridge = { module = "ca.weblite:java-objc-bridge", version = "1.2" }
+
+# Logging bridges (silence third-party logging)
+slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
+slf4j-nop = { module = "org.slf4j:slf4j-nop", version.ref = "slf4j" }
+
+[bundles]
+ui = ["flatlaf", "flatlaf-extras", "flatlaf-fonts-inter", "flatlaf-fonts-jetbrains-mono", "miglayout-swing", "glazedlists", "rsyntaxtextarea", "imgscalr"]
+groovy = ["groovy", "groovy-jsr223", "groovy-xml", "groovy-json", "groovy-templates", "groovy-dateutil", "groovy-datetime", "groovy-nio"]
+cli = ["args4j", "lanterna"]
+core = ["guava", "streamex", "caffeine", "json-io", "jaxb-api", "jsoup", "icu4j", "simmetrics", "language-detector"]
+media = ["metadata-extractor", "bencode", "xz", "commons-io", "commons-vfs2", "sevenzipjbinding", "sevenzipjbinding-natives"]
+native = ["jna", "jna-platform", "objc-bridge"]

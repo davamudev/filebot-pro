@@ -1,0 +1,175 @@
+---
+title: Command line
+description: Every option of the filebot-pro command and examples for scripts and automation.
+---
+
+Every download includes `filebot-pro`: `filebot-pro.exe` on Windows, a command on the `PATH` with the `.deb` and
+`.rpm` packages and `bin/filebot-pro` in the Linux portable folder (see [installation](/getting-started/installation/#command-line)
+for every system).
+
+## Examples
+
+```bash
+# preview new names without touching the files
+filebot-pro -rename "/media/TV" --db TVmaze --action test --format "{n} - {s00e00} - {t}"
+
+# rename movies into a library
+filebot-pro -rename "/downloads" --db TheMovieDB --output "/media" --format "Movies/{n} ({y})/{n} ({y})"
+
+# list the episodes of a show
+filebot-pro -list --q "Firefly" --db TVmaze --format "{n} - {s00e00} - {t}"
+
+# verify checksums, extract archives, print media properties
+filebot-pro -check "/media/Movies"
+filebot-pro -find "/media" -r --file-filter "vf == '2160p'" -exec echo "{f}"
+filebot-pro -extract "/downloads/archive.rar" --output "/downloads"
+filebot-pro -mediainfo "/media/Movies" --format "{fn} {vf} {ac}"
+
+# run a built-in script
+filebot-pro -script fn:sysinfo
+
+# sort finished downloads into a library
+filebot-pro -script fn:amc "/downloads/complete" --output "/media" --action move -non-strict --lang en --def clean=y
+```
+
+## Commands
+
+| Option | Does |
+| --- | --- |
+| `-rename` | Rename media files |
+| `-get-subtitles` | Download subtitles |
+| `-check` | Create or verify checksum files |
+| `-list` | Print an episode list |
+| `-mediainfo` | Print media properties |
+| `-find` | Print the files that match `--file-filter` (with `-r` inside subfolders too), or run `-exec` for each of them |
+| `-extract` | Extract archives |
+| `-revert` | Undo earlier renames: without paths, the most recent operation; with paths, every rename from or into them |
+| `-script` | Run a Groovy script: `fn:name` for a [built-in script](#built-in-scripts) or a `.groovy` file |
+| `-version`, `-help` | Version and option summary |
+
+## Built-in scripts
+
+These scripts ship with the application, so nothing is downloaded. They are licensed under the GPL-3.0.
+
+| Script | Does |
+| --- | --- |
+| `fn:amc` | Sorts downloads into your library: episodes, movies, anime and music, with optional subtitles, artwork, clean-up and notifications |
+| `fn:cleaner` | Deletes clutter files and empty folders |
+| `fn:watcher` | Watches a folder and renames new files |
+| `fn:extract` | Extracts archives in place |
+| `fn:suball` | Downloads missing subtitles |
+| `fn:artwork`, `fn:nfo` | Artwork and NFO files for media centers, for files renamed with FileBot Pro (read from their stored metadata) |
+| `fn:artwork.tmdb`, `fn:artwork.tvdb` | Artwork and NFO files for whole movie or series folders, looked up by the folder name (or `--q`) on TheMovieDB or TheTVDB |
+| `fn:miss`, `fn:duplicates` | Lists missing episodes or duplicate files (`--mode binary --action hardlink` replaces identical copies with hard links, so they use the disk space only once) |
+| `fn:history` | Prints the rename history |
+| `fn:configure` | Sets the OpenSubtitles login |
+| `fn:sysinfo` | Versions, native tools and data folder |
+
+### Automate downloads with amc
+
+`amc` takes the downloaded files (or a folder), detects whether they are episodes, movies, anime or music and moves
+them into `--output`. Options are passed with `--def name=value`:
+
+| Option | Use |
+| --- | --- |
+| `seriesFormat`, `movieFormat`, `animeFormat`, `musicFormat` | [Format](/formats/syntax/) of each kind (default `{plex}`) |
+| `seriesDB`, `movieDB`, `animeDB` | Sources (default `TheMovieDB::TV`, `TheMovieDB`, `AniDB`) |
+| `subtitles=en` | Download subtitles in these languages |
+| `artwork=y` | Download artwork and NFO files |
+| `clean=y` | Delete clutter and empty folders after moving |
+| `music=y`, `unsorted=y` | Also process music, move unrecognized files to `Unsorted` |
+| `excludeList=amc.txt` | Remember processed files so they are never processed twice |
+| `kodi=host`, `plex=host:token`, `emby=host:apikey` | Refresh your media center |
+| `pushover=user:token`, `pushbullet=apikey`, `discord=webhook` | Send a notification (Pushover needs your own application token) |
+| `minFileSize` | Skip files smaller than this many bytes (default `50000000`, 50 MB) |
+| `minLengthMS` | Skip videos shorter than this many milliseconds (default `600000`, 10 minutes); `0` turns the check off |
+| `minFileAge` | Skip files modified less than this many days ago (default `0`, off) |
+| `ignore` | Skip files whose path matches this pattern |
+| `excludeLink=y` | Skip files that are symbolic links or have more than one hard link |
+| `extractFolder`, `skipExtract=y`, `deleteAfterExtract=y` | Where archives are extracted (default: the archive's folder), leave archives alone, or delete them after extracting |
+| `storeReport=folder` | Save an HTML report of each run to this folder |
+| `ut_label` | Label from the download client that forces the kind: Movie, TV series, Anime, Music, or Unsorted for games, books and other |
+| `musicDB`, `unsortedFormat` | Music source (default `ID3`) and [format](/formats/syntax/) for unsorted files (default `Unsorted/{f.structurePathTail}`) |
+| `exec` | Run a program for each new file, for example `exec="notify.bat {n}"` (see the caution below) |
+
+:::caution
+`exec` does not run through a shell. The template is split on spaces into arguments, and each argument is filled in
+on its own, so a title with spaces stays one argument, but pipes, redirects and `&&` do not work. Quote an argument
+that contains spaces, for example `exec="\"C:\Tools\notify.bat\" {n}"`.
+:::
+
+Torrent clients can call it when a download finishes. For qBittorrent, *Options › Downloads › Run external program
+on torrent finished*:
+
+```bash
+filebot-pro -script fn:amc --output "D:/Media" --action move -non-strict --lang en --log-file amc.log --def excludeList=amc.txt clean=y ut_dir="%F" ut_kind=multi ut_title="%N" ut_label="%L"
+```
+
+## Options
+
+| Option | Values | Use |
+| --- | --- | --- |
+| `--db` | TheTVDB, AniDB, TheMovieDB::TV, TVmaze, TheMovieDB, OMDb, OpenSubtitles, Shooter, AnimeLists, FanartTV, AcoustID, ID3, xattr, exif, file | Source (OpenSubtitles identifies movies by file hash first, then by name). `Shooter` is a subtitle source and `FanartTV` an artwork source. `AnimeLists` is the `--db` name of the AnimeList source used by `--mapper` (the binding is called `AnimeList`). With `-list`, only TheTVDB, AniDB, TheMovieDB::TV and TVmaze work, and `TheMovieDB` means `TheMovieDB::TV`; an unknown name is an error |
+| `--format` | expression, `format.groovy` or `@format.txt` | [Format](/formats/syntax/) of the new names |
+| `--action` | move, copy, keeplink, symlink, hardlink, clone, duplicate, test | Rename action (`test` only previews). `clone` makes a copy-on-write clone (APFS, Btrfs, XFS, bcachefs; ReFS / Dev Drive on Windows 11 24H2 or later) and a regular copy where the file system can't. `duplicate` makes a hard link and copies the file where linking fails. It can also be a program, given by its path (`C:\Tools\action.bat`, `/usr/local/bin/action`) or by its name if it is on the `PATH` (`action` finds `action.exe`, `action.cmd`, ...; `.ps1` scripts run with PowerShell), called with the source path and the destination, or a Groovy closure or `.groovy` file that receives `from` and `to` |
+| `--file-order` | name, path, date, size, resolution, or an expression | Order in which the files are renamed, which decides which file wins when several are renamed to the same path (`--conflict skip` keeps the first one): `date` is newest first, `size` largest first, `resolution` best video quality first. An expression gives a sort key for each file, smallest first: `--file-order "{-bytes}"` |
+| `--conflict` | skip, override, auto, index, fail, or a Groovy closure or `.groovy` file | What to do when the target exists. A closure receives the file and the existing target and returns another target file, one of the conflict actions, or `true` (override) / `false` (skip): `--conflict "{ from, to -> from.length() > to.length() ? 'override' : 'skip' }"` |
+| `--order` | Airdate, Official, DVD, Absolute, AbsoluteAirdate, Digital, StoryArc, Production | Episode order (with TheTVDB, Official is the Aired Order, Digital the Alternate Order, StoryArc the Alternate DVD Order and Production the Regional Order, and Airdate follows the default order of the series; with TheMovieDB, Digital, StoryArc and Production are episode groups. Series without that order use the default one) |
+| `--lang` | language code | Language of the data |
+| `--q` | text | Force the series or movie: a name, an id (`id:1399`, `tvdb:73255`, `tmdb:603`, a series id of 5 to 9 digits, an IMDb id like `tt0133093`) or several separated by `\|` (each file is matched to the closest one) |
+| `--filter` | expression | Only keep matches for which the expression is `true` |
+| `--mapper` | expression | Match episodes by another numbering, e.g. `db.AniDB` or `AnimeList.AniDB`; the new names still use the original episode data |
+| `--apply` | artwork, cover, thumbnail, nfo, url, srt, metadata (or tag), finder, date, touch, chmod, import, prune, or a Groovy closure or `.groovy` file | After renaming: download artwork, write a `cover.jpg` per folder (reusing a local poster first, `<name>-cover.jpg` if the folder holds other movies or seasons), make video thumbnails from the poster for Synology NAS (`@eaDir/<file>/SYNOVIDEO_VIDEO_SCREENSHOT.jpg`) and QNAP NAS (`.@__thumb`), so File Station, DS File, Qfile and the media servers show them (`thumbnail`, when it runs on the NAS or the folder already has an `@eaDir` or `.@__thumb` folder), write NFO files, write `.url` shortcuts to the movie or series page, convert the renamed subtitles and the subtitles next to renamed videos to SRT in UTF-8 (other formats such as ASS, and TMPlayer and MPL2 `.txt` subtitles, are kept next to the new `.srt`), write title, series, season, episode and date into mkv and mp4 files and attach the cover (scaled down to 1000 pixels in height), add Finder tags for the media type, video format and HDR (macOS), set the release date as the last modified date, set the last modified date to now (`touch`), set POSIX file permissions (`chmod`, or `chmod=644` for other permissions than the default `664`; Linux and macOS), take extras along with the renamed videos (`import`: files such as `Movie-trailer.mkv`, renamed to match the new name, and Plex extras folders such as `Trailers` or `Featurettes` of folders with a single video), and after a move delete source folders that are left truly empty (`--apply artwork nfo`). `srt`, `finder`, `touch` and `chmod` also work for files renamed without online data. A closure (`--apply "{ f, m -> println f }"`) or a `.groovy` file that contains one runs for every renamed file, with the file and, if it takes two parameters, its match data. With `--apply`, `-exec` runs after these steps. `prune` never deletes the folders passed as arguments, and a folder with hidden files is not empty, except for NAS thumbnail folders such as `@eaDir` |
+| `--file-filter` | expression | Only process the files for which the expression is `true` (with `-script`, the script receives the selected files instead of the folders) |
+| `--output` | path | Output folder |
+| `--encoding` | UTF-8, Windows-1252 | Encoding of written text files |
+| `-r` | | Process folders recursively (with `-script`, the script receives every file inside the folders) |
+| `-d` | | Folder mode: rename the given folders as a whole (e.g. one folder per movie) instead of the files inside |
+| `-non-strict` | | More aggressive matching |
+| `-exec` | `echo {f}` | Run a command for each processed file |
+| `--def` | `name=value` | Variables for scripts |
+| `--mode` | interactive, binary | Confirm matches in the terminal (numbered prompts in cmd.exe and PowerShell, a full-screen dialog elsewhere). `binary` is passed to scripts as `_args.mode`; `fn:duplicates` needs it to find binary duplicates (`--mode binary --action hardlink`) |
+| `-unixfs` | | Allow any character in file names |
+| `-no-xattr`, `-no-history` | | Do not store data on files or in the history |
+| `-no-probe` | | Match files without reading their contents (no MediaInfo) |
+| `-no-index` | | Don't load the local series, movie and anime lists (uses less memory, for NAS and low-memory devices) |
+| `--log` | all, fine, info, warning | Log level |
+| `--log-file`, `--log-lock` | file, yes/no | Write the log to a file |
+| `-clear-cache`, `-clear-prefs`, `-clear-history` | | Reset caches, settings or history. `-clear-cache` must be run from an interactive console; in a script it fails with an error |
+| `-export-data`, `-import-data` | zip file | [Back up or restore](/reference/configuration/#backup-and-restore) settings, presets, history and API keys |
+
+## Argument files
+
+Long commands can be kept in a text file and passed as `@file`. Each line is one argument, so values with spaces
+need no quotes. Blank lines and lines starting with `#` are ignored, and the file may be saved with or without a BOM.
+
+```bash
+filebot-pro @movies.txt "/downloads"
+```
+
+```text title="movies.txt"
+# movies into the library
+-rename
+--db
+TheMovieDB
+--format
+Movies/{n} ({y})/{n} ({y})
+```
+
+Option values are never read as argument files, so `--format @format.groovy` still loads a format from a file.
+
+`--` ends the options: every argument after it is a file or folder, even if it starts with `-` or `@`.
+
+```bash
+filebot-pro -rename --db TheMovieDB -- "-weird name-.mkv"
+```
+
+## Exit codes
+
+| Code | Meaning |
+| --- | --- |
+| `0` | Done |
+| `1` | Error |
+| `3` | Failure |
+| `4` | Aborted |
+| `100` | Nothing to do |

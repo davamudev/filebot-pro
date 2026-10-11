@@ -1,0 +1,35 @@
+---
+title: Filter
+description: Inspect a folder tree, read media properties, extract archives and split folders.
+---
+
+Drop folders onto **File Tree** on the left (or use **Load**). The tabs on the right work on everything in the
+tree.
+
+| Tab | What it shows or does |
+| --- | --- |
+| **Archives** | Every archive (zip, rar, 7z, …) and its contents; **Extract All** unpacks them with 7-Zip |
+| **Types** | Files grouped by type: video, subtitles, audio, images, archives, … |
+| **Parts** | Splits the files into volumes of a size you choose (**Split every … MB**), for example to fit discs |
+| **Attributes** | The data FileBot Pro stored on each file when it was renamed. **Apply** downloads artwork, writes NFO files or `.url` shortcuts, converts subtitles to SRT, sets the release date (or the current date with **Touch**) as the last modified date, writes tags into mkv and mp4 files or adds Finder tags on macOS, for the selected rows (or all of them) |
+| **MediaInfo** | Video, audio and subtitle properties of every media file |
+
+Right click a file or folder in the tree to **Send to** another panel, **Reveal** it in your file manager or
+**Move to Trash**.
+
+:::tip
+**MediaInfo** needs the MediaInfo library: see [native tools](/reference/configuration/#native-tools).
+:::
+
+## MediaInfo views
+
+The **MediaInfo** tab shows every property by default. To see only the columns you care about, create a view:
+
+1. Click **Columns …**. Pick columns from **Available columns** (use the filter box to find them) and move them with
+   the arrow button; double click works too. Order them with the up and down buttons.
+2. A column that isn't in the loaded files yet can be typed by name, e.g. `Video.Width` or `Audio[1].Language`.
+3. Give the view a name and **Save**. It's selected right away and remembered next time.
+
+Switch views with the **View** list. The **⋯** button next to it can create, duplicate, rename and delete views, and
+**Export** or **Import** them as `.json` files to share them or move them to another computer. The **Default** view
+can't be changed: editing its columns starts a new view.

@@ -1,0 +1,115 @@
+---
+title: Building from source
+description: Compile FileBot Pro, build its installers and this documentation, and embed the API keys.
+---
+
+This page is for people who want to compile FileBot Pro themselves. To use the app, download it from the
+[installation](/getting-started/installation/) page instead.
+
+## Requirements
+
+- JDK 25 (Gradle downloads one if missing).
+- The source code: `git clone https://github.com/davamudev/FileBot-Pro.git`
+
+On Windows use `gradlew.bat` instead of `./gradlew`.
+
+## Build and run
+
+```bash
+./gradlew run             # start the desktop app
+./gradlew installDist     # command line in build/install/filebot-pro/bin/filebot-pro
+./gradlew portableZip     # portable zip with bundled Java, in build/distributions/
+./gradlew jpackage        # installer for this system: msi, dmg or deb (-PinstallerType=exe|pkg|rpm)
+./gradlew synologyPackage # Synology DSM 7 package with bundled Java (-PsynologyArch=x86_64|armv8), on any system
+```
+
+Installers can only be built on their own system: the `.exe` and `.msi` on Windows, the `.deb` and `.rpm` on Linux,
+the `.dmg` and `.pkg` on macOS. The macOS builds bundle the Java runtime of the build JDK, so build on an Apple Silicon
+Mac for `arm64` and on an Intel Mac for `x64`; the [release workflow](#releases) builds both.
+
+`./gradlew downloadNativeTools` downloads MediaInfo and fpcalc for Windows, so that the Windows packages include
+them. On macOS and Linux they come from the system package manager. Built on Windows 11 arm64, the packages are for
+arm64 (with the arm64 MediaInfo; the command-line tools run through x64 emulation).
+
+The [start options](/reference/configuration/#start-options) of a build from `installDist` go in the
+`FILEBOT_PRO_OPTS` (or `JAVA_OPTS`) environment variable.
+
+## API keys
+
+Builds embed the keys of the services that allow one key for every user of an application. Without them the build
+still works, but those sources report a missing key.
+
+| Key | Used by | Get one at |
+| --- | --- | --- |
+| `themoviedb` | TheMovieDB and TheMovieDB::TV | [themoviedb.org](https://www.themoviedb.org/settings/api) |
+| `thetvdb` | TheTVDB (API v4 project key) | [thetvdb.com](https://thetvdb.com/api-information) |
+| `fanart.tv` | Artwork | [fanart.tv](https://fanart.tv/get-an-api-key/) |
+| `acoustid` | Music fingerprints | [acoustid.org](https://acoustid.org/new-application) |
+| `anidb` | AniDB (client name) | [anidb.net](https://anidb.net/software/add) |
+| `opensubtitles` | Subtitles (REST API key, one per application) | [opensubtitles.com](https://www.opensubtitles.com/en/consumers) |
+
+Copy `api-keys.properties.example` to `api-keys.properties` in the project folder (it is ignored by git) and fill
+them in, or set `FILEBOT_PRO_APIKEY_<NAME>` environment variables (dots as underscores, e.g.
+`FILEBOT_PRO_APIKEY_FANART_TV`) on the build machine. Never commit `api-keys.properties`.
+
+`omdb` and `google.geocode` are never embedded: their quota, licensing or billing belongs to each user.
+
+At run time FileBot Pro looks for each key in this order: `-Dapikey.<name>`, `FILEBOT_PRO_APIKEY_<NAME>`,
+`api-keys.properties` in the [user data folder](/reference/configuration/#user-data), and finally the embedded key.
+
+## Docker image
+
+The `Dockerfile` builds the [Docker image](/getting-started/docker/) from source. Pass `api-keys.properties` as a
+build secret to embed the keys (it never ends up in an image layer), and the git revision as a build argument:
+
+```bash
+docker build -t filebot-pro --secret id=apikeys,src=api-keys.properties --build-arg REVISION=$(git rev-list --count HEAD) .
+docker buildx build --platform linux/amd64,linux/arm64 -t filebot-pro .   # both architectures
+docker build --target gui -t filebot-pro:gui .                            # desktop app in the browser
+```
+
+The [release workflow](#releases) builds both architectures and publishes them to `ghcr.io/<owner>/filebot-pro`.
+
+## Releases
+
+`develop` is the default branch; `master` holds the released code. The `Build` workflow (`.github/workflows/build.yml`)
+compiles the sources and the documentation site on every push to `develop` or `master` and on every pull request.
+
+A release starts with a version tag on `master` that matches `app.version` in `gradle.properties`:
+
+```bash
+git checkout master
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+The `Release` workflow (`.github/workflows/release.yml`) refuses tags that don't point to a commit of `master` or don't
+match the version. It then builds the Linux `.deb`, `.rpm` and portable zip, the Synology packages, the Windows `.msi`
+and portable zips (x64 and arm64), the macOS `.dmg` and portable zips (Apple Silicon and Intel) and the Docker images,
+and attaches every package with a `SHA256SUMS.txt` file to the GitHub release. The release notes are the section of
+that version in `CHANGELOG.md`.
+
+All release builds embed the API keys of the repository secret `API_KEYS` (the contents of `api-keys.properties`);
+the workflow stops if the secret is missing and warns about every missing key.
+
+## Other tasks
+
+| Task | What it does |
+| --- | --- |
+| `./gradlew generateIcons` | Renders the app icons, the installer images and the in-app logos from `packaging/icons/logo*.png` (exported from the `logo*.svg` masters next to them) |
+| `./gradlew updateData` | Regenerates the bundled movie, series and anime indexes (downloads a lot of data) |
+| `./gradlew bashCompletion` | Generates a bash completion script for the command line |
+
+## This documentation
+
+The site is built with Astro and Starlight from the `docs/` folder:
+
+```bash
+cd docs
+npm install
+npm run dev       # http://localhost:4321
+npm run build     # static site in docs/dist/
+```
+
+English pages live in `src/content/docs/` and their Spanish twins, with the same path, in
+`src/content/docs/es/`. Navigation for both languages is in `src/sidebar.mjs`.

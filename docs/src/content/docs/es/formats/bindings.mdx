@@ -1,0 +1,182 @@
+---
+title: Variables
+description: Todos los valores disponibles en una expresión de formato, agrupados por tipo.
+---
+
+## Episodios
+
+| Variable | Valor | Ejemplo |
+| --- | --- | --- |
+| `n` | Nombre de la serie | `Breaking Bad` |
+| `y` | Año del primer episodio | `2008` |
+| `decade` | Década del primer episodio | `2000` |
+| `ny` | Nombre de la serie con el año | `Breaking Bad (2008)` |
+| `s` | Número de temporada | `2` |
+| `e` | Número de episodio | `3` |
+| `es` | Números de episodio de los archivos con varios episodios | `[3, 4]` |
+| `sxe` | Temporada y episodio | `2x03` |
+| `s00e00` | Temporada y episodio | `S02E03` |
+| `e00` | Episodio con dos cifras | `03` |
+| `t` | Título del episodio | `Bit by a Dead Bee` |
+| `d` | Fecha de emisión | `2009-03-22` |
+| `airdate` | Fecha de emisión, igual que `d` | `2009-03-22` |
+| `absolute` | Número de episodio absoluto | `10` |
+| `special` | Número de especial | `1` |
+| `sc` | Número de temporadas | `5` |
+| `sn` | Nombre de la temporada (TheMovieDB, TheTVDB) | `The Final Season` |
+| `sy` | Años de la temporada | `[2009]` |
+| `startdate` | Fecha del primer episodio | `2008-01-20` |
+| `age` | Días desde la emisión | `5800` |
+| `regular` | `true` en episodios normales, `false` en especiales | `true` |
+| `anime` | `true` en anime: datos de AniDB, series de TheTVDB que están en la lista de anime, el género Anime o animación en japonés | `false` |
+| `episodelist` | Todos los episodios de la serie | |
+| `episode`, `episodes` | El episodio y todos los episodios de un archivo con varios episodios | |
+| `series` | Información de la serie | `{series.name}` |
+| `seasonize` | Episodios de AniDB con las temporadas de TheTVDB | `{seasonize.s00e00}` |
+
+## Películas
+
+| Variable | Valor | Ejemplo |
+| --- | --- | --- |
+| `n` | Nombre de la película | `Inception` |
+| `y` | Año | `2010` |
+| `decade` | Década | `2010` |
+| `ny` | Nombre con el año | `Inception (2010)` |
+| `anime` | `true` en películas de animación japonesas | `false` |
+| `primaryTitle` | Título original; para anime de TheTVDB, el título romanizado de AniDB | `Inception`, `Shingeki no Kyojin` |
+| `alias` | Títulos alternativos | |
+| `collection` | Nombre de la colección | `The Matrix Collection` |
+| `ci` | Posición en la colección | `1` |
+| `cy` | Años de la colección | `[1999, 2003]` |
+| `genres`, `genre` | Géneros, primer género | `Action` |
+| `director` | Director | |
+| `actors` | Actores principales | |
+| `certification` | Calificación por edades (películas y series); `{info.certifications.DE}` para otro país | `PG-13` |
+| `country` | Primer país de producción (código ISO; películas y series) | `US` |
+| `rating`, `votes` | Puntuación de los usuarios y número de votos | `8.4` |
+| `runtime` | Duración en minutos (la del episodio si la fuente la tiene, si no la habitual de la serie) | `148` |
+| `languages` | Idiomas hablados | `[eng]` |
+| `language` | Idioma original (películas y series) | `jpn` |
+| `localize` | Nombres en otro idioma | `{localize.spa.n}` |
+| `az` | Primera letra para carpetas de la A a la Z | `I` |
+| `movie` | La película | |
+
+## Identificadores y fuente
+
+| Variable | Valor |
+| --- | --- |
+| `id` | Id en la base de datos de origen |
+| `tmdbid`, `imdbid` | Ids de TheMovieDB e IMDb |
+| `tvdbid` | Id de la serie en TheTVDB, también en series identificadas con TheMovieDB o AniDB (se busca a través de TheMovieDB o de las listas de anime) |
+| `info` | Todos los campos de la fuente como objeto (`{info.overview}`). `{info.status}` es el estado de publicación (`Released` en películas, `Ended` o `Continuing` en series) y `{info.video}` vale `true` en las películas estrenadas directamente en vídeo según TheMovieDB |
+| `omdb` | Datos extra de OMDb |
+| `order` | El episodio en otro orden (`{order.DVD.sxe}`) |
+| `AnimeList` | El episodio convertido entre AniDB y TheTVDB con las listas de anime (`{AnimeList.TheTVDB.sxe}`) |
+| `XEM` | El episodio convertido con TheXEM a la numeración de AniDB, TheTVDB o la scene (`{XEM.Scene.sxe}`) |
+| `db` | El episodio convertido a otra base de datos: prueba primero con las listas de anime y después con TheXEM, y convierte entre TheTVDB y TheMovieDB con los ids externos de TheMovieDB (`{db.AniDB.n}`, `{db.TheTVDB.s00e00}`, `{db.TheMovieDB.id}`) |
+| `object` | El episodio, la película o la pista encontrada |
+| `json` | Los datos encontrados en JSON |
+
+## Propiedades multimedia
+
+Se leen del archivo con [MediaInfo](/es/reference/configuration/#herramientas-nativas). El resultado se guarda en caché (igual que la salida de ffprobe), así que un archivo solo se vuelve a leer si cambia.
+
+| Variable | Valor | Ejemplo |
+| --- | --- | --- |
+| `vf` | Formato de vídeo | `1080p` |
+| `hpi` | Altura exacta con tipo de barrido | `1080i` |
+| `dim` | Ancho y alto | `[1920, 1080]` |
+| `resolution`, `width`, `height` | Resolución | `1920x1080` |
+| `hd` | Definición: `UHD` (2160p), `QHD` (1440p), `FHD` (1080p), `HD` (720p) o `SD` | `FHD` |
+| `vk` | Etiqueta `4K` (2160p) u `8K` (4320p), sin definir en resoluciones menores | `4K` |
+| `ws` | Panorámico | `WS` |
+| `ar` | Relación de aspecto | `16∶9`, `2.39∶1` |
+| `vc` | Códec de vídeo | `x265` |
+| `vcf` | Formato de compresión de vídeo | `HEVC` |
+| `hdr` | Formato HDR: `DV`, `DV HDR10`, `DV HDR10+`, `DV HLG`, `HDR10+`, `HDR10`, `HLG`, o `HDR` en vídeo de 10 bits BT.2020 sin metadatos HDR | `HDR10` |
+| `dovi` | `DV` en vídeo Dolby Vision | `DV` |
+| `bitdepth` | Profundidad de bits | `10` |
+| `fps` | Fotogramas por segundo (`{fps.format()}` = `23.976 fps`) | `23.976` |
+| `ac` | Códec de audio | `AAC` |
+| `af` | Canales de audio | `6ch` |
+| `channels` | Distribución de canales de audio | `5.1` |
+| `acf` | Códec y canales de audio, como en los nombres de release | `DD5.1`, `DDP5.1`, `AAC2.0` |
+| `aco` | Perfil del códec de audio | |
+| `cf` | Formato del contenedor | `mkv` |
+| `bitrate`, `kbps`, `mbps` | Tasa de bits total. `bitrate` va en bits por segundo: `{bitrate.Mbps}` = `4.5`, `{bitrate.kbps}` = `4500`, `{bitrate.format()}` = `4.5 Mbps` | `4.5 Mbps`, `4500 kbps` |
+| `vbr`, `abr` | Tasa de bits de vídeo y de audio, con las mismas unidades que `bitrate` (`{vbr.format()}`) | `4.1 Mbps` |
+| `khz` | Frecuencia de muestreo | `48.0 kHz` |
+| `duration`, `minutes`, `seconds` | Duración. `{minutes}` y `{seconds}` son números; `{duration}` solo imprime ISO-8601 (`PT2H28M`) | `148` (`{minutes}`) |
+| `hours` | Duración en horas y minutos, con el signo de razón (∶) en lugar de dos puntos, que no se admiten en los nombres de archivo | `2∶28` |
+| `audioLanguages`, `textLanguages` | Idiomas de audio y subtítulos | `[eng, spa]` |
+| `media`, `video`, `audio`, `text`, `menu`, `chapters` | Cualquier campo de MediaInfo | `{video.codecID}` |
+| `image` | Cualquier campo de MediaInfo de una imagen | `{image.width}` |
+| `mediaTitle` | Título guardado en el archivo | |
+| `mediaTags` | Etiquetas guardadas en el archivo (título, comentario, género, ...) | `{mediaTags.Comment}` |
+| `encodedDate` | Fecha de codificación del archivo | `2010-07-16` |
+| `ffprobe` | Cualquier campo de ffprobe (necesita ffprobe en el `PATH`) | |
+
+## Información de la versión
+
+Se deduce del nombre y la carpeta del archivo original.
+
+| Variable | Valor | Ejemplo |
+| --- | --- | --- |
+| `source` | Origen tal y como aparece en el nombre | `BDRip`, `WEB.DL` |
+| `vs` | Etiqueta estándar del origen | `BluRay`, `WEB-DL`, `WEBRip`, `HDTV`, `DVD` |
+| `group` | Grupo de la versión | |
+| `tags` | Etiquetas de edición | `[Extended, Unrated]` |
+| `s3d` | Formato 3D | `SBS` |
+| `subt` | Idioma y etiquetas de un subtítulo | `.eng.forced` |
+| `lang` | Idioma de un subtítulo | `eng` |
+| `crc32` | Suma CRC32 | `A1B2C3D4` |
+
+## Archivos
+
+| Variable | Valor |
+| --- | --- |
+| `fn` | Nombre original sin extensión |
+| `ext` | Extensión |
+| `mediaFileName` | Nombre del archivo de vídeo sin extensión: en subtítulos, nfo o imágenes, el del vídeo al que acompañan |
+| `f` | El propio archivo (`{f.parent}`) |
+| `folder` | Carpeta del archivo |
+| `files` | Archivos de una carpeta, o el contenido de un comprimido como rutas relativas (`{files.size()}`) |
+| `original` | Nombre antes del primer renombrado |
+| `history` | Ruta original según el historial |
+| `bytes`, `megabytes`, `gigabytes` | Tamaño del archivo. `bytes` también tiene unidades: `{bytes.GB}`, `{bytes.GiB}`, `{bytes.format()}` = `4.8 GB` |
+| `drive` | Letra de unidad, recurso de red o punto de montaje del archivo (`D:\`, `\\servidor\recurso`, `/Volumes/Media`) |
+| `ct`, `mt` | Fecha de creación y de última modificación del archivo (`{ct.format('yyyy-MM-dd')}`) |
+| `dt` | Fecha en que se tomó la foto (EXIF), o la fecha de creación del archivo si no tiene fecha EXIF |
+| `today` | Fecha de hoy |
+| `home` | Tu carpeta personal |
+| `mime`, `type` | Tipo de contenido |
+| `file` | El archivo tal como se añadió, antes de buscar nada |
+| `mediaPath`, `relativeFile` | Ruta del archivo dentro de su carpeta de biblioteca |
+| `xattr` | Datos guardados en los atributos extendidos del archivo por un renombrado anterior |
+| `output` | Carpeta de salida indicada con `--output` (línea de comandos) |
+| `defines`, `label` | Valores indicados con `--def nombre=valor`; `label` es el primero cuyo nombre termina en `label` (`ut_label`) |
+
+## Música y fotos
+
+| Variable | Valor |
+| --- | --- |
+| `artist`, `albumArtist`, `album` | Etiquetas de música |
+| `pi`, `pn` | Número de pista y total de pistas (también parte y total de partes en películas divididas) |
+| `medium`, `mediumCount` | Número de disco y total de discos de álbumes con varios discos |
+| `exif`, `camera`, `location` | Datos de la foto |
+| `music`, `photo` | La pista de música y los metadatos de la foto |
+
+## Servidores multimedia y listas
+
+| Variable | Valor |
+| --- | --- |
+| `plex` | Ruta estándar de Plex: `TV Shows/Breaking Bad/Season 02/Breaking Bad - S02E03 - Bit by a Dead Bee` |
+| `kodi` | Ruta estándar de Kodi, con el año en la carpeta de la serie: `TV Shows/Breaking Bad (2008)/Season 02/Breaking Bad - 2x03 - Bit by a Dead Bee` |
+| `emby` | Ruta estándar de Emby |
+| `jellyfin` | Ruta estándar de Jellyfin, con el año en la carpeta de la serie |
+| `plex.id`, `kodi.id`, `emby.id`, `jellyfin.id` | La misma ruta con el id de la base de datos en la carpeta de la película o serie, para que el servidor multimedia no tenga que adivinarla: `Movies/The Matrix (1999) {tmdb-603}/The Matrix (1999)`, con Kodi `{tmdb=603}` y con Emby y Jellyfin `[tmdbid-603]` |
+| `plex.year`, `kodi.year`, `emby.year`, `jellyfin.year` | La misma ruta con Nombre de la serie (Año) en la carpeta de la serie y en los episodios: `TV Shows/Doctor Who (2005)/Season 01/Doctor Who (2005) - S01E01 - Rose`. Se combina con los ids como `{plex.year.id}` |
+| `disc` | Title de un ripeo de disco identificado con TheDiscDB (p. ej. `title_t01.mkv` de MakeMKV): `{disc.type}` (`Episode`, `MainMovie`, `Extra`, `Featurette`, `DeletedScene`, `Trailer`, `Interview`, ...), `{disc.title}`, `{disc.extra}`, `{disc.folder}` (carpeta de extras de Plex, p. ej. `Featurettes`), `{disc.disc}`, `{disc.index}`, `{disc.release}`. Con `{plex}`, `{jellyfin}`, `{emby}` y `{kodi}`, los extras van a la carpeta de extras de la película, la temporada o la serie: `Movies/The Matrix (1999)/Featurettes/The Burly Man Chronicles` |
+| `i` | Posición del elemento en la lista |
+| `di`, `dc` | Índice y número de duplicados, para elementos que aparecen más de una vez |
+| `self`, `model` | El objeto de datos completo y todos los elementos que se renombran |

@@ -1,0 +1,83 @@
+package dev.davamu.filebotpro.util;
+
+import static java.nio.charset.StandardCharsets.*;
+import static java.util.Collections.*;
+import static java.util.stream.Collectors.*;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.DosFileAttributeView;
+import java.util.List;
+
+public class PlainFileXattrView implements XattrView {
+
+	private static final String XATTR_FOLDER = System.getProperty("dev.davamu.filebotpro.xattr.store", ".xattr");
+
+	private static Path getXattrFolder(Path f) {
+		Path xattrFolder = Paths.get(XATTR_FOLDER);
+
+		// absolute xattr folder
+		if (xattrFolder.isAbsolute()) {
+			return xattrFolder;
+		}
+
+		// xattr folder folder relative to the given file
+		return f.getParent().resolve(xattrFolder);
+	}
+
+	/**
+	 * @return true if the given folder is a relative .xattr store folder
+	 */
+	public static boolean isXattrStore(File folder) {
+		return !Paths.get(XATTR_FOLDER).isAbsolute() && folder.getName().equals(Paths.get(XATTR_FOLDER).getFileName().toString()) && folder.isDirectory();
+	}
+
+	private final Path root;
+	private final Path node;
+
+	public PlainFileXattrView(Path path) throws IOException {
+		root = getXattrFolder(path);
+		node = root.resolve(path.getFileName());
+	}
+
+	@Override
+	public List<String> list() throws IOException {
+		if (Files.isDirectory(node)) {
+			return Files.list(node).map(Path::getFileName).map(Path::toString).collect(toList());
+		}
+		return emptyList();
+	}
+
+	@Override
+	public String read(String key) throws IOException {
+		try {
+			return new String(Files.readAllBytes(node.resolve(key)), UTF_8);
+		} catch (NoSuchFileException e) {
+			return null;
+		}
+	}
+
+	@Override
+	public void write(String key, String value) throws IOException {
+		if (!Files.isDirectory(node)) {
+			Files.createDirectories(node);
+
+			// set Hidden on Windows
+			if (Files.getFileStore(root).supportsFileAttributeView(DosFileAttributeView.class)) {
+				Files.getFileAttributeView(root, DosFileAttributeView.class).setHidden(true);
+			}
+		}
+
+		Files.write(node.resolve(key), value.getBytes(UTF_8));
+	}
+
+	@Override
+	public void delete(String key) throws IOException {
+		Files.deleteIfExists(node.resolve(key));
+	}
+
+}

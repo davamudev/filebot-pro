@@ -1,0 +1,188 @@
+---
+title: Docker y NAS
+description: Ejecuta FileBot Pro sin escritorio en un contenedor Docker en un servidor o un NAS (Synology, QNAP, Unraid, TrueNAS) y renombra las descargas nuevas automáticamente.
+---
+
+import { Steps, Tabs, TabItem } from '@astrojs/starlight/components'
+
+La imagen Docker ejecuta la [línea de comandos](/es/reference/command-line/) sin escritorio. Por defecto vigila
+una carpeta y renombra cada archivo nuevo dentro de tu biblioteca, así que encaja bien en un NAS o un servidor
+doméstico junto al cliente de descargas.
+
+| | |
+| --- | --- |
+| **Imagen** | `ghcr.io/davamudev/filebot-pro` |
+| **Arquitecturas** | `linux/amd64` y `linux/arm64` (la mayoría de los Synology y QNAP de los últimos años, Raspberry Pi 4 o posterior) |
+| **Incluye** | Java, MediaInfo, fpcalc, mkvpropedit, AtomicParsley y 7-Zip |
+
+## Carpetas
+
+| Carpeta del contenedor | Contenido |
+| --- | --- |
+| `/input` | Carpeta vigilada, por ejemplo las descargas completadas |
+| `/output` | Biblioteca a la que se mueven los archivos renombrados |
+| `/data` | Ajustes, cachés, historial de renombrados y logs. Guárdala en un volumen para que se conserven al actualizar |
+
+## Ajustes
+
+| Variable | Por defecto | Significado |
+| --- | --- | --- |
+| `PUID`, `PGID` | `1000` | Usuario y grupo dueños de los archivos y carpetas nuevos. Usa los del dueño de tus carpetas multimedia (`id <usuario>` en el NAS) |
+| `UMASK` | `022` | Permisos de los archivos y carpetas nuevos (`002` los deja escribibles para el grupo) |
+| `FILEBOT_PRO_APIKEY_<NOMBRE>` | | Tus propias [claves API](/es/reference/configuration/#claves-api), por ejemplo `FILEBOT_PRO_APIKEY_THEMOVIEDB` |
+
+## Ejecutar
+
+<Tabs>
+<TabItem label="Docker Compose">
+
+Guarda esto como `docker-compose.yml` y arráncalo con `docker compose up -d`:
+
+```yaml
+services:
+  filebot-pro:
+    image: ghcr.io/davamudev/filebot-pro:latest
+    container_name: filebot-pro
+    restart: unless-stopped
+    environment:
+      - PUID=1000
+      - PGID=1000
+    volumes:
+      - ./data:/data
+      - /volume1/downloads/complete:/input
+      - /volume1/media:/output
+```
+
+</TabItem>
+<TabItem label="docker run">
+
+```bash
+docker run -d --name filebot-pro --restart unless-stopped \
+  -e PUID=1000 -e PGID=1000 \
+  -v ./data:/data -v /volume1/downloads/complete:/input -v /volume1/media:/output \
+  ghcr.io/davamudev/filebot-pro:latest
+```
+
+</TabItem>
+</Tabs>
+
+Mira el log con `docker logs -f filebot-pro`. Copia un archivo en la carpeta de entrada: en unos segundos se
+renombra y se mueve a la biblioteca con el [esquema de nombres de Plex](/es/formats/examples/)
+(`Movies/Nombre (Año)/...` y `TV Shows/Nombre/Season 01/...`).
+
+## Otros comandos
+
+Todo lo que va después del nombre de la imagen sustituye al comando por defecto, así que el contenedor ejecuta
+cualquier operación de la línea de comandos:
+
+```bash
+# versiones, herramientas nativas y carpeta de datos
+docker run --rm -v ./data:/data ghcr.io/davamudev/filebot-pro -script fn:sysinfo
+
+# procesar una carpeta una vez con fn:amc, con carátulas y limpieza de los restos
+docker run --rm -e PUID=1000 -e PGID=1000 -v ./data:/data -v /volume1/downloads:/input -v /volume1/media:/output \
+  ghcr.io/davamudev/filebot-pro -script fn:amc /input --output /output --action move -non-strict \
+  --def artwork=y clean=y
+```
+
+Para cambiar el esquema de nombres o las opciones del vigilante, pasa el comando completo. Por ejemplo el esquema de
+Kodi, carátulas, archivos NFO y borrado de las carpetas de descarga que se quedan vacías
+([`--apply`](/es/reference/command-line/)):
+
+```yaml
+    command: ["-script", "fn:watcher", "/input", "--output", "/output", "--format", "{kodi}",
+              "--action", "move", "-rename", "-non-strict", "--apply", "artwork", "nfo", "prune"]
+```
+
+:::caution[Carpetas de red]
+El vigilante reacciona a los eventos del sistema de archivos. Las carpetas que el NAS o el host montan desde otra
+máquina (SMB o NFS) no los envían: añade `"--def", "poll=60"` para revisar la carpeta cada 60 segundos.
+:::
+
+## Aplicación de escritorio en el navegador
+
+La imagen `gui` ejecuta la aplicación de escritorio completa en una pantalla virtual y la muestra en el navegador,
+para un NAS o un servidor sin escritorio. Abre `http://<host>:5800` después de arrancarla:
+
+```yaml
+services:
+  filebot-pro-gui:
+    image: ghcr.io/davamudev/filebot-pro:gui
+    container_name: filebot-pro-gui
+    restart: unless-stopped
+    ports:
+      - "5800:5800"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - VNC_PASSWORD=cambiame   # obligatoria, la pide el navegador
+    volumes:
+      - ./data:/data
+      - /volume1/media:/media
+```
+
+| Variable | Por defecto | Significado |
+| --- | --- | --- |
+| `VNC_PASSWORD` | | Contraseña de la vista en el navegador. Obligatoria: el contenedor no arranca sin ella salvo con `VNC_ALLOW_NO_PASSWORD=true` (sin autenticación: solo en una red de confianza o tras un proxy inverso con autenticación) |
+| `DISPLAY_WIDTH`, `DISPLAY_HEIGHT` | `1600`, `900` | Tamaño de la pantalla virtual |
+
+La aplicación vuelve a arrancar cuando cierras su ventana. Los ajustes, presets e historial se guardan en `/data`,
+igual que en la imagen de línea de comandos.
+
+## NAS
+
+<Tabs>
+<TabItem label="Synology">
+
+<Steps>
+
+1. Instala **Container Manager** desde el Centro de paquetes (DSM 7.2 o posterior; **Docker** en versiones
+   anteriores).
+
+2. Crea una carpeta para los ajustes, por ejemplo `/volume1/docker/filebot-pro`.
+
+3. En **Container Manager → Proyecto → Crear**, elige esa carpeta, selecciona **Crear docker-compose.yml** y pega
+   el archivo Compose de arriba. Ajusta las rutas de `/input` y `/output` a tus carpetas compartidas.
+
+4. Usa el ID de usuario y de grupo del dueño de las carpetas multimedia: abre **Panel de control → Terminal y
+   SNMP**, activa SSH, inicia sesión y ejecuta `id <usuario>`.
+
+</Steps>
+
+FileBot Pro ignora las carpetas de miniaturas `@eaDir` y las carpetas `#recycle` y `#snapshot` de las carpetas
+compartidas de Synology.
+
+**Sin Docker**: el paquete `FileBot-Pro-<versión>-synology-x86_64.spk` (modelos Intel y AMD) o `-armv8.spk`
+(modelos ARM de 64 bits) instala la línea de comandos con su propio Java, en DSM 7.0 o posterior. Instálalo desde
+**Centro de paquetes → Instalación manual** y ejecuta `filebot-pro` por SSH o desde el **Programador de tareas**,
+p. ej. `filebot-pro -script fn:amc /volume1/downloads --output /volume1/media --action move -non-strict`. Los
+ajustes y la caché van a `~/.filebot-pro` del usuario que lo ejecuta, o a la carpeta de la variable de entorno
+`FILEBOT_PRO_DATA`. MediaInfo no forma parte de DSM, así que `{vf}` y las demás propiedades multimedia quedan vacías.
+
+</TabItem>
+<TabItem label="Unraid">
+
+Añade un contenedor desde **Docker → Add Container** con el repositorio `ghcr.io/davamudev/filebot-pro`, asigna
+`/data` a `/mnt/user/appdata/filebot-pro`, `/input` y `/output` a tus shares, y pon `PUID=99` y `PGID=100` (el
+dueño `nobody:users` de los shares de Unraid).
+
+</TabItem>
+<TabItem label="TrueNAS / QNAP">
+
+Instálalo como app personalizada (TrueNAS SCALE) o en **Container Station** (QNAP) con el archivo Compose de
+arriba, y asigna las carpetas a tus datasets o carpetas compartidas.
+
+</TabItem>
+</Tabs>
+
+## Actualizar
+
+```bash
+docker compose pull && docker compose up -d
+```
+
+Los ajustes, el historial y las cachés se quedan en `/data`.
+
+## Construir la imagen
+
+Para construir la imagen tú mismo, consulta [compilar desde el código](/es/development/building/#imagen-docker).

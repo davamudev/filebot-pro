@@ -1,0 +1,21 @@
+{
+  "name": "filebot-pro-docs",
+  "type": "module",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev --host",
+    "start": "astro dev --host",
+    "build": "astro build",
+    "preview": "astro preview --host",
+    "astro": "astro",
+    "check": "astro check"
+  },
+  "dependencies": {
+    "@astrojs/starlight": "^0.36.0",
+    "@fontsource-variable/jetbrains-mono": "^5.2.5",
+    "@fontsource-variable/roboto": "^5.2.5",
+    "astro": "^5.14.1",
+    "sharp": "^0.34.2"
+  }
+}

@@ -1,0 +1,181 @@
+---
+title: Installation
+description: Install FileBot Pro on Windows, Ubuntu, Debian, Fedora or macOS, start it and use the command line.
+---
+
+import { Steps, Tabs, TabItem } from '@astrojs/starlight/components'
+
+## Requirements
+
+| | |
+| --- | --- |
+| **Operating system** | Windows 10/11, Linux (Ubuntu, Debian, Fedora and others) or macOS, 64-bit |
+| **Java** | Bundled with every download |
+| **Internet** | Needed to look up movies, episodes, subtitles and artwork |
+
+## Install
+
+Download the file for your system from the [releases page](https://github.com/davamudev/FileBot-Pro/releases).
+
+<Tabs syncKey="os">
+<TabItem label="Windows">
+
+**Portable (recommended)**: nothing is installed and nothing is written outside the
+[user data folder](/reference/configuration/#user-data).
+
+<Steps>
+
+1. Unzip `FileBot-Pro-1.0.0-windows-portable.zip` (`FileBot-Pro-1.0.0-windows-arm64-portable.zip` on ARM computers
+   such as Snapdragon laptops) anywhere: your desktop, `Program Files` or a USB stick.
+
+2. Start **FileBot Pro.exe**. The folder also contains `filebot-pro.exe`, the command-line version.
+
+</Steps>
+
+**Installer**: run `FileBot Pro-1.0.0.msi` and start **FileBot Pro** from the start menu or the desktop shortcut.
+
+MediaInfo and fpcalc are included in both.
+
+</TabItem>
+<TabItem label="Ubuntu / Debian">
+
+<Steps>
+
+1. Install the package with `apt`, from the folder you downloaded it to:
+
+   ```bash
+   sudo apt install ./filebot-pro_1.0.0-1_amd64.deb
+   ```
+
+   `apt` also installs MediaInfo and fpcalc, the recommended packages, so media properties and music matching
+   work out of the box.
+
+2. Start **FileBot Pro** from the application menu, or type `filebot-pro` in a terminal.
+
+</Steps>
+
+The app is installed in `/opt/filebot-pro` and the `filebot-pro` command in `/usr/bin`, with tab completion for
+bash. Works on Ubuntu 22.04 or later, Debian 12 or later and derivatives such as Linux Mint, Pop!_OS or elementary OS.
+
+</TabItem>
+<TabItem label="Fedora / RPM">
+
+<Steps>
+
+1. Install the package with `dnf` (or `zypper` on openSUSE):
+
+   ```bash
+   sudo dnf install ./filebot-pro-1.0.0-1.x86_64.rpm
+   ```
+
+2. Start **FileBot Pro** from the application menu, or type `filebot-pro` in a terminal.
+
+</Steps>
+
+`dnf` also installs MediaInfo (`libmediainfo`) and fpcalc (`chromaprint-tools`) when they are available. The `filebot-pro` command has tab completion for bash.
+
+</TabItem>
+<TabItem label="Other Linux">
+
+<Steps>
+
+1. Unzip `FileBot-Pro-1.0.0-linux-portable.zip` anywhere, for example `~/Applications`.
+
+2. Run `FileBot Pro/bin/FileBot Pro` for the desktop app or `FileBot Pro/bin/filebot-pro` for the command line.
+
+3. Optional: link the command into your `PATH`:
+
+   ```bash
+   ln -s "$HOME/Applications/FileBot Pro/bin/filebot-pro" ~/.local/bin/filebot-pro
+   ```
+
+4. Install MediaInfo and fpcalc with your package manager, see
+   [native tools](/reference/configuration/#native-tools).
+
+</Steps>
+
+</TabItem>
+<TabItem label="macOS">
+
+<Steps>
+
+1. Open `FileBot Pro-1.0.0-arm64.dmg` (Apple Silicon, M1 and later) or `FileBot Pro-1.0.0-x64.dmg` (Intel) and drag
+   **FileBot Pro** into **Applications**.
+
+2. The builds are not signed yet. If macOS refuses to open the app the first time, go to **System Settings →
+   Privacy & Security** and click **Open Anyway**.
+
+3. Install MediaInfo and fpcalc with [Homebrew](https://brew.sh):
+
+   ```bash
+   brew install libmediainfo chromaprint
+   ```
+
+</Steps>
+
+Video and subtitle files show **FileBot Pro** in the Finder's **Open With** menu (it never becomes the default
+app for them).
+
+</TabItem>
+</Tabs>
+
+On Linux, video and subtitle files show **FileBot Pro** under **Open With** too, and the app uses the file dialog
+of your desktop when `zenity` (GNOME and most others) or `kdialog` (KDE) is installed.
+
+To compile FileBot Pro yourself, see [building from source](/development/building/).
+
+On the first start the welcome screen opens. Close it or follow the link to
+[your first rename](/getting-started/first-rename/).
+
+## Command line
+
+Every download includes the `filebot-pro` command for scripts, servers and automation. Without arguments it opens
+the desktop app.
+
+| System | Command |
+| --- | --- |
+| Windows | `filebot-pro.exe` in the portable folder or in the install folder (`C:\Program Files\FileBot Pro`) |
+| Ubuntu, Debian, Fedora | `filebot-pro`, already on the `PATH` |
+| Other Linux | `FileBot Pro/bin/filebot-pro` |
+| macOS | `"/Applications/FileBot Pro.app/Contents/MacOS/FileBot Pro"` |
+
+```bash
+filebot-pro -script fn:sysinfo                        # versions, native tools and data folder
+filebot-pro -rename "/media/TV" --db TVmaze --action test --format "{n} - {s00e00} - {t}"
+filebot-pro -script fn:amc "/downloads/complete" --output "/media" --action move -non-strict
+```
+
+On Linux the command line does not need a desktop session, so it also runs over SSH and on servers. See the
+[command line reference](/reference/command-line/) for every option.
+
+## First start checklist
+
+- **Online databases**: ready to use. Only OMDb and photo locations need your own free key, see
+  [API keys](/reference/configuration/#api-keys).
+- **Media properties**: check that MediaInfo and fpcalc were found with `filebot-pro -script fn:sysinfo`. If not,
+  see [native tools](/reference/configuration/#native-tools).
+- **Theme**: FileBot Pro follows the light or dark mode of your system. Change it with the **Appearance**
+  button at the bottom of the navigation.
+
+:::note[No license needed]
+Everything is free, renaming included: FileBot Pro needs no license or account, and the online databases are
+ready to use.
+:::
+
+## Updating
+
+Replace the portable folder or install the new package over the old one (`sudo apt install ./<new>.deb`,
+`sudo dnf install ./<new>.rpm`). Settings, history and presets live in the
+[user data folder](/reference/configuration/#user-data) and are kept.
+
+## Uninstalling
+
+| System | How |
+| --- | --- |
+| Windows | **Settings → Apps**, or delete the portable folder |
+| Ubuntu, Debian | `sudo apt remove filebot-pro` |
+| Fedora | `sudo dnf remove filebot-pro` |
+| macOS | Move **FileBot Pro** from **Applications** to the trash |
+
+The [user data folder](/reference/configuration/#user-data) is kept; delete it as well to remove settings,
+history and caches.

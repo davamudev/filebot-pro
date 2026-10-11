@@ -1,0 +1,11 @@
+#!/bin/sh
+# command-line tool only, there is no service to start or stop
+case "$1" in
+	start|stop)
+		exit 0
+		;;
+	status)
+		exit 3
+		;;
+esac
+exit 0

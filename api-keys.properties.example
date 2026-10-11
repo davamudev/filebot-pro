@@ -1,0 +1,40 @@
+#
+# Copy this file to api-keys.properties (git-ignored) and fill in your own keys to embed them at build time.
+#
+# Without rebuilding: put the same file into the user data folder (e.g. %APPDATA%\FileBot Pro\api-keys.properties),
+# set FILEBOT_PRO_APIKEY_<NAME> environment variables (e.g. FILEBOT_PRO_APIKEY_THEMOVIEDB)
+# or start the application with -Dapikey.<name>=<key>.
+#
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Application keys, embedded at build time (one key shared by all users of the application)
+# ---------------------------------------------------------------------------------------------------------------------
+
+# https://www.themoviedb.org/settings/api (movies and TheMovieDB::TV)
+themoviedb =
+
+# https://thetvdb.com/api-information (TheTVDB, API v4 project key)
+thetvdb =
+
+# https://fanart.tv/get-an-api-key/ (artwork)
+fanart.tv =
+
+# https://acoustid.org/new-application (music fingerprints)
+acoustid =
+
+# AniDB HTTP API client name, see https://anidb.net/software/add
+anidb =
+
+# OpenSubtitles.org XML-RPC user agent, see https://trac.opensubtitles.org/projects/opensubtitles/wiki/DevReadFirst
+opensubtitles =
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Personal keys, never embedded (per-key quota, licensing or billing): only read from the api-keys.properties in the
+# user data folder, FILEBOT_PRO_APIKEY_<NAME> environment variables or -Dapikey.<name>=<key> at runtime
+# ---------------------------------------------------------------------------------------------------------------------
+
+# https://www.omdbapi.com/apikey.aspx (IMDb ratings, the free key allows 1,000 requests per day)
+omdb =
+
+# Google Geocoding API (location of photos), billed to the Google Cloud account that owns the key
+google.geocode =

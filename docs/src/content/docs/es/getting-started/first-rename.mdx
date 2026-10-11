@@ -1,0 +1,49 @@
+---
+title: Tu primer renombrado
+description: De una carpeta de episodios mal nombrados a una biblioteca ordenada en cinco pasos.
+---
+
+import { Steps } from '@astrojs/starlight/components'
+
+![Archivos originales a la izquierda y nombres nuevos a la derecha](/img/rename-light.png)
+
+<Steps>
+
+1. **Añade tus archivos.** Abre el panel **Rename** (`Ctrl`+`1`) y arrastra archivos o carpetas enteras a
+   **Original Files**, o usa **Load**.
+
+2. **Busca los datos.** Pulsa **Fetch Data** debajo de **New Names** y elige una fuente: TheTVDB, AniDB,
+   TheMovieDB::TV o TVmaze para episodios, TheMovieDB u OMDb para películas, AcoustID o ID3 para música.
+   **Autodetect** decide por cada archivo.
+
+3. **Confirma la serie.** Si un nombre es ambiguo, FileBot Pro te pide elegir la serie o película correcta.
+   Selecciónala y pulsa **Select**; marca la casilla para recordar la elección.
+
+4. **Revisa el resultado.** Cada archivo original queda junto a su nombre nuevo. Las filas atenuadas no tienen
+   pareja: quítalas con `Supr` o colócalas con las flechas y pulsa **Match**.
+
+5. **Renombra.** Pulsa el botón naranja **Rename**. Cada operación queda en el
+   [historial](/es/tools/rename/#historial), así que se puede deshacer.
+
+</Steps>
+
+## Elige cómo se nombran los archivos
+
+Los nombres nuevos salen de una [expresión de formato](/es/formats/syntax/). Ábrela en **Fetch Data** ›
+**Edit Format**. Un buen punto de partida para un servidor multimedia:
+
+```groovy title="Episodios"
+{plex}
+```
+
+```groovy title="Películas"
+{n} ({y})/{n} ({y})
+```
+
+El editor muestra el resultado con un archivo de ejemplo mientras escribes.
+
+## Copiar, enlazar o mover
+
+El botón del engranaje junto a **Fetch Data** fija la **acción**: renombrar/mover (por defecto), copiar,
+keeplink (mover y dejar un enlace en el sitio original), symlink, hardlink o clone (macOS y Linux). El icono
+del botón **Rename** cambia con la acción, así que siempre sabes qué va a pasar.

@@ -1,0 +1,185 @@
+---
+title: Docker and NAS
+description: Run FileBot Pro without a desktop in a Docker container on a server or a NAS (Synology, QNAP, Unraid, TrueNAS) and rename new downloads automatically.
+---
+
+import { Steps, Tabs, TabItem } from '@astrojs/starlight/components'
+
+The Docker image runs the [command line](/reference/command-line/) without a desktop. By default it watches a
+folder and renames every new file into your media library, which makes it a good fit for a NAS or a home server
+next to your download client.
+
+| | |
+| --- | --- |
+| **Image** | `ghcr.io/davamudev/filebot-pro` |
+| **Architectures** | `linux/amd64` and `linux/arm64` (most Synology and QNAP models from the last years, Raspberry Pi 4 or later) |
+| **Included** | Java, MediaInfo, fpcalc, mkvpropedit, AtomicParsley and 7-Zip |
+
+## Folders
+
+| Container folder | Contents |
+| --- | --- |
+| `/input` | Folder that is watched, e.g. the completed downloads |
+| `/output` | Media library the renamed files are moved into |
+| `/data` | Settings, caches, rename history and logs. Keep it on a volume, so they survive updates |
+
+## Settings
+
+| Variable | Default | Meaning |
+| --- | --- | --- |
+| `PUID`, `PGID` | `1000` | User and group that own the new files and folders. Use the owner of your media folders (`id <user>` on the NAS) |
+| `UMASK` | `022` | Permissions of new files and folders (`002` makes them writable for the group) |
+| `FILEBOT_PRO_APIKEY_<NAME>` | | Your own [API keys](/reference/configuration/#api-keys), e.g. `FILEBOT_PRO_APIKEY_THEMOVIEDB` |
+
+## Run
+
+<Tabs>
+<TabItem label="Docker Compose">
+
+Save this as `docker-compose.yml` and start it with `docker compose up -d`:
+
+```yaml
+services:
+  filebot-pro:
+    image: ghcr.io/davamudev/filebot-pro:latest
+    container_name: filebot-pro
+    restart: unless-stopped
+    environment:
+      - PUID=1000
+      - PGID=1000
+    volumes:
+      - ./data:/data
+      - /volume1/downloads/complete:/input
+      - /volume1/media:/output
+```
+
+</TabItem>
+<TabItem label="docker run">
+
+```bash
+docker run -d --name filebot-pro --restart unless-stopped \
+  -e PUID=1000 -e PGID=1000 \
+  -v ./data:/data -v /volume1/downloads/complete:/input -v /volume1/media:/output \
+  ghcr.io/davamudev/filebot-pro:latest
+```
+
+</TabItem>
+</Tabs>
+
+Check the log with `docker logs -f filebot-pro`. Copy a file into the input folder: after a few seconds it is
+renamed and moved into the library with the [Plex naming scheme](/formats/examples/) (`Movies/Name (Year)/...` and
+`TV Shows/Name/Season 01/...`).
+
+## Other commands
+
+Everything after the image name replaces the default command, so the container runs any command-line operation:
+
+```bash
+# versions, native tools and data folder
+docker run --rm -v ./data:/data ghcr.io/davamudev/filebot-pro -script fn:sysinfo
+
+# process a folder once with fn:amc, with artwork and clean-up of left-behind files
+docker run --rm -e PUID=1000 -e PGID=1000 -v ./data:/data -v /volume1/downloads:/input -v /volume1/media:/output \
+  ghcr.io/davamudev/filebot-pro -script fn:amc /input --output /output --action move -non-strict \
+  --def artwork=y clean=y
+```
+
+To change the naming scheme or the watcher options, pass the whole watcher command. For example the Kodi naming
+scheme, artwork, NFO files and deleting the download folders that are left empty
+([`--apply`](/reference/command-line/)):
+
+```yaml
+    command: ["-script", "fn:watcher", "/input", "--output", "/output", "--format", "{kodi}",
+              "--action", "move", "-rename", "-non-strict", "--apply", "artwork", "nfo", "prune"]
+```
+
+:::caution[Network shares]
+The watcher reacts to file system events. Folders that the NAS or the host mounts from another machine (SMB or
+NFS) do not send them: add `"--def", "poll=60"` to scan the folder every 60 seconds instead.
+:::
+
+## Desktop app in the browser
+
+The `gui` image runs the full desktop app on a virtual screen and shows it in the browser, for a NAS or a server
+without a desktop. Open `http://<host>:5800` after starting it:
+
+```yaml
+services:
+  filebot-pro-gui:
+    image: ghcr.io/davamudev/filebot-pro:gui
+    container_name: filebot-pro-gui
+    restart: unless-stopped
+    ports:
+      - "5800:5800"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - VNC_PASSWORD=change-me   # required, asked by the browser
+    volumes:
+      - ./data:/data
+      - /volume1/media:/media
+```
+
+| Variable | Default | Meaning |
+| --- | --- | --- |
+| `VNC_PASSWORD` | | Password of the browser view. Required: the container refuses to start without it unless `VNC_ALLOW_NO_PASSWORD=true` (no authentication: only on a trusted network or behind an authenticating reverse proxy) |
+| `DISPLAY_WIDTH`, `DISPLAY_HEIGHT` | `1600`, `900` | Size of the virtual screen |
+
+The app starts again when you close its window. Settings, presets and history live in `/data`, like in the
+command-line image.
+
+## NAS
+
+<Tabs>
+<TabItem label="Synology">
+
+<Steps>
+
+1. Install **Container Manager** from the Package Center (DSM 7.2 or later; **Docker** on older versions).
+
+2. Create a folder for the settings, e.g. `/volume1/docker/filebot-pro`.
+
+3. In **Container Manager → Project → Create**, choose that folder, select **Create docker-compose.yml** and paste
+   the Compose file from above. Adjust the paths of `/input` and `/output` to your shared folders.
+
+4. Use the user ID and group ID of the user that owns the media folders: open **Control Panel → Terminal & SNMP**,
+   enable SSH, sign in and run `id <user>`.
+
+</Steps>
+
+FileBot Pro ignores the `@eaDir` thumbnail folders and the `#recycle` and `#snapshot` folders of Synology shares.
+
+**Without Docker**: the `FileBot-Pro-<version>-synology-x86_64.spk` (Intel and AMD models) or `-armv8.spk` (64-bit ARM
+models) package installs the command line with its own Java runtime, on DSM 7.0 or later. Install it from
+**Package Center → Manual Install**, then run `filebot-pro` over SSH or from the **Task Scheduler**, e.g.
+`filebot-pro -script fn:amc /volume1/downloads --output /volume1/media --action move -non-strict`. Settings and
+caches go to `~/.filebot-pro` of the user that runs it, or to the folder in the `FILEBOT_PRO_DATA` environment
+variable. MediaInfo is not part of DSM, so `{vf}` and other media properties stay empty.
+
+</TabItem>
+<TabItem label="Unraid">
+
+Add a container from **Docker → Add Container** with the repository `ghcr.io/davamudev/filebot-pro`, map `/data` to
+`/mnt/user/appdata/filebot-pro`, `/input` and `/output` to your shares, and set `PUID=99` and `PGID=100` (the
+`nobody:users` owner of Unraid shares).
+
+</TabItem>
+<TabItem label="TrueNAS / QNAP">
+
+Install it as a custom app (TrueNAS SCALE) or in **Container Station** (QNAP) with the Compose file from above, and
+map the folders to your datasets or shared folders.
+
+</TabItem>
+</Tabs>
+
+## Updating
+
+```bash
+docker compose pull && docker compose up -d
+```
+
+Settings, history and caches stay in `/data`.
+
+## Building the image
+
+To build the image yourself, see [building from source](/development/building/#docker-image).

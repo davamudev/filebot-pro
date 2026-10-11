@@ -1,0 +1,64 @@
+---
+title: Troubleshooting
+description: What to check when files are not detected, a source fails or a tool is missing.
+---
+
+import { Steps } from '@astrojs/starlight/components'
+
+## A file is not matched
+
+<Steps>
+
+1. **Is the source right?** Episodes need an episode source (TheTVDB, AniDB, TheMovieDB::TV, TVmaze) and movies
+   a movie source (TheMovieDB, OMDb).
+
+2. **Does the name contain the show or movie?** `Breaking.Bad.S02E03.mkv` works, `video_0123.mkv` does not.
+   Rename it by hand or force the name with `--q` on the command line.
+
+3. **Is the language right?** Some titles are only found in the language of the show.
+
+4. **Try the other match mode.** *Opportunistic* guesses more, *Strict* rejects doubtful matches.
+
+5. **Are the numbers in another order?** Anime and some shows use absolute or DVD order: change the
+   **Episode Order**.
+
+</Steps>
+
+## Common messages
+
+OMDb and photo locations need your own key. Without it, the message names the key and the file to put
+it in:
+
+```text
+OMDb API key is missing. Add omdb = YOUR_KEY to C:\Users\you\AppData\Roaming\FileBot Pro\api-keys.properties
+```
+
+Get a free key on the website of the service, add that line to the file and try again, or use another source such
+as TVmaze:
+
+```properties title="api-keys.properties"
+omdb = your-key
+```
+
+| Message | Cause and fix |
+| --- | --- |
+| *… API key is missing* | The source needs your own key: add it to `api-keys.properties` as the message says. See [API keys](/reference/configuration/#api-keys). |
+| *… rejected the request (HTTP 401)* | The key is wrong or expired. Check it on the website of the service. |
+| *Unable to load … native library mediainfo* | MediaInfo is not installed. See [native tools](/reference/configuration/#native-tools). |
+| *Failed to load 7z-JBinding* | The built-in 7-Zip does not work on this system. Install `7z` and use `-Ddev.davamu.filebotpro.archive.extractor=ShellExecutables`. |
+
+## Logs and diagnostics
+
+- Errors are written to `error.log` in the [user data folder](/reference/configuration/#user-data).
+- `Ctrl`+`Shift`+`Delete` clears cached data from the online sources.
+
+From a terminal:
+
+```bash
+filebot-pro -script fn:sysinfo   # versions, native tools and data folder
+filebot-pro -clear-cache         # clear cached data
+```
+
+:::caution
+Review logs before sharing them: they contain file paths and names of your media.
+:::
