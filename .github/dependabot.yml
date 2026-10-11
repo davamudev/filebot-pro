@@ -1,14 +1,27 @@
 version: 2
 updates:
+  # commit messages follow Conventional Commits (see CONTRIBUTING.md)
   - package-ecosystem: gradle
     directory: /
+    target-branch: develop
     schedule:
       interval: weekly
+    commit-message:
+      prefix: build
+      include: scope
   - package-ecosystem: github-actions
     directory: /
+    target-branch: develop
     schedule:
       interval: weekly
+    commit-message:
+      prefix: ci
+      include: scope
   - package-ecosystem: npm
     directory: /docs
+    target-branch: develop
     schedule:
       interval: weekly
+    commit-message:
+      prefix: docs
+      include: scope

@@ -12,12 +12,12 @@ import { Steps } from '@astrojs/starlight/components'
 1. **Add your files.** Open the **Rename** panel (`Ctrl`+`1`) and drag files or whole folders into
    **Original Files**, or use **Load**.
 
-2. **Fetch the data.** Click **Fetch Data** below **New Names** and pick a source: TheTVDB, AniDB,
-   TheMovieDB::TV or TVmaze for episodes, TheMovieDB or OMDb for movies, AcoustID or ID3 for music.
-   **Autodetect** decides for each file.
+2. **Fetch the data.** Click **Fetch Data** below **New Names** and pick a source: under **Episode Mode** TheTVDB,
+   AniDB, TheMovieDB::TV or TVmaze; under **Movie Mode** TheMovieDB or OMDb; under **Music Mode** AcoustID or ID3.
+   **Autodetect**, under **Smart Mode**, decides for each file.
 
 3. **Confirm the show.** When a name is ambiguous, FileBot Pro asks you to pick the right show or movie.
-   Select it and press **Select**; tick the checkbox to remember the choice.
+   Select it and press **Select**; tick the checkbox to remember the choice for next time.
 
 4. **Check the result.** Each original file sits next to its new name. Dimmed rows have no counterpart;
    remove them with `Delete` or line them up with the arrows and press **Match**.
@@ -26,6 +26,13 @@ import { Steps } from '@astrojs/starlight/components'
    [history](/tools/rename/#history), so it can be undone.
 
 </Steps>
+
+## What the result looks like
+
+| Original file | New name, with the format shown |
+| --- | --- |
+| `The.Office.US.S03E10.HDTV.mkv` | `The Office - S03E10 - A Benihana Christmas.mkv` with `{n} - {s00e00} - {t}` |
+| `Inception.2010.1080p.BluRay.mkv` | `Inception (2010)/Inception (2010).mkv` with `{n} ({y})/{n} ({y})` |
 
 ## Choose how files are named
 
@@ -45,5 +52,61 @@ The editor previews the result for a sample file while you type.
 ## Copy, link or move
 
 The gear button next to **Fetch Data** sets the **rename action**: rename/move (the default), copy, keeplink
-(move and leave a link behind), symlink, hardlink or clone (macOS and Linux). The icon of the **Rename**
+(move and leave a link behind), symlink, hardlink or clone (macOS and Linux only). The icon of the **Rename**
 button changes with the action, so you always know what is going to happen.
+
+## Common tasks
+
+### Rename a TV season
+
+<Steps>
+
+1. Drop the season folder (or its episode files) onto **Original Files**.
+
+2. Click **Fetch Data** and choose a source under **Episode Mode**, for example **TheTVDB**. Airdate suits most
+   series; check the **Episode Order** in **Fetch Data › Preferences** if the numbers do not line up.
+
+3. Select the show in the dialog and press **Select**.
+
+4. Check the **New Names** column. Right-click a wrong name for **Edit Match** to search again, or **Edit Name** to
+   type it yourself.
+
+5. Click **Rename**.
+
+</Steps>
+
+### Rename a movie
+
+<Steps>
+
+1. Drop the movie files or movie folders onto **Original Files**.
+
+2. Click **Fetch Data** and choose **TheMovieDB** under **Movie Mode**.
+
+3. Check the match. The file or folder name should contain the title and year, e.g. `Inception (2010)`. Right-click
+   a row and choose **Match …** to search again by title or id.
+
+4. Click **Rename**.
+
+</Steps>
+
+### Rename anime
+
+<Steps>
+
+1. Drop the anime files onto **Original Files**.
+
+2. Click **Fetch Data** and choose **AniDB** under **Episode Mode**. Anime is usually numbered in absolute order, so
+   set **Episode Order** to **Absolute** in **Fetch Data › Preferences**, or use the **Anime** preset from
+   [Presets to start with](/tools/rename/#presets-to-start-with).
+
+3. Use **Edit Match** on any row that matched the wrong series.
+
+4. Click **Rename**.
+
+</Steps>
+
+:::tip
+File names with the title and year, or with the season and episode (`S03E10`), are found much more reliably than
+names such as `video_0123.mkv`. See [troubleshooting](/help/troubleshooting/) when a file is not matched.
+:::

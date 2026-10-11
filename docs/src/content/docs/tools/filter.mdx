@@ -9,17 +9,34 @@ tree.
 | Tab | What it shows or does |
 | --- | --- |
 | **Archives** | Every archive (zip, rar, 7z, …) and its contents; **Extract All** unpacks them with 7-Zip |
-| **Types** | Files grouped by type: video, subtitles, audio, images, archives, … |
+| **Types** | Files grouped by type: episode, movie, movie folder, subtitles, audio, images, archives, … |
 | **Parts** | Splits the files into volumes of a size you choose (**Split every … MB**), for example to fit discs |
-| **Attributes** | The data FileBot Pro stored on each file when it was renamed. **Apply** downloads artwork, writes NFO files or `.url` shortcuts, converts subtitles to SRT, sets the release date (or the current date with **Touch**) as the last modified date, writes tags into mkv and mp4 files or adds Finder tags on macOS, for the selected rows (or all of them) |
+| **Attributes** | The data FileBot Pro stored on each file when it was renamed. **Apply** does the chosen actions for the selected rows (or all of them): artwork, cover, NFO, URL, Tags, SRT, Finder Tags, Touch, Chmod or Date (see below) |
 | **MediaInfo** | Video, audio and subtitle properties of every media file |
 
-Right click a file or folder in the tree to **Send to** another panel, **Reveal** it in your file manager or
-**Move to Trash**.
+Right click a file or folder in the tree to **Send to** another panel, **Reveal** it or **Reveal Folder** in your file
+manager, or **Move to Trash**.
 
 :::tip
 **MediaInfo** needs the MediaInfo library: see [native tools](/reference/configuration/#native-tools).
 :::
+
+## Attributes
+
+Tick the actions you want, then press **Apply**:
+
+| Action | What it does |
+| --- | --- |
+| Artwork | Downloads posters, backdrops and episode thumbnails |
+| Cover | Writes `cover.jpg` for each folder, reusing local posters before downloading one |
+| NFO | Writes `.nfo` files for Kodi, Plex, Emby and Jellyfin |
+| URL | Writes a `.url` shortcut to the movie or series page |
+| Tags | Writes title, series, season, episode and date into mkv (mkvpropedit) and mp4 (AtomicParsley) files, and attaches the cover |
+| SRT | Converts subtitle files to SubRip (`.srt`) with UTF-8 encoding |
+| Finder Tags | Adds Finder tags for the media type, video format and HDR (macOS) |
+| Touch | Sets the last modified date to now |
+| Chmod | Sets the file permissions to the default |
+| Date | Sets the last modified date to the release or air date |
 
 ## MediaInfo views
 

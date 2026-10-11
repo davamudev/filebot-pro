@@ -11,9 +11,9 @@ left is renamed to the row next to it on the right.
 | Button | Action |
 | --- | --- |
 | ↓ ↑ | Move the selected rows down or up to line them up with the new names |
-| ✕ | Remove the selected rows (`Delete`) |
-| **Load** | Add files or folders (also by drag and drop) |
-| Clear | Empty both lists |
+| ✕ | Remove the selected rows: **Exclude Selected Items** (`Delete`) |
+| **Load** | Add files or folders (also by drag and drop). Right-click for **Select Folders** or **Select Files** |
+| Clear All | Empty both lists |
 | History | Open the [rename history](#history) |
 | Presets | Apply or edit [presets](#presets) |
 
@@ -35,12 +35,15 @@ The same menu has **Edit Format** (the [format expression](/formats/syntax/) of 
 - **Language** of titles and names.
 - **Episode Order**: Airdate, Official, DVD, Absolute, AbsoluteAirdate, Digital, StoryArc or Production (with TheTVDB, Official is the Aired Order, Digital the Alternate Order, StoryArc the Alternate DVD Order and Production the Regional Order, and Airdate follows the default order of the series; with TheMovieDB, Digital, StoryArc and Production are episode groups. Series without that order use the default one).
 
-The gear button next to it holds the rename options:
+![The Preferences dialog: Match Mode, Language and Episode Order](/img/preferences-dark.png#small)
+
+The gear button next to it holds the **Rename Options**:
 
 - **Extension**: *Preserve* keeps the original extension, *Override* lets the format decide.
-- **Action**: Rename (move), Copy, Keeplink, Symlink, Hardlink or Clone (macOS and Linux only). Copy already makes a
-  copy-on-write clone where the file system supports it (APFS, Btrfs, XFS, ReFS / Dev Drive), so it's instant and
-  takes no extra space.
+- **Action**: Rename (move), Copy, Keeplink, Symlink, Hardlink or Clone (macOS and Linux only).
+  - *Copy* makes a full copy of each file.
+  - *Clone* uses copy-on-write where the file system supports it (APFS, Btrfs or XFS), so it is instant and takes no
+    extra space. Elsewhere it is a normal copy.
 
 When a series or movie can't be identified, FileBot Pro asks for its name. You can also type its id: `tt0133093`
 (IMDb) or the number of the series or movie in the selected source (e.g. `81189` for TheTVDB).
@@ -75,12 +78,13 @@ Right-click a new name for:
 - **Edit Name**: type the new name by hand. Suggestions (the current and the original name, the other new names
   and earlier input) appear as you type.
 - **Edit All Names …** (`Ctrl`+`Shift`+`N`): edit every new name at once (or only the selected ones, if you selected
-  several rows), one per line, with **Find** and **Replace** (plain text or regular expressions) for changes that
-  repeat in every name. With **Column Edit** (on when all names start the same way), a change within that common
-  start, such as the series name, applies to every name. Names you don't touch keep their match.
+  several rows), one per line. Use **Find** and **Replace** for changes that repeat in every name: plain text by
+  default, or regular expressions with **Regex**. With **Column Edit** (on when all names start the same way), a
+  change within that common start, such as the series name, applies to every name. Names you don't touch keep their
+  match.
 
 Right-click an original file to **Open** it, **Reveal** it in its folder, match only that file (**Match …**),
-**Rename** it on disk, store its match in its attributes (**Set Attributes**) or **Move** it **to Trash**.
+**Rename …** it on disk, store its match in its attributes (**Set Attributes**) or **Move to Trash**.
 
 Hover a new name to see the details of its match. Click the spinning indicator or press `Esc` to cancel
 **Fetch Data**.
@@ -95,12 +99,12 @@ they are and `F3` the data stored on earlier renames, without looking anything u
 
 ## Presets
 
-A preset stores a format, a source, a language, an episode order and a rename action under a name. Create
-them with **Presets** › **Edit Presets**, then apply them from the same menu or with the number keys `1` to
-`9`. Each preset can have its own **Shortcut**: a fixed number key, **None**, or **Automatic**, which gives it the
-next free number in alphabetical order. The **Presets** menu groups the presets by mode (episodes, movies, music,
-files, format only) and shows the key of each preset. Number keys never
-apply a preset while you type in a text field.
+A preset stores a format, a source, a language, an episode order, a match mode and a rename action under a name.
+It can also hold an **Input Folder** with an **Includes** filter and a **File Order**. Create presets with
+**Presets** › **Edit Presets**, then apply them from the same menu or with the number keys `1` to `9`. Each preset can
+have its own **Shortcut**: a fixed number key, **None**, or **Automatic**, which gives it the next free number in
+alphabetical order. The **Presets** menu groups the presets by mode (episodes, movies, music, files, format only)
+and shows the key of each preset. Number keys never apply a preset while you type in a text field.
 
 **File Order** sorts the files before matching: `name`, `path`, `date` (newest first), `size` (largest first),
 `resolution` (best video quality first) or an `{expression}` that gives each file a sort key, e.g. `{-bytes}`. It also
@@ -123,8 +127,8 @@ the values of the table and put your library folder in front of the expression (
 | Downloads · Copy | TheMovieDB::TV | Airdate | `{plex.id}` | Copy |
 
 `{plex.id}` and `{jellyfin.id}` add the TheTVDB or TheMovieDB id to the series or movie folder, so the media server
-never picks the wrong one. Use **Test** as the action first if you want to check the new names without touching
-the files, and see [Examples](/formats/examples/) for formats with quality tags (`[{vf} {hd} {acf}]`).
+never picks the wrong one. Check the **New Names** column before you press **Rename**: nothing changes on disk until
+then. See [Examples](/formats/examples/) for formats with quality tags (`[{vf} {hd} {acf}]`).
 
 ## Conflicts and validation
 
@@ -134,8 +138,9 @@ Before renaming, FileBot Pro checks the new names:
 - **Conflicts** (an existing file, two files with the same new name, a missing extension) are listed with the
   reason and the files involved: the source, the new name and folder, the file that would be overwritten, or which
   duplicate is renamed (the highest quality one) and which is skipped. **Override** moves the existing files to the
-  trash (or deletes them if there is no trash) and replaces them, **Skip** keeps the current names of the
-  conflicting files and renames all others. The dialog shows how many files will be skipped and renamed.
+  trash (or deletes them if there is no trash) and replaces them. **Continue** keeps the current names of the
+  conflicting files and renames all others; when files are skipped the button reads **Skip** with their number.
+  The dialog shows how many files will be skipped and renamed.
 
 ## History
 

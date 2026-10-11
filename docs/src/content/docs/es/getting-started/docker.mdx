@@ -12,7 +12,8 @@ doméstico junto al cliente de descargas.
 | | |
 | --- | --- |
 | **Imagen** | `ghcr.io/davamudev/filebot-pro` |
-| **Arquitecturas** | `linux/amd64` y `linux/arm64` (la mayoría de los Synology y QNAP de los últimos años, Raspberry Pi 4 o posterior) |
+| **Etiquetas** | `latest` o `1.0.0` para la línea de comandos, `gui` o `1.0.0-gui` para la aplicación de escritorio en el navegador |
+| **Arquitecturas** | `linux/amd64` y `linux/arm64` (NAS x86-64 y ARM de 64 bits, y placas de un solo chip) |
 | **Incluye** | Java, MediaInfo, fpcalc, mkvpropedit, AtomicParsley y 7-Zip |
 
 ## Carpetas
@@ -156,8 +157,8 @@ compartidas de Synology.
 (modelos ARM de 64 bits) instala la línea de comandos con su propio Java, en DSM 7.0 o posterior. Instálalo desde
 **Centro de paquetes → Instalación manual** y ejecuta `filebot-pro` por SSH o desde el **Programador de tareas**,
 p. ej. `filebot-pro -script fn:amc /volume1/downloads --output /volume1/media --action move -non-strict`. Los
-ajustes y la caché van a `~/.filebot-pro` del usuario que lo ejecuta, o a la carpeta de la variable de entorno
-`FILEBOT_PRO_DATA`. MediaInfo no forma parte de DSM, así que `{vf}` y las demás propiedades multimedia quedan vacías.
+ajustes y la caché van a `~/.filebot-pro` del usuario que lo ejecuta, o a la carpeta indicada en la variable de
+entorno `FILEBOT_PRO_DATA`. MediaInfo no forma parte de DSM, así que `{vf}` y las demás propiedades multimedia quedan vacías.
 
 </TabItem>
 <TabItem label="Unraid">

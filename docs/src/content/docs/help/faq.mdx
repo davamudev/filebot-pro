@@ -32,6 +32,17 @@ They have no counterpart in the other list. Check the name of the file, try anot
 They are read with MediaInfo. See [native tools](/reference/configuration/#native-tools) and check the result
 with `filebot-pro -script fn:sysinfo`.
 
+## Where are my settings, history and logs?
+
+In the [user data folder](/reference/configuration/#user-data):
+
+| System | Folder |
+| --- | --- |
+| Windows | `%APPDATA%\FileBot Pro` |
+| macOS | `~/Library/Application Support/FileBot Pro` |
+| Linux | `~/.filebot-pro` |
+| Docker | `/data` |
+
 ## Can it run from a USB stick?
 
 Yes. Use the portable build and add `-Dapplication.dir=$APPDIR/data` to its

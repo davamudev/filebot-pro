@@ -1,53 +1,137 @@
 ---
 title: Examples
-description: Ready-to-copy formats for TV shows, movies, anime and music.
+description: Ready-to-copy formats for TV shows, movies, anime and music, with the names they produce.
 ---
+
+Every example shows an original file name and the new name it produces. The extension is added automatically
+(in lowercase), so the formats leave it out. The results depend on the online data, so titles can differ.
 
 ## TV shows
 
-```groovy title="Plex or Jellyfin"
+### Plex, Jellyfin or Emby folders
+
+```groovy title="Plex-style folders by hand"
 TV Shows/{n}/Season {s.pad(2)}/{n} - {s00e00} - {t}
 ```
+
+Input `Breaking.Bad.S02E03.1080p.WEB-DL.mkv` gives `TV Shows/Breaking Bad/Season 02/Breaking Bad - S02E03 - Bit by a Dead Bee`.
+
+```groovy title="The same layout from the media server standard"
+{plex}
+```
+
+`{plex}` produces the same path without writing the folders yourself. `{jellyfin}` and `{emby}` produce the same
+layout with the year in the series folder, and `{plex.id}` adds the database id to the folder names when you need
+the server to find the right show.
+
+### Kodi
+
+```groovy title="Kodi, with the year and 2x03 numbering"
+{kodi}
+```
+
+Input `Breaking.Bad.S02E03.mkv` gives `TV Shows/Breaking Bad (2008)/Season 02/Breaking Bad - 2x03 - Bit by a Dead Bee`.
+
+### Year in the folder name
 
 ```groovy title="Year in the folder name"
 {n} ({y})/Season {s}/{n} - {s00e00} - {t}
 ```
 
-```groovy title="With quality"
-{n}/Season {s}/{n} - {s00e00} - {t} [{vf} {vc} {ac}]
+Input `Doctor.Who.S01E01.mkv` gives `Doctor Who (2005)/Season 1/Doctor Who (2005) - S01E01 - Rose`. The `{y}` is
+the year of the first episode, so the year stays the same for every season.
+
+### Quality in the file name
+
+```groovy title="With resolution and codec"
+{n}/Season {s}/{n} - {s00e00} - {t} [{vf} {vc}]
 ```
+
+Input `Breaking.Bad.S02E03.1080p.x265.mkv` gives `Breaking Bad/Season 2/Breaking Bad - S02E03 - Bit by a Dead Bee [1080p x265]`.
+`{vc}` is the encoder name when the file was made with it (`x265`, `x264`); otherwise it shows the codec.
+
+### Multi-episode files
+
+```groovy title="Two episodes in one file"
+{n} - {s00e00} - {t}
+```
+
+Input `Show.S01E01E02.mkv` gives `Show - S01E01-E02 - First Part & Second Part`. The range comes from `{s00e00}`
+and `{t}` joins the titles of all episodes. For the numbers only, use `{s00e00}` with `{e00}` (which gives `01-02`).
+
+### Conditional parts
+
+```groovy title="Add a part only when the file has it"
+{n} - {s00e00} - {t}{if (vk) ' [' + vk + ']'}
+```
+
+Input `Show.S01E01.2160p.mkv` gives `Show - S01E01 - Pilot [4K]`, and a 720p file gets no tag at all.
+`{if (…) …}` returns nothing when the condition is false, so the brackets and the text inside them are left out.
 
 ## Movies
 
-```groovy title="One folder per movie"
+### One folder per movie
+
+```groovy title="Movie folder with year"
 Movies/{n} ({y})/{n} ({y})
 ```
 
-```groovy title="Collections"
-Movies/{collection + '/'}{n} ({y})/{n} ({y})
+Input `the.matrix.1999.2160p.uhd.bluray.x265.mkv` gives `Movies/The Matrix (1999)/The Matrix (1999)`.
+
+```groovy title="Movie folder with the database id"
+Movies/{n} ({y}) {kodi.id}/{n} ({y})
 ```
 
-Movies that are not part of a collection simply skip that folder.
+With the id, `{kodi.id}` gives `Movies/The Matrix (1999) {tmdb=603}/The Matrix (1999)` (`{plex.id}` uses
+`{tmdb-603}` and `{jellyfin.id}` uses `[tmdbid-603]`).
 
-```groovy title="With edition and quality"
+### Collections
+
+```groovy title="Movies grouped by collection"
+Movies/{if (collection) collection + '/'}{n} ({y})/{n} ({y})
+```
+
+Input `The.Matrix.Reloaded.2003.1080p.mkv` gives `Movies/The Matrix Collection/The Matrix Reloaded (2003)/The Matrix Reloaded (2003)`.
+A movie that is not part of a collection has no `collection` value, so the `if` returns nothing and the folder is left out.
+
+### Edition and HDR
+
+```groovy title="With edition and HDR"
 {n} ({y}){' ' + tags.join(' ')} [{vf}{' ' + hdr}]
 ```
 
-```groovy title="Release style audio and definition"
+Input `Blade.Runner.1982.Extended.2160p.UHD.BluRay.HDR10.mkv` gives `Blade Runner (1982) Extended [2160p HDR10]`.
+`tags` holds the edition words found in the file name (such as `Extended` or `Unrated`). When the file has none, the
+space before them is left out too.
+
+### Audio and definition, release style
+
+```groovy title="Release-style audio and definition"
 Movies/{n} ({y})/{n} ({y}) [{hd} {vc} {acf}]
 ```
 
-For a 1080p HEVC movie with Dolby Digital Plus 5.1 audio this gives `The Matrix (1999) [FHD x265 DDP5.1]`.
+For a 1080p x265 movie with Dolby Digital Plus 5.1 audio this gives `The Matrix (1999) [FHD x265 DDP5.1]`.
+`{acf}` reads the audio codec and channel layout from the file itself, so it needs MediaInfo.
 
 ## Anime
 
-```groovy title="Absolute numbering"
+### Absolute numbering
+
+```groovy title="Absolute episode numbers"
 Anime/{n}/{n} - {absolute.pad(3)} - {t}
 ```
 
-```groovy title="Season numbering for AniDB"
+Input `[SubsPlease] One Piece - 1000 (1080p).mkv` gives `Anime/One Piece/One Piece - 1000 - <episode title>`.
+`{absolute}` is the number counted from the first episode, which is how most fansub releases number anime.
+
+### Season numbering from AniDB
+
+```groovy title="Season folders for AniDB matches"
 Anime/{n}/Season {seasonize.s}/{n} - {seasonize.s00e00} - {t}
 ```
+
+`{seasonize}` converts the AniDB absolute numbers into the season and episode numbers of TheTVDB, so the files
+end up in the same season folders that a media server expects.
 
 ## Music
 
@@ -55,11 +139,14 @@ Anime/{n}/Season {seasonize.s}/{n} - {seasonize.s00e00} - {t}
 Music/{albumArtist}/{album} ({y})/{pi.pad(2)} - {t}
 ```
 
+Input `05 Comfortably Numb.mp3` tagged as album *The Wall* by Pink Floyd (1979) gives
+`Music/Pink Floyd/The Wall (1979)/05 - Comfortably Numb`. `{pi}` is the track number from the tags.
+
 ## Subtitles next to their video
 
-```groovy
+```groovy title="Subtitle that follows its video"
 {n} - {s00e00} - {t}{subt}
 ```
 
-`{subt}` adds the language and the `forced` or `sdh` tag of the subtitle (`.eng.forced`), so players still
-recognize it.
+`{subt}` adds the language and the `forced` or `sdh` tag of the subtitle, so the player still finds it. A subtitle
+`Breaking.Bad.S02E03.eng.forced.srt` renamed next to its episode gives `Breaking Bad - S02E03 - Bit by a Dead Bee.eng.forced.srt`.

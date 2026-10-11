@@ -1,53 +1,138 @@
 ---
 title: Ejemplos
-description: Formatos listos para copiar para series, películas, anime y música.
+description: Formatos listos para copiar para series, películas, anime y música, con los nombres que producen.
 ---
+
+Cada ejemplo muestra el nombre del archivo original y el nombre nuevo que produce. La extensión se añade
+automáticamente (en minúsculas), por eso los formatos no la incluyen. Los resultados dependen de los datos en línea,
+así que los títulos pueden variar.
 
 ## Series
 
-```groovy title="Plex o Jellyfin"
+### Carpetas para Plex, Jellyfin o Emby
+
+```groovy title="Carpetas tipo Plex, escritas a mano"
 TV Shows/{n}/Season {s.pad(2)}/{n} - {s00e00} - {t}
 ```
+
+El archivo `Breaking.Bad.S02E03.1080p.WEB-DL.mkv` da `TV Shows/Breaking Bad/Season 02/Breaking Bad - S02E03 - Bit by a Dead Bee`.
+
+```groovy title="El mismo diseño según el estándar del servidor multimedia"
+{plex}
+```
+
+`{plex}` produce la misma ruta sin que tengas que escribir las carpetas. `{jellyfin}` y `{emby}` generan el mismo
+diseño con el año en la carpeta de la serie, y `{plex.id}` añade el id de la base de datos a los nombres de las
+carpetas cuando necesitas que el servidor encuentre la serie correcta.
+
+### Kodi
+
+```groovy title="Kodi, con el año y la numeración 2x03"
+{kodi}
+```
+
+El archivo `Breaking.Bad.S02E03.mkv` da `TV Shows/Breaking Bad (2008)/Season 02/Breaking Bad - 2x03 - Bit by a Dead Bee`.
+
+### Año en el nombre de la carpeta
 
 ```groovy title="Año en el nombre de la carpeta"
 {n} ({y})/Season {s}/{n} - {s00e00} - {t}
 ```
 
-```groovy title="Con calidad"
-{n}/Season {s}/{n} - {s00e00} - {t} [{vf} {vc} {ac}]
+El archivo `Doctor.Who.S01E01.mkv` da `Doctor Who (2005)/Season 1/Doctor Who (2005) - S01E01 - Rose`. `{y}` es el año
+del primer episodio, así que el año no cambia de una temporada a otra.
+
+### Calidad en el nombre del archivo
+
+```groovy title="Con resolución y códec"
+{n}/Season {s}/{n} - {s00e00} - {t} [{vf} {vc}]
 ```
+
+El archivo `Breaking.Bad.S02E03.1080p.x265.mkv` da `Breaking Bad/Season 2/Breaking Bad - S02E03 - Bit by a Dead Bee [1080p x265]`.
+`{vc}` es el nombre del codificador cuando el vídeo se hizo con él (`x265`, `x264`); en otro caso muestra el códec.
+
+### Archivos con varios episodios
+
+```groovy title="Dos episodios en un mismo archivo"
+{n} - {s00e00} - {t}
+```
+
+El archivo `Show.S01E01E02.mkv` da `Show - S01E01-E02 - First Part & Second Part`. El rango lo genera `{s00e00}`,
+y `{t}` une los títulos de todos los episodios. Si solo quieres los números, usa `{e00}` (que da `01-02`).
+
+### Partes condicionales
+
+```groovy title="Añadir una parte solo cuando el archivo la tiene"
+{n} - {s00e00} - {t}{if (vk) ' [' + vk + ']'}
+```
+
+El archivo `Show.S01E01.2160p.mkv` da `Show - S01E01 - Pilot [4K]`, y un archivo de 720p no recibe ninguna etiqueta.
+`{if (…) …}` no devuelve nada cuando la condición es falsa, así que los corchetes y su contenido desaparecen.
 
 ## Películas
 
-```groovy title="Una carpeta por película"
+### Una carpeta por película
+
+```groovy title="Carpeta de película con año"
 Movies/{n} ({y})/{n} ({y})
 ```
 
-```groovy title="Colecciones"
-Movies/{collection + '/'}{n} ({y})/{n} ({y})
+El archivo `the.matrix.1999.2160p.uhd.bluray.x265.mkv` da `Movies/The Matrix (1999)/The Matrix (1999)`.
+
+```groovy title="Carpeta de película con el id de la base de datos"
+Movies/{n} ({y}) {kodi.id}/{n} ({y})
 ```
 
-Las películas que no forman parte de una colección simplemente se saltan esa carpeta.
+Con el id, `{kodi.id}` da `Movies/The Matrix (1999) {tmdb=603}/The Matrix (1999)` (`{plex.id}` usa
+`{tmdb-603}` y `{jellyfin.id}` usa `[tmdbid-603]`).
 
-```groovy title="Con edición y calidad"
+### Colecciones
+
+```groovy title="Películas agrupadas por colección"
+Movies/{if (collection) collection + '/'}{n} ({y})/{n} ({y})
+```
+
+El archivo `The.Matrix.Reloaded.2003.1080p.mkv` da `Movies/The Matrix Collection/The Matrix Reloaded (2003)/The Matrix Reloaded (2003)`.
+Una película que no forma parte de una colección no tiene valor `collection`, así que el `if` no devuelve nada y se omite esa carpeta.
+
+### Edición y HDR
+
+```groovy title="Con edición y HDR"
 {n} ({y}){' ' + tags.join(' ')} [{vf}{' ' + hdr}]
 ```
+
+El archivo `Blade.Runner.1982.Extended.2160p.UHD.BluRay.HDR10.mkv` da `Blade Runner (1982) Extended [2160p HDR10]`.
+`tags` contiene las palabras de edición que aparecen en el nombre del archivo (como `Extended` o `Unrated`). Si el
+archivo no tiene ninguna, también se omite el espacio que las precede.
+
+### Audio y definición al estilo de las releases
 
 ```groovy title="Audio y definición al estilo de las releases"
 Movies/{n} ({y})/{n} ({y}) [{hd} {vc} {acf}]
 ```
 
-Para una película 1080p en HEVC con audio Dolby Digital Plus 5.1 da `The Matrix (1999) [FHD x265 DDP5.1]`.
+Para una película de 1080p en x265 con audio Dolby Digital Plus 5.1 da `The Matrix (1999) [FHD x265 DDP5.1]`.
+`{acf}` lee el códec y la disposición de canales del propio archivo, así que necesita MediaInfo.
 
 ## Anime
 
-```groovy title="Numeración absoluta"
+### Numeración absoluta
+
+```groovy title="Números de episodio absolutos"
 Anime/{n}/{n} - {absolute.pad(3)} - {t}
 ```
 
-```groovy title="Temporadas para AniDB"
+El archivo `[SubsPlease] One Piece - 1000 (1080p).mkv` da `Anime/One Piece/One Piece - 1000 - <título del episodio>`.
+`{absolute}` es el número contado desde el primer episodio, que es como numeran el anime la mayoría de las releases de fansubs.
+
+### Temporadas según AniDB
+
+```groovy title="Carpetas de temporada para coincidencias de AniDB"
 Anime/{n}/Season {seasonize.s}/{n} - {seasonize.s00e00} - {t}
 ```
+
+`{seasonize}` convierte los números absolutos de AniDB en la temporada y el episodio de TheTVDB, así los archivos
+acaban en las mismas carpetas de temporada que espera un servidor multimedia.
 
 ## Música
 
@@ -55,11 +140,14 @@ Anime/{n}/Season {seasonize.s}/{n} - {seasonize.s00e00} - {t}
 Music/{albumArtist}/{album} ({y})/{pi.pad(2)} - {t}
 ```
 
+El archivo `05 Comfortably Numb.mp3`, con las etiquetas del álbum *The Wall* de Pink Floyd (1979), da
+`Music/Pink Floyd/The Wall (1979)/05 - Comfortably Numb`. `{pi}` es el número de pista de las etiquetas.
+
 ## Subtítulos junto a su vídeo
 
-```groovy
+```groovy title="Subtítulo que sigue a su vídeo"
 {n} - {s00e00} - {t}{subt}
 ```
 
-`{subt}` añade el idioma y la etiqueta `forced` o `sdh` del subtítulo (`.eng.forced`), así los reproductores lo
-siguen reconociendo.
+`{subt}` añade el idioma y la etiqueta `forced` o `sdh` del subtítulo, así el reproductor lo sigue encontrando. El
+subtítulo `Breaking.Bad.S02E03.eng.forced.srt`, renombrado junto a su episodio, da `Breaking Bad - S02E03 - Bit by a Dead Bee.eng.forced.srt`.

@@ -30,8 +30,9 @@ All notable changes to FileBot Pro.
 ### Platform and build
 
 - The Windows installer (`.msi` / `.exe`) shows the FileBot Pro logo in its setup dialogs instead of the default WiX artwork.
-- Builds only embed the API keys of services that allow one key for all users (TheMovieDB, Fanart.tv, AcoustID, AniDB,
-  OpenSubtitles). TheTVDB, OMDb and Google Geocoding need your own key in `api-keys.properties` in the user data folder.
+- Builds only embed the API keys of services that allow one key for all users (TheMovieDB, TheTVDB, Fanart.tv,
+  AcoustID, AniDB, OpenSubtitles). OMDb and Google Geocoding need your own key in `api-keys.properties` in the user
+  data folder.
 - Linux packages (`.deb`, `.rpm`) install the `filebot-pro` command in `/usr/bin`, so the command line works right
   after `sudo apt install ./filebot-pro_*.deb` or `sudo dnf install ./filebot-pro-*.rpm`. The Linux portable folder
   has `bin/filebot-pro` too.
@@ -59,8 +60,8 @@ All notable changes to FileBot Pro.
 - The syntax page explains the format editor, with a screenshot.
 - The subtitles page mentions Shooter, used for Chinese subtitles.
 - New screenshots with the new logo.
-- The documentation is written for users: the online databases work without setup, and only TheTVDB, OMDb and
-  photo locations ask for your own key. Building from source, the embedded API keys and the documentation site
+- The documentation is written for users: the online databases work without setup, and only OMDb and photo
+  locations ask for your own key. Building from source, the embedded API keys and the documentation site
   moved to a new **Development** section.
 
 ### Fixes

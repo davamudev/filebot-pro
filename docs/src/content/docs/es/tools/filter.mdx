@@ -9,18 +9,35 @@ todo lo que haya en el árbol.
 | Pestaña | Qué muestra o hace |
 | --- | --- |
 | **Archives** | Cada archivo comprimido (zip, rar, 7z, …) y su contenido; **Extract All** los extrae con 7-Zip |
-| **Types** | Archivos agrupados por tipo: vídeo, subtítulos, audio, imágenes, comprimidos, … |
+| **Types** | Archivos agrupados por tipo: episodio, película, carpeta de película, subtítulos, audio, imágenes, comprimidos, … |
 | **Parts** | Reparte los archivos en volúmenes del tamaño que elijas (**Split every … MB**), por ejemplo para discos |
-| **Attributes** | Los datos que FileBot Pro guardó en cada archivo al renombrarlo. **Apply** descarga carátulas, escribe archivos NFO o accesos `.url`, convierte subtítulos a SRT, pone la fecha de estreno (o la actual con **Touch**) como fecha de modificación, escribe etiquetas dentro de los mkv y mp4 o añade etiquetas de Finder en macOS, en las filas seleccionadas (o en todas) |
+| **Attributes** | Los datos que FileBot Pro guardó en cada archivo al renombrarlo. **Apply** ejecuta las acciones marcadas en las filas seleccionadas (o en todas): carátulas, cover, NFO, URL, Tags, SRT, Finder Tags, Touch, Chmod o Date (ver abajo) |
 | **MediaInfo** | Propiedades de vídeo, audio y subtítulos de cada archivo multimedia |
 
 Haz clic derecho en un archivo o carpeta del árbol para enviarlo a otro panel (**Send to**), mostrarlo en tu
-explorador (**Reveal**) o llevarlo a la papelera (**Move to Trash**).
+explorador (**Reveal**, o **Reveal Folder** para la carpeta que lo contiene) o llevarlo a la papelera (**Move to Trash**).
 
 :::tip
 **MediaInfo** necesita la biblioteca MediaInfo: consulta
 [herramientas nativas](/es/reference/configuration/#herramientas-nativas).
 :::
+
+## Attributes
+
+Marca las acciones que quieras y pulsa **Apply**:
+
+| Acción | Qué hace |
+| --- | --- |
+| Artwork | Descarga pósteres, fondos y miniaturas de episodio |
+| Cover | Escribe `cover.jpg` en cada carpeta, reutilizando los pósteres locales antes de descargar uno |
+| NFO | Escribe archivos `.nfo` para Kodi, Plex, Emby y Jellyfin |
+| URL | Escribe un acceso `.url` a la página de la película o la serie |
+| Tags | Escribe título, serie, temporada, episodio y fecha dentro de los mkv (mkvpropedit) y mp4 (AtomicParsley), y adjunta la carátula |
+| SRT | Convierte los subtítulos a SubRip (`.srt`) con codificación UTF-8 |
+| Finder Tags | Añade etiquetas de Finder para el tipo de medio, el formato de vídeo y HDR (macOS) |
+| Touch | Pone la fecha de modificación en este momento |
+| Chmod | Pone los permisos por defecto del archivo |
+| Date | Pone la fecha de modificación a la fecha de estreno o emisión |
 
 ## Vistas de MediaInfo
 

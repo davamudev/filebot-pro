@@ -3,17 +3,19 @@ title: SFV
 description: Crea y comprueba archivos de sumas de verificación SFV, MD5 y SHA.
 ---
 
-## Comprobar
-
-Suelta un archivo de sumas (`.sfv`, `.md5`, `.sha1`, `.sha256`, `.sha3`) o una carpeta entera sobre la tabla.
-Cada archivo se calcula y se compara, y la columna **State** muestra el resultado de cada uno.
-
-Un CRC32 en el nombre de un archivo (por ejemplo `[A1B2C3D4]`) también se comprueba, así que una versión se
-puede verificar sin archivo de sumas.
+import { Steps } from '@astrojs/starlight/components'
 
 ## Crear
 
-Suelta los archivos que quieras proteger, elige el tipo de suma debajo de la tabla y pulsa **Save as ...**.
+<Steps>
+
+1. Suelta los archivos que quieras proteger (o una carpeta) sobre la tabla. Cada archivo se calcula en cuanto se añade.
+
+2. Elige el tipo de suma debajo de la tabla: **SFV**, **MD5**, **SHA1**, **SHA2** o **SHA3**.
+
+3. Pulsa **Save as ...** y elige dónde guardar el archivo.
+
+</Steps>
 
 | Botón | Algoritmo | Archivo |
 | --- | --- | --- |
@@ -29,3 +31,23 @@ los MD5 y SHA saltos de línea de Unix, como `md5sum`. Los archivos cuya suma a�
 un aviso.
 
 Cambiar el tipo de suma recalcula la tabla. **Clear** la vacía; `Supr` quita las filas seleccionadas.
+
+## Comprobar
+
+<Steps>
+
+1. Suelta un archivo de sumas (`.sfv`, `.md5`, `.sha1`, `.sha256` o `.sha3`) o la carpeta entera sobre la tabla. Los
+   archivos de suma se comprueban con los archivos que tienen al lado, y los demás archivos se calculan.
+
+2. Lee la columna **State** de cada archivo:
+
+   | Estado | Significado |
+   | --- | --- |
+   | OK | La suma coincide |
+   | WARNING | El CRC32 del nombre del archivo (p. ej. `[A1B2C3D4]`) no coincide con el archivo |
+   | ERROR | El archivo de sumas y el archivo no coinciden, o el archivo no se pudo leer |
+
+</Steps>
+
+Un CRC32 en el nombre de un archivo (por ejemplo `[A1B2C3D4]`) también se comprueba, así que una versión se
+puede verificar sin archivo de sumas.

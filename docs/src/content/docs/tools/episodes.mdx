@@ -3,6 +3,8 @@ title: Episodes
 description: Browse the episode list of any show and copy or export it.
 ---
 
+import { Steps } from '@astrojs/starlight/components'
+
 ## Search
 
 Pick a source with the button on the left of the search box (TheTVDB, AniDB, TheMovieDB::TV or TVmaze;
@@ -13,6 +15,19 @@ Pick a source with the button on the left of the search box (TheTVDB, AniDB, The
 | Season | **All Seasons** or a single season (`Shift`+`↑`/`↓`) |
 | Order | Airdate, Official, DVD, Absolute, AbsoluteAirdate, Digital, StoryArc or Production (with TheTVDB, Official is the Aired Order, Digital the Alternate Order, StoryArc the Alternate DVD Order and Production the Regional Order, and Airdate follows the default order of the series; with TheMovieDB, Digital, StoryArc and Production are episode groups. Series without that order use the default one) |
 | Language | Language of the episode titles |
+
+## Check a season before you rename
+
+<Steps>
+
+1. Search the series and pick the **Order** that matches your files: Airdate for most TV series, Absolute for anime.
+
+2. Pick the season, or **All Seasons**, and compare the numbers and titles with your files.
+
+3. Right-click the list and choose **Send to** › **Rename**. The episodes become new names in the Rename panel, where
+   you match your files to them.
+
+</Steps>
 
 ## Use the list
 

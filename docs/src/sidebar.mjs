@@ -92,11 +92,12 @@ export const sections = [
 		icon: 'cube',
 		kicker: { es: 'Código fuente', en: 'Source code' },
 		summary: {
-			es: 'Para quien quiere compilar FileBot Pro: instaladores, claves API incluidas y esta documentación.',
-			en: 'For people who compile FileBot Pro: installers, embedded API keys and this documentation.',
+			es: 'Para quien quiere compilar FileBot Pro o contribuir: instaladores, claves API incluidas, commits y esta documentación.',
+			en: 'For people who compile or contribute to FileBot Pro: installers, embedded API keys, commits and this documentation.',
 		},
 		items: [
 			{ label: { es: 'Compilar desde el código', en: 'Building from source' }, link: '/development/building/' },
+			{ label: { es: 'Contribuir', en: 'Contributing' }, link: '/development/contributing/' },
 		],
 	},
 ]

@@ -1,6 +1,6 @@
 ---
 title: Instalación
-description: Instala FileBot Pro en Windows, Ubuntu, Debian, Fedora o macOS, ábrelo y usa la línea de comandos.
+description: Instala FileBot Pro en Windows, Ubuntu, Debian, Fedora, macOS o un NAS Synology, ábrelo y usa la línea de comandos.
 ---
 
 import { Steps, Tabs, TabItem } from '@astrojs/starlight/components'
@@ -9,13 +9,34 @@ import { Steps, Tabs, TabItem } from '@astrojs/starlight/components'
 
 | | |
 | --- | --- |
-| **Sistema operativo** | Windows 10/11, Linux (Ubuntu, Debian, Fedora y otras) o macOS, de 64 bits |
+| **Sistema operativo** | Windows 10/11, Linux (Ubuntu, Debian, Fedora y otras), macOS, de 64 bits, o un NAS Synology con DSM 7.0 o posterior |
 | **Java** | Incluido en todas las descargas |
 | **Internet** | Para buscar películas, episodios, subtítulos e imágenes |
 
-## Instalar
+## Descargas
 
-Descarga el archivo de tu sistema desde la [página de versiones](https://github.com/davamudev/FileBot-Pro/releases).
+Descarga el archivo de tu sistema desde la [página de versiones](https://github.com/davamudev/filebot-pro/releases).
+Los ejemplos de esta página usan la versión `1.0.0`.
+
+| Sistema | Archivos |
+| --- | --- |
+| Windows (x64) | `FileBot-Pro-1.0.0.msi` (instalador) o `FileBot-Pro-1.0.0-windows-portable.zip` |
+| Windows (ARM) | `FileBot-Pro-1.0.0-windows-arm64-portable.zip` |
+| macOS, Apple Silicon | `FileBot-Pro-1.0.0-arm64.dmg` o `FileBot-Pro-1.0.0-macos-arm64-portable.zip` |
+| macOS, Intel | `FileBot-Pro-1.0.0-x64.dmg` o `FileBot-Pro-1.0.0-macos-x64-portable.zip` |
+| Ubuntu, Debian | `filebot-pro_1.0.0-1_amd64.deb` |
+| Fedora, openSUSE | `filebot-pro-1.0.0-1.x86_64.rpm` |
+| Otro Linux | `FileBot-Pro-1.0.0-linux-portable.zip` |
+| NAS Synology | `FileBot-Pro-1.0.0-synology-x86_64.spk` (Intel y AMD) o `FileBot-Pro-1.0.0-synology-armv8.spk` (ARM de 64 bits) |
+| Docker | `ghcr.io/davamudev/filebot-pro`, consulta [Docker y NAS](/es/getting-started/docker/) |
+
+Cada versión incluye también `SHA256SUMS.txt`. Para comprobar una descarga, compara su hash SHA-256 con la línea
+correspondiente de ese archivo: `sha256sum` en Linux, `shasum -a 256` en macOS, `certutil -hashfile <archivo> SHA256` en Windows.
+
+:::caution[Las versiones todavía no están firmadas]
+Windows y macOS avisan la primera vez que abres FileBot Pro. En Windows, SmartScreen muestra **Windows protegió su PC**:
+haz clic en **Más información** y después en **Ejecutar de todos modos**. En macOS, consulta la pestaña de macOS más abajo.
+:::
 
 <Tabs syncKey="os">
 <TabItem label="Windows">
@@ -32,10 +53,10 @@ Descarga el archivo de tu sistema desde la [página de versiones](https://github
 
 </Steps>
 
-**Instalador**: ejecuta `FileBot Pro-1.0.0.msi` y abre **FileBot Pro** desde el menú de inicio o el acceso
-directo del escritorio.
+**Instalador**: ejecuta `FileBot-Pro-1.0.0.msi` y abre **FileBot Pro** desde el menú de inicio o el acceso directo
+del escritorio.
 
-MediaInfo y fpcalc vienen incluidos en los dos.
+MediaInfo, fpcalc, mkvpropedit y AtomicParsley vienen incluidos en los dos.
 
 </TabItem>
 <TabItem label="Ubuntu / Debian">
@@ -48,8 +69,8 @@ MediaInfo y fpcalc vienen incluidos en los dos.
    sudo apt install ./filebot-pro_1.0.0-1_amd64.deb
    ```
 
-   `apt` instala también MediaInfo y fpcalc, los paquetes recomendados, así que las propiedades multimedia y el
-   reconocimiento de música funcionan desde el principio.
+   `apt` instala también los paquetes recomendados: MediaInfo, fpcalc (`chromaprint-tools`), mkvtoolnix y
+   AtomicParsley. Las propiedades multimedia, el reconocimiento de música y la escritura de metadatos funcionan desde el principio.
 
 2. Abre **FileBot Pro** desde el menú de aplicaciones o escribe `filebot-pro` en una terminal.
 
@@ -73,7 +94,8 @@ para bash. Funciona en Ubuntu 22.04 o posterior, Debian 12 o posterior y derivad
 
 </Steps>
 
-`dnf` instala también MediaInfo (`libmediainfo`) y fpcalc (`chromaprint-tools`) si están disponibles. El comando `filebot-pro` tiene autocompletado para bash.
+`dnf` instala también los paquetes recomendados si están disponibles: MediaInfo (`libmediainfo`), fpcalc
+(`chromaprint-tools`), mkvtoolnix y AtomicParsley. El comando `filebot-pro` tiene autocompletado para bash.
 
 </TabItem>
 <TabItem label="Otro Linux">
@@ -101,8 +123,8 @@ para bash. Funciona en Ubuntu 22.04 o posterior, Debian 12 o posterior y derivad
 
 <Steps>
 
-1. Abre `FileBot Pro-1.0.0-arm64.dmg` (Apple Silicon, M1 y posteriores) o `FileBot Pro-1.0.0-x64.dmg` (Intel) y
-   arrastra **FileBot Pro** a **Aplicaciones**.
+1. Abre `FileBot-Pro-1.0.0-arm64.dmg` (Apple Silicon, M1 y posteriores) o `FileBot-Pro-1.0.0-x64.dmg` (Intel) y
+   arrastra **FileBot Pro** a **Aplicaciones**. Los archivos `-macos-…-portable.zip` contienen la misma aplicación sin la imagen de disco.
 
 2. Las versiones todavía no están firmadas. Si macOS no deja abrir la aplicación la primera vez, ve a
    **Ajustes del Sistema → Privacidad y seguridad** y pulsa **Abrir igualmente**.
@@ -121,6 +143,8 @@ la aplicación predeterminada para ellos).
 </TabItem>
 </Tabs>
 
+En un NAS Synology, instala el paquete `.spk` o ejecuta la imagen Docker, consulta [Docker y NAS](/es/getting-started/docker/#nas).
+
 En Linux, los archivos de vídeo y subtítulos también muestran **FileBot Pro** en **Abrir con**, y la aplicación usa
 el diálogo de archivos de tu escritorio si está instalado `zenity` (GNOME y la mayoría) o `kdialog` (KDE).
 
@@ -132,7 +156,7 @@ En el primer arranque aparece la pantalla de bienvenida. Ciérrala o sigue el en
 ## Línea de comandos
 
 Todas las descargas incluyen el comando `filebot-pro` para scripts, servidores y automatización. Sin argumentos
-abre la aplicación de escritorio.
+abre la aplicación de escritorio; con argumentos ejecuta el comando y termina.
 
 | Sistema | Comando |
 | --- | --- |

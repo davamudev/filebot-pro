@@ -9,21 +9,47 @@ para cada sistema).
 
 ## Ejemplos
 
-```bash
-# previsualizar los nombres nuevos sin tocar los archivos
-filebot-pro -rename "/media/TV" --db TVmaze --action test --format "{n} - {s00e00} - {t}"
+Las carpetas no se recorren a menos que añadas `-r`: sin él solo se procesan los archivos que están directamente dentro de una carpeta.
 
-# renombrar películas dentro de una biblioteca
-filebot-pro -rename "/downloads" --db TheMovieDB --output "/media" --format "Movies/{n} ({y})/{n} ({y})"
+```bash
+# previsualizar los nombres nuevos de una carpeta de series sin cambiar nada (--action test)
+filebot-pro -rename "/media/TV" -r --db TVmaze --action test --format "{n}/Season {s}/{n} - {s00e00} - {t}"
+
+# mover una serie a una biblioteca de Plex, dejando que {plex} cree las carpetas
+filebot-pro -rename "/downloads/Breaking Bad" -r --db TheTVDB --output "/media" --format "{plex}"
+
+# películas con un formato propio, copiadas para que los originales se queden donde están
+filebot-pro -rename "/downloads/peliculas" -r --db TheMovieDB --action copy --output "/media" --format "Movies/{n} ({y})/{n} ({y})"
+
+# una carpeta por película: procesar las carpetas completas con -d
+filebot-pro -rename "/media/Movies" -d --db TheMovieDB --format "{n} ({y})"
+
+# enlaces duros: la biblioteca recibe los nombres nuevos y los originales siguen compartiéndose
+filebot-pro -rename "/downloads/seeding" -r --db TVmaze --action hardlink --output "/media/TV" --format "{plex}"
+
+# nombres desordenados: emparejado más agresivo con -non-strict
+filebot-pro -rename "/downloads/sin-clasificar" -r -non-strict --db TheMovieDB --format "Movies/{n} ({y})/{n} ({y})"
+
+# anime con numeración absoluta de AniDB
+filebot-pro -rename "/downloads/anime" -r --db AniDB --output "/media" --format "Anime/{n}/{n} - {absolute.pad(3)} - {t}"
+
+# forzar la serie o la película en lugar de buscarla
+filebot-pro -rename "/downloads/Firefly" -r --q "Firefly" --db TVmaze --format "{n} - {s00e00} - {t}"
 
 # listar los episodios de una serie
 filebot-pro -list --q "Firefly" --db TVmaze --format "{n} - {s00e00} - {t}"
 
-# comprobar sumas, extraer comprimidos, mostrar propiedades multimedia
+# descargar subtítulos en inglés para cada vídeo de una carpeta (--output define el formato del subtítulo)
+filebot-pro -get-subtitles "/media/TV" -r --lang en --output srt
+
+# sumas de comprobación, comprimidos y propiedades multimedia
 filebot-pro -check "/media/Movies"
+filebot-pro -mediainfo "/media/Movies" -r --format "{fn} {vf} {ac}"
 filebot-pro -find "/media" -r --file-filter "vf == '2160p'" -exec echo "{f}"
 filebot-pro -extract "/downloads/archive.rar" --output "/downloads"
-filebot-pro -mediainfo "/media/Movies" --format "{fn} {vf} {ac}"
+
+# deshacer el último renombrado
+filebot-pro -revert
 
 # ejecutar un script integrado
 filebot-pro -script fn:sysinfo
@@ -103,7 +129,7 @@ Los clientes de torrent pueden llamarlo al terminar una descarga. En qBittorrent
 programa externo al finalizar el torrent*:
 
 ```bash
-filebot-pro -script fn:amc --output "D:/Media" --action move -non-strict --lang es --log-file amc.log --def excludeList=amc.txt clean=y ut_dir="%F" ut_kind=multi ut_title="%N" ut_label="%L"
+filebot-pro -script fn:amc "%F" --output "D:/Media" --action move -non-strict --lang es --log-file amc.log --def excludeList=amc.txt clean=y ut_label="%L"
 ```
 
 ## Opciones

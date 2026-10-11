@@ -35,7 +35,7 @@
 
 ## Install
 
-Every download bundles its own Java runtime. Step-by-step instructions for each system are in the [installation guide](https://filebotpro.davamu.dev/getting-started/installation/).
+Download the packages from [GitHub releases](https://github.com/davamudev/filebot-pro/releases). Every download bundles its own Java runtime. Step-by-step instructions for each system are in the [installation guide](https://filebotpro.davamu.dev/getting-started/installation/).
 
 | System | Download | Install |
 |---|---|---|
@@ -102,7 +102,7 @@ On Windows, downloaded tools are bundled by the next `portableZip` / `jpackage`.
 Every build includes a `filebot-pro` command: `filebot-pro.exe` next to `FileBot Pro.exe` on Windows, `/usr/bin/filebot-pro` with the `.deb` / `.rpm` packages, `bin/filebot-pro` in the Linux portable folder and `FileBot Pro.app/Contents/MacOS/FileBot Pro` on macOS (from source: `./gradlew installDist`, then `build/install/filebot-pro/bin/filebot-pro`). Without arguments it opens the desktop app; on Linux it also runs without a desktop session, e.g. over SSH.
 
 ```bash
-filebot-pro -rename "/media/TV" --db TVmaze --action test --format "{n}/Season {s}/{n} - {s00e00} - {t}"
+filebot-pro -rename "/media/TV" -r --db TVmaze --action test --format "{n}/Season {s}/{n} - {s00e00} - {t}"
 filebot-pro -script fn:amc "/downloads/complete" --output "/media" --action move -non-strict
 filebot-pro -script fn:sysinfo
 ```
@@ -116,11 +116,15 @@ filebot-pro -script fn:sysinfo
 
 ## Roadmap
 
-Next up: release builds for every system attached to each GitHub release, an APT repository (`apt install filebot-pro`) and Windows Explorer integration. See [ROADMAP.md](ROADMAP.md). The Docker image is published to GHCR on every version tag.
+Next up: an APT repository (`apt install filebot-pro`) and Windows Explorer integration. See [ROADMAP.md](ROADMAP.md). Each version tag publishes the packages to GitHub releases and the Docker image to GHCR.
 
 ## Development
 
 Open the folder in IntelliJ IDEA as a Gradle project. Other useful tasks: `compileJava`, `generateIcons`, `updateData`, `bashCompletion`. The documentation site lives in [`docs/`](docs/README.md). See [CHANGELOG.md](CHANGELOG.md) for changes and [ROADMAP.md](ROADMAP.md) for planned work.
+
+## Contributing
+
+Open pull requests against `develop`. Commit messages and PR titles follow [Conventional Commits](https://www.conventionalcommits.org/). See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
 ## License
 

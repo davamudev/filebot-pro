@@ -9,7 +9,7 @@ página de [instalación](/es/getting-started/installation/).
 ## Requisitos
 
 - JDK 25 (Gradle descarga uno si falta).
-- El código fuente: `git clone https://github.com/davamudev/FileBot-Pro.git`
+- El código fuente: `git clone https://github.com/davamudev/filebot-pro.git`
 
 En Windows usa `gradlew.bat` en lugar de `./gradlew`.
 
@@ -28,7 +28,7 @@ en Linux, el `.dmg` y el `.pkg` en macOS. Las versiones de macOS incluyen el Jav
 que hay que compilar en un Mac con Apple Silicon para `arm64` y en uno con Intel para `x64`; el
 [workflow de versiones](#versiones) compila las dos.
 
-`./gradlew downloadNativeTools` descarga MediaInfo y fpcalc para Windows, para que los paquetes de Windows los
+`./gradlew downloadNativeTools` descarga MediaInfo, fpcalc, mkvpropedit y AtomicParsley para Windows, para que los paquetes de Windows los
 incluyan. En macOS y Linux vienen del gestor de paquetes del sistema. Compilados en Windows 11 arm64, los paquetes son
 para arm64 (con el MediaInfo de arm64; las herramientas de línea de comandos funcionan con la emulación x64).
 

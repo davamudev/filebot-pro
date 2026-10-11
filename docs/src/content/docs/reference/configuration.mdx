@@ -5,11 +5,12 @@ description: Optional API keys, native tools, the user data folder and start opt
 
 ## API keys
 
-The online databases work out of the box: FileBot Pro comes with the keys for TheMovieDB, TheTVDB, AniDB,
-fanart.tv, AcoustID and OpenSubtitles, and TVmaze and the local sources need none.
+The release builds embed the keys for TheMovieDB, TheTVDB, AniDB, fanart.tv, AcoustID and OpenSubtitles, so these
+work out of the box. TVmaze and the local sources need no key. A build made without a key reports that source as
+missing its key, and you can add one as described below. The key you add always takes precedence over the embedded one.
 
-Two optional sources tie their quota, licensing or billing to the person who uses them, so they need your own
-free key:
+Two sources tie their quota, licensing or billing to the person who uses them, so they are never embedded and need
+your own key:
 
 | Source | Key | Get one at |
 | --- | --- | --- |
@@ -125,7 +126,6 @@ JVM options such as `-Xmx4g` only take effect in the `.cfg` file or in the `JAVA
 | `-DuseMediaParser=false` | Disable the media parser, the same as `-no-probe` |
 | `-DuseLocalIndex=false` | Do not use the local media indices, the same as `-no-index` |
 | `-DuseGVFS=true` | Read dropped files from GVFS locations on Linux |
-| `-Ddev.davamu.filebotpro.media.parser=ffprobe` | Read media properties with `ffprobe` instead of `libmediainfo` (the default) |
 | `-Ddev.davamu.filebotpro.archive.7z=<path>` | Path to `7z` when the extractor is `ShellExecutables` |
 | `-Ddev.davamu.filebotpro.archive.unrar=<path>` | Path to `unrar` when the extractor is `ShellExecutables` |
 | `-Ddev.davamu.filebotpro.xattr.store=<folder>` | Keep extended attributes in a folder (default `.xattr`) instead of on the files |

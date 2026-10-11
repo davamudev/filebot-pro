@@ -1,0 +1,41 @@
+# Pull request titles and commit messages must follow Conventional Commits (see CONTRIBUTING.md)
+name: Commits
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  conventional-commits:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+
+      - name: Check
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          pattern='^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\([a-z0-9._/-]+\))?!?: [^ ].*$'
+          failed=0
+          if ! printf '%s\n' "$TITLE" | grep -Eq "$pattern"; then
+            echo "::error::Pull request title is not a Conventional Commit: $TITLE"
+            failed=1
+          fi
+          while IFS= read -r line; do
+            sha=${line%% *}; subject=${line#* }
+            if ! printf '%s\n' "$subject" | grep -Eq "$pattern"; then
+              echo "::error::Commit ${sha:0:7} is not a Conventional Commit: $subject"
+              failed=1
+            fi
+          done < <(git log --no-merges --format='%H %s' "$BASE..$HEAD")
+          if [ "$failed" = 1 ]; then
+            echo "Expected '<type>(<scope>): <description>' with type feat, fix, docs, style, refactor, perf, test, build, ci, chore or revert. See CONTRIBUTING.md."
+            exit 1
+          fi

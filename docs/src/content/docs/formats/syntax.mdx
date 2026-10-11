@@ -61,7 +61,8 @@ Common methods:
 | `sortName()`, `sortInitial()` | drop a leading *The*, *A* or *An* (`Simpsons`), first letter (`S`) |
 | `acronym()`, `initialName()` | `BB`, `B. Bad` |
 | `replaceAll(pattern, text)`, `removeAll(pattern)` | regular expressions |
-| `match(pattern)`, `findMatch(pattern)` | extract part of a value |
+| `match(pattern)` | extract the part of a value that matches the pattern |
+| `findMatch(pattern)` | `true` or `false`: whether the value matches, for use in `{if …}` |
 | `truncate(n)` | shorten to `n` characters |
 | `before(pattern)`, `after(pattern)` | cut a value |
 | `roman()` | Roman numerals |

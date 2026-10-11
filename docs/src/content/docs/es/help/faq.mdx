@@ -33,6 +33,17 @@ No tienen pareja en la otra lista. Revisa el nombre del archivo, prueba otra fue
 Se leen con MediaInfo. Consulta [herramientas nativas](/es/reference/configuration/#herramientas-nativas) y
 comprueba el resultado con `filebot-pro -script fn:sysinfo`.
 
+## ¿Dónde están mis ajustes, mi historial y los logs?
+
+En la [carpeta de datos](/es/reference/configuration/#datos-de-usuario):
+
+| Sistema | Carpeta |
+| --- | --- |
+| Windows | `%APPDATA%\FileBot Pro` |
+| macOS | `~/Library/Application Support/FileBot Pro` |
+| Linux | `~/.filebot-pro` |
+| Docker | `/data` |
+
 ## ¿Funciona desde un USB?
 
 Sí. Usa la versión portable y añade `-Dapplication.dir=$APPDIR/data` a sus

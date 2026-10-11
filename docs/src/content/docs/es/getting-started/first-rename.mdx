@@ -12,12 +12,12 @@ import { Steps } from '@astrojs/starlight/components'
 1. **Añade tus archivos.** Abre el panel **Rename** (`Ctrl`+`1`) y arrastra archivos o carpetas enteras a
    **Original Files**, o usa **Load**.
 
-2. **Busca los datos.** Pulsa **Fetch Data** debajo de **New Names** y elige una fuente: TheTVDB, AniDB,
-   TheMovieDB::TV o TVmaze para episodios, TheMovieDB u OMDb para películas, AcoustID o ID3 para música.
-   **Autodetect** decide por cada archivo.
+2. **Busca los datos.** Pulsa **Fetch Data** debajo de **New Names** y elige una fuente: en **Episode Mode**
+   TheTVDB, AniDB, TheMovieDB::TV o TVmaze; en **Movie Mode** TheMovieDB u OMDb; en **Music Mode** AcoustID o ID3.
+   **Autodetect**, en **Smart Mode**, decide por cada archivo.
 
 3. **Confirma la serie.** Si un nombre es ambiguo, FileBot Pro te pide elegir la serie o película correcta.
-   Selecciónala y pulsa **Select**; marca la casilla para recordar la elección.
+   Selecciónala y pulsa **Select**; marca la casilla para recordar la elección la próxima vez.
 
 4. **Revisa el resultado.** Cada archivo original queda junto a su nombre nuevo. Las filas atenuadas no tienen
    pareja: quítalas con `Supr` o colócalas con las flechas y pulsa **Match**.
@@ -26,6 +26,13 @@ import { Steps } from '@astrojs/starlight/components'
    [historial](/es/tools/rename/#historial), así que se puede deshacer.
 
 </Steps>
+
+## Así queda el resultado
+
+| Archivo original | Nombre nuevo, con el formato indicado |
+| --- | --- |
+| `The.Office.US.S03E10.HDTV.mkv` | `The Office - S03E10 - A Benihana Christmas.mkv` con `{n} - {s00e00} - {t}` |
+| `Inception.2010.1080p.BluRay.mkv` | `Inception (2010)/Inception (2010).mkv` con `{n} ({y})/{n} ({y})` |
 
 ## Elige cómo se nombran los archivos
 
@@ -45,5 +52,61 @@ El editor muestra el resultado con un archivo de ejemplo mientras escribes.
 ## Copiar, enlazar o mover
 
 El botón del engranaje junto a **Fetch Data** fija la **acción**: renombrar/mover (por defecto), copiar,
-keeplink (mover y dejar un enlace en el sitio original), symlink, hardlink o clone (macOS y Linux). El icono
+keeplink (mover y dejar un enlace en el sitio original), symlink, hardlink o clone (solo macOS y Linux). El icono
 del botón **Rename** cambia con la acción, así que siempre sabes qué va a pasar.
+
+## Tareas habituales
+
+### Renombrar una temporada
+
+<Steps>
+
+1. Arrastra la carpeta de la temporada (o sus archivos de episodio) a **Original Files**.
+
+2. Pulsa **Fetch Data** y elige una fuente en **Episode Mode**, por ejemplo **TheTVDB**. Airdate encaja con la
+   mayoría de las series; revisa el **Episode Order** en **Fetch Data › Preferences** si los números no cuadran.
+
+3. Selecciona la serie en el diálogo y pulsa **Select**.
+
+4. Revisa la columna **New Names**. Con clic derecho sobre un nombre incorrecto, **Edit Match** lo busca de nuevo y
+   **Edit Name** te deja escribirlo tú.
+
+5. Pulsa **Rename**.
+
+</Steps>
+
+### Renombrar una película
+
+<Steps>
+
+1. Arrastra los archivos o las carpetas de películas a **Original Files**.
+
+2. Pulsa **Fetch Data** y elige **TheMovieDB** en **Movie Mode**.
+
+3. Revisa la coincidencia. El nombre del archivo o de la carpeta debe contener el título y el año, p. ej.
+   `Inception (2010)`. Con clic derecho sobre una fila, elige **Match …** para buscar de nuevo por título o id.
+
+4. Pulsa **Rename**.
+
+</Steps>
+
+### Renombrar anime
+
+<Steps>
+
+1. Arrastra los archivos de anime a **Original Files**.
+
+2. Pulsa **Fetch Data** y elige **AniDB** en **Episode Mode**. El anime suele numerarse en orden absoluto, así que
+   pon **Episode Order** en **Absolute** en **Fetch Data › Preferences**, o usa el preset **Anime** de
+   [Presets para empezar](/es/tools/rename/#presets-para-empezar).
+
+3. Usa **Edit Match** en las filas que hayan coincidido con una serie equivocada.
+
+4. Pulsa **Rename**.
+
+</Steps>
+
+:::tip
+Los nombres con el título y el año, o con la temporada y el episodio (`S03E10`), se encuentran mucho mejor que
+nombres como `video_0123.mkv`. Consulta el [diagnóstico](/es/help/troubleshooting/) si un archivo no se empareja.
+:::

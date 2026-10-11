@@ -3,6 +3,8 @@ title: Episodios
 description: Consulta la lista de episodios de cualquier serie y cópiala o expórtala.
 ---
 
+import { Steps } from '@astrojs/starlight/components'
+
 ## Buscar
 
 Elige una fuente con el botón de la izquierda del buscador (TheTVDB, AniDB, TheMovieDB::TV o TVmaze;
@@ -13,6 +15,19 @@ Elige una fuente con el botón de la izquierda del buscador (TheTVDB, AniDB, The
 | Temporada | **All Seasons** o una temporada concreta (`Mayús`+`↑`/`↓`) |
 | Orden | Airdate, Official, DVD, Absolute, AbsoluteAirdate, Digital, StoryArc o Production (con TheTVDB, Official es el Aired Order, Digital el Alternate Order, StoryArc el Alternate DVD Order y Production el Regional Order, y Airdate sigue el orden por defecto de la serie; con TheMovieDB, Digital, StoryArc y Production son grupos de episodios. Las series sin ese orden usan el orden por defecto) |
 | Idioma | Idioma de los títulos de los episodios |
+
+## Revisar una temporada antes de renombrar
+
+<Steps>
+
+1. Busca la serie y elige el **Orden** que coincida con tus archivos: Airdate para la mayoría de series, Absolute para el anime.
+
+2. Elige la temporada, o **All Seasons**, y compara los números y los títulos con tus archivos.
+
+3. Haz clic derecho en la lista y elige **Send to** › **Rename**. Los episodios pasan a ser nombres nuevos en el panel
+   Rename, donde emparejas tus archivos con ellos.
+
+</Steps>
 
 ## Usar la lista
 

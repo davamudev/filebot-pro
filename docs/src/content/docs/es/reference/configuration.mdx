@@ -5,11 +5,13 @@ description: Claves API opcionales, herramientas nativas, la carpeta de datos y 
 
 ## Claves API
 
-Las bases de datos en línea funcionan sin configurar nada: FileBot Pro incluye las claves de TheMovieDB, TheTVDB,
-AniDB, fanart.tv, AcoustID y OpenSubtitles, y TVmaze y las fuentes locales no necesitan ninguna.
+Las versiones publicadas incluyen las claves de TheMovieDB, TheTVDB, AniDB, fanart.tv, AcoustID y OpenSubtitles, así que
+estas fuentes funcionan sin configurar nada. TVmaze y las fuentes locales no necesitan clave. Una compilación hecha sin
+clave indica que a esa fuente le falta, y puedes añadir la tuya como se explica más abajo. La clave que añadas siempre
+tiene prioridad sobre la incluida.
 
-Dos fuentes opcionales vinculan su cuota, licencia o facturación a quien las usa, así que necesitan tu propia clave
-gratuita:
+Dos fuentes vinculan su cuota, licencia o facturación a quien las usa, así que nunca se incluyen y necesitan tu propia
+clave:
 
 | Fuente | Clave | Dónde conseguirla |
 | --- | --- | --- |
@@ -130,7 +132,6 @@ de Synology no).
 | `-DuseMediaParser=false` | Desactiva el analizador multimedia, igual que `-no-probe` |
 | `-DuseLocalIndex=false` | No usa los índices multimedia locales, igual que `-no-index` |
 | `-DuseGVFS=true` | Lee los archivos arrastrados desde ubicaciones GVFS en Linux |
-| `-Ddev.davamu.filebotpro.media.parser=ffprobe` | Lee las propiedades multimedia con `ffprobe` en lugar de `libmediainfo` (por defecto) |
 | `-Ddev.davamu.filebotpro.archive.7z=<ruta>` | Ruta de `7z` cuando el extractor es `ShellExecutables` |
 | `-Ddev.davamu.filebotpro.archive.unrar=<ruta>` | Ruta de `unrar` cuando el extractor es `ShellExecutables` |
 | `-Ddev.davamu.filebotpro.xattr.store=<carpeta>` | Guarda los atributos extendidos en una carpeta (por defecto `.xattr`) en lugar de en los archivos |

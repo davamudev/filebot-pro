@@ -1,0 +1,70 @@
+---
+title: Contribuir
+description: Ramas, Conventional Commits y qué revisar antes de abrir una pull request.
+---
+
+Los avisos de errores, las ideas y las pull requests son bienvenidos en [GitHub](https://github.com/davamudev/filebot-pro).
+Las mismas reglas están en [`CONTRIBUTING.md`](https://github.com/davamudev/filebot-pro/blob/develop/CONTRIBUTING.md).
+
+## Ramas
+
+- `develop` es la rama por defecto: abre todas las pull requests contra `develop`.
+- `master` contiene el código publicado. Solo recibe merges de `develop`, y cada versión es una etiqueta `vX.Y.Z` en
+  `master` (consulta [Versiones](/es/development/building/#versiones)).
+
+## Conventional Commits
+
+Todos los commits, y el título de cada pull request, deben seguir
+[Conventional Commits 1.0.0](https://www.conventionalcommits.org/es/v1.0.0/):
+
+```text
+<tipo>(<ámbito opcional>)<! opcional>: <descripción>
+
+[cuerpo opcional]
+
+[pie(s) opcional(es)]
+```
+
+| Tipo | Para qué |
+| --- | --- |
+| `feat` | Una función nueva para los usuarios |
+| `fix` | Una corrección de un error |
+| `docs` | Solo documentación (`docs/`, README, …) |
+| `style` | Formato que no cambia el comportamiento |
+| `refactor` | Cambios de código que ni corrigen un error ni añaden una función |
+| `perf` | Mejoras de rendimiento |
+| `test` | Pruebas |
+| `build` | Sistema de compilación, paquetes o dependencias (`build.gradle.kts`, `packaging/`, `Dockerfile`) |
+| `ci` | Workflows de GitHub |
+| `chore` | Cualquier otra cosa que no toque la aplicación (herramientas, mantenimiento) |
+| `revert` | Deshace un commit anterior |
+
+- La descripción va en inglés, en imperativo y en minúsculas, sin punto final.
+- El ámbito es opcional e indica la zona: `rename`, `episodes`, `subtitles`, `sfv`, `filter`, `list`, `cli`,
+  `format`, `web`, `ui`, `docs`, `docker`, `synology`, …
+- Los cambios incompatibles añaden `!` tras el tipo o el ámbito y un pie `BREAKING CHANGE:` que explica qué cambia para
+  los usuarios.
+- Un cambio lógico por commit.
+
+```text
+feat(subtitles): download subtitles for every selected file at once
+fix(cli): respect --action test when the output folder does not exist
+docs: add Plex folder examples to the formats page
+build(deps): bump groovy to 4.0.28
+ci: build the Linux packages in the release workflow
+feat(format)!: rename the {vf} binding to {resolution}
+
+BREAKING CHANGE: format expressions that use {vf} must use {resolution}.
+```
+
+El workflow `Commits` (`.github/workflows/commits.yml`) revisa el título de la pull request y cada uno de sus commits,
+y falla si alguno no sigue el patrón. Las actualizaciones de Dependabot usan el mismo formato (`build(deps): …`,
+`ci(deps): …`).
+
+## Antes de abrir una pull request
+
+- `./gradlew compileJava` termina sin errores (no hay batería de pruebas).
+- Los cambios visibles para los usuarios están en `CHANGELOG.md` y, si procede, en esta documentación en los dos
+  idiomas (`docs/src/content/docs/` y `docs/src/content/docs/es/`).
+- Sigue `.editorconfig` (tabuladores en Java, 4 espacios en el resto) y nunca subas `api-keys.properties`.
+- Las dependencias nuevas deben tener una licencia compatible con GPL-3.0.

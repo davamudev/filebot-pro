@@ -3,17 +3,19 @@ title: SFV
 description: Create and verify SFV, MD5 and SHA checksum files.
 ---
 
-## Verify
-
-Drop a checksum file (`.sfv`, `.md5`, `.sha1`, `.sha256`, `.sha3`) or a whole folder onto the table. Every file
-is hashed and compared, and the **State** column shows the result for each one.
-
-A CRC32 in a file name (for example `[A1B2C3D4]`) is checked too, so a release can be verified without a
-checksum file.
+import { Steps } from '@astrojs/starlight/components'
 
 ## Create
 
-Drop the files to protect, choose the hash type below the table and click **Save as ...**.
+<Steps>
+
+1. Drop the files to protect (or a folder) onto the table. Each file is hashed as soon as it is added.
+
+2. Choose the hash type below the table: **SFV**, **MD5**, **SHA1**, **SHA2** or **SHA3**.
+
+3. Click **Save as ...** and choose where to save the file.
+
+</Steps>
 
 | Toggle | Algorithm | File |
 | --- | --- | --- |
@@ -28,3 +30,23 @@ another drive keep their full path). SFV files use Windows line endings, MD5 and
 like `md5sum`. Files whose hash is still being calculated are left out, with a warning.
 
 Changing the hash type recalculates the table. **Clear** empties it; `Delete` removes the selected rows.
+
+## Verify
+
+<Steps>
+
+1. Drop a checksum file (`.sfv`, `.md5`, `.sha1`, `.sha256` or `.sha3`) or the whole folder onto the table. Checksum
+   files are verified against the files next to them, and every other file is hashed.
+
+2. Read the **State** column for each file:
+
+   | State | Meaning |
+   | --- | --- |
+   | OK | The hash matches |
+   | WARNING | The CRC32 in the file name (e.g. `[A1B2C3D4]`) does not match the file |
+   | ERROR | The checksum file and the file disagree, or the file could not be read |
+
+</Steps>
+
+A CRC32 in a file name (for example `[A1B2C3D4]`) is checked too, so a release can be verified without a
+checksum file.

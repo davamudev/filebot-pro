@@ -9,7 +9,7 @@ This page is for people who want to compile FileBot Pro themselves. To use the a
 ## Requirements
 
 - JDK 25 (Gradle downloads one if missing).
-- The source code: `git clone https://github.com/davamudev/FileBot-Pro.git`
+- The source code: `git clone https://github.com/davamudev/filebot-pro.git`
 
 On Windows use `gradlew.bat` instead of `./gradlew`.
 
@@ -27,8 +27,8 @@ Installers can only be built on their own system: the `.exe` and `.msi` on Windo
 the `.dmg` and `.pkg` on macOS. The macOS builds bundle the Java runtime of the build JDK, so build on an Apple Silicon
 Mac for `arm64` and on an Intel Mac for `x64`; the [release workflow](#releases) builds both.
 
-`./gradlew downloadNativeTools` downloads MediaInfo and fpcalc for Windows, so that the Windows packages include
-them. On macOS and Linux they come from the system package manager. Built on Windows 11 arm64, the packages are for
+`./gradlew downloadNativeTools` downloads MediaInfo, fpcalc, mkvpropedit and AtomicParsley for Windows, so that the
+Windows packages include them. On macOS and Linux they come from the system package manager. Built on Windows 11 arm64, the packages are for
 arm64 (with the arm64 MediaInfo; the command-line tools run through x64 emulation).
 
 The [start options](/reference/configuration/#start-options) of a build from `installDist` go in the

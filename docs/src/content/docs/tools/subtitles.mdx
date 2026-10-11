@@ -3,17 +3,22 @@ title: Subtitles
 description: Find subtitles by name or for your video files, and share your own.
 ---
 
+import { Steps } from '@astrojs/starlight/components'
+
 :::note
 Subtitles come from OpenSubtitles and work without any setup.
 :::
+
+![The Subtitles panel in dark mode: search field, language, Find and the download drop target](/img/subtitles-dark.png)
 
 ## Search by name
 
 Type a movie or show, pick a language (or **All Languages**) and press **Find**.
 
 1. Double click a subtitle package (or press `Enter`) to download it.
-2. Its files appear below. Double click one to preview it.
-3. Right click a file to **Save As...** or **Export...** it.
+2. Its files appear below. Double click one (or press `Enter`) to preview it.
+3. Right click a file to **Preview**, **Save As...** or **Export...** it. **Export...** writes SubRip (`.srt`) files in
+   UTF-8 to a folder you choose.
 
 Without an account you can download 5 subtitles per day. **Login** signs in with your
 [OpenSubtitles.com](https://www.opensubtitles.com) account to download more: 20 per day with a free account, up to
@@ -21,10 +26,19 @@ Without an account you can download 5 subtitles per day. **Login** signs in with
 
 ## Subtitles for your videos
 
-Drop video files or folders onto the **download** button at the top right of the panel, or click it to
-select a folder. FileBot Pro computes a hash of each video, finds subtitles made for that exact release and
-shows them in a dialog where you pick the ones to save next to the videos. For Chinese subtitles it also
-searches Shooter (射手网), which needs no key.
+<Steps>
+
+1. Drop the video files or folders onto the **download** button at the top right of the panel, or click it to
+   select a folder.
+
+2. FileBot Pro computes a hash of each video and searches for subtitles made for that exact release. The search
+   needs the complete video: a partial download or a re-encoded copy finds nothing, so use the search by name instead.
+
+3. In the dialog, pick the subtitles to save next to the videos.
+
+</Steps>
+
+For Chinese subtitles it also searches Shooter (射手网), which needs no key.
 
 :::note
 The OpenSubtitles.com API does not support uploading subtitles. Upload them on

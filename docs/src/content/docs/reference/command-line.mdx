@@ -9,21 +9,47 @@ for every system).
 
 ## Examples
 
-```bash
-# preview new names without touching the files
-filebot-pro -rename "/media/TV" --db TVmaze --action test --format "{n} - {s00e00} - {t}"
+Folders are not searched unless you add `-r`: without it only the files directly inside a folder are processed.
 
-# rename movies into a library
-filebot-pro -rename "/downloads" --db TheMovieDB --output "/media" --format "Movies/{n} ({y})/{n} ({y})"
+```bash
+# preview the new names of a TV folder without changing anything (--action test)
+filebot-pro -rename "/media/TV" -r --db TVmaze --action test --format "{n}/Season {s}/{n} - {s00e00} - {t}"
+
+# move a TV show into a Plex library, letting {plex} create the folders
+filebot-pro -rename "/downloads/Breaking Bad" -r --db TheTVDB --output "/media" --format "{plex}"
+
+# movies with a custom format, copied so the originals stay where they are
+filebot-pro -rename "/downloads/movies" -r --db TheMovieDB --action copy --output "/media" --format "Movies/{n} ({y})/{n} ({y})"
+
+# one folder per movie: process the folders as a whole with -d
+filebot-pro -rename "/media/Movies" -d --db TheMovieDB --format "{n} ({y})"
+
+# hard links: the library gets the new names and the originals keep seeding
+filebot-pro -rename "/downloads/seeding" -r --db TVmaze --action hardlink --output "/media/TV" --format "{plex}"
+
+# messy file names: more aggressive matching with -non-strict
+filebot-pro -rename "/downloads/unsorted" -r -non-strict --db TheMovieDB --format "Movies/{n} ({y})/{n} ({y})"
+
+# anime with absolute numbering from AniDB
+filebot-pro -rename "/downloads/anime" -r --db AniDB --output "/media" --format "Anime/{n}/{n} - {absolute.pad(3)} - {t}"
+
+# force the series or movie instead of searching
+filebot-pro -rename "/downloads/Firefly" -r --q "Firefly" --db TVmaze --format "{n} - {s00e00} - {t}"
 
 # list the episodes of a show
 filebot-pro -list --q "Firefly" --db TVmaze --format "{n} - {s00e00} - {t}"
 
-# verify checksums, extract archives, print media properties
+# download English subtitles for every video in a folder (--output sets the subtitle format)
+filebot-pro -get-subtitles "/media/TV" -r --lang en --output srt
+
+# checksums, archives and media properties
 filebot-pro -check "/media/Movies"
+filebot-pro -mediainfo "/media/Movies" -r --format "{fn} {vf} {ac}"
 filebot-pro -find "/media" -r --file-filter "vf == '2160p'" -exec echo "{f}"
 filebot-pro -extract "/downloads/archive.rar" --output "/downloads"
-filebot-pro -mediainfo "/media/Movies" --format "{fn} {vf} {ac}"
+
+# undo the most recent rename
+filebot-pro -revert
 
 # run a built-in script
 filebot-pro -script fn:sysinfo
@@ -102,7 +128,7 @@ Torrent clients can call it when a download finishes. For qBittorrent, *Options 
 on torrent finished*:
 
 ```bash
-filebot-pro -script fn:amc --output "D:/Media" --action move -non-strict --lang en --log-file amc.log --def excludeList=amc.txt clean=y ut_dir="%F" ut_kind=multi ut_title="%N" ut_label="%L"
+filebot-pro -script fn:amc "%F" --output "D:/Media" --action move -non-strict --lang en --log-file amc.log --def excludeList=amc.txt clean=y ut_label="%L"
 ```
 
 ## Options
