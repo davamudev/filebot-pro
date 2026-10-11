@@ -10,7 +10,8 @@
 </p>
 
 <p align="center">
-  <img alt="Version" src="https://img.shields.io/badge/version-1.0.0-F97316?style=flat-square">
+  <a href="https://github.com/davamudev/filebot-pro/actions/workflows/build.yml"><img alt="Build" src="https://img.shields.io/github/actions/workflow/status/davamudev/filebot-pro/build.yml?branch=develop&style=flat-square&label=build"></a>
+  <a href="https://github.com/davamudev/filebot-pro/releases/latest"><img alt="Release" src="https://img.shields.io/github/v/release/davamudev/filebot-pro?style=flat-square&color=F97316"></a>
   <img alt="Java" src="https://img.shields.io/badge/Java-25-E76F00?style=flat-square&logo=openjdk&logoColor=white">
   <img alt="Gradle" src="https://img.shields.io/badge/Gradle-9.8-02303A?style=flat-square&logo=gradle&logoColor=white">
   <img alt="UI" src="https://img.shields.io/badge/UI-FlatLaf%203.7-4B5563?style=flat-square">
