@@ -709,6 +709,22 @@ header.header {
 
 /* ---------- 7. Custom pieces --------------------------------------------- */
 
+/* Promo video on the home page. */
+.w-video {
+	margin: 0 0 var(--w-space-8);
+}
+
+.w-video video {
+	display: block;
+	inline-size: 100%;
+	block-size: auto;
+	aspect-ratio: 16 / 9;
+	border: 1px solid var(--w-border);
+	border-radius: var(--w-radius-lg);
+	background: var(--w-neutral-950);
+	box-shadow: var(--w-shadow-float);
+}
+
 .w-grid {
 	display: grid;
 	gap: var(--w-space-4);

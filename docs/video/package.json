@@ -1,0 +1,27 @@
+{
+    "name": "filebot-pro-promo",
+    "private": true,
+    "description": "Promotional video for FileBot Pro (English and Spanish), built with Remotion",
+    "scripts": {
+        "music": "python scripts/music.py",
+        "studio": "remotion studio",
+        "render:en": "remotion render promo-en ../public/video/filebot-pro-en.mp4",
+        "render:es": "remotion render promo-es ../public/video/filebot-pro-es.mp4",
+        "render:posters": "remotion still promo-en-720p ../public/video/filebot-pro-en.jpg --frame=250 --image-format=jpeg --jpeg-quality=85 && remotion still promo-es-720p ../public/video/filebot-pro-es.jpg --frame=250 --image-format=jpeg --jpeg-quality=85",
+        "render:720p": "remotion render promo-en-720p out/filebot-pro-promo-en-720p.mp4 --crf=20 --audio-bitrate=128k && remotion render promo-es-720p out/filebot-pro-promo-es-720p.mp4 --crf=20 --audio-bitrate=128k",
+        "render": "npm run music && npm run render:en && npm run render:es && npm run render:posters"
+    },
+    "dependencies": {
+        "@remotion/cli": "4.0.534",
+        "@remotion/google-fonts": "4.0.534",
+        "@remotion/transitions": "4.0.534",
+        "lucide-react": "0.468.0",
+        "react": "19.0.0",
+        "react-dom": "19.0.0",
+        "remotion": "4.0.534"
+    },
+    "devDependencies": {
+        "@types/react": "19.0.2",
+        "typescript": "5.7.2"
+    }
+}

@@ -1,0 +1,17 @@
+{
+    "fps": 30,
+    "transition": 15,
+    "scenes": {
+        "chaos": 159,
+        "logo": 135,
+        "free": 150,
+        "demo": 315,
+        "databases": 120,
+        "examples": 285,
+        "format": 255,
+        "features": 255,
+        "cli": 225,
+        "platforms": 123,
+        "cta": 210
+    }
+}

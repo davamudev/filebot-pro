@@ -1,0 +1,25 @@
+---
+/**
+ * Promo video for the home page, in the language of the page. The videos and
+ * posters in public/video are rendered by the Remotion project in docs/video
+ * (npm run render there). preload="none": nothing is downloaded until play is pressed.
+ */
+import { langOf } from '../sidebar.mjs'
+
+const lang = langOf(Astro.locals.starlightRoute.locale)
+const label = lang === 'es' ? 'Vídeo de presentación de FileBot Pro' : 'FileBot Pro introduction video'
+---
+
+<figure class="w-video not-content">
+	<video
+		controls
+		playsinline
+		preload="none"
+		width="1920"
+		height="1080"
+		poster={`/video/filebot-pro-${lang}.jpg`}
+		aria-label={label}
+	>
+		<source src={`/video/filebot-pro-${lang}.mp4`} type="video/mp4" />
+	</video>
+</figure>
