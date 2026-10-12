@@ -809,9 +809,30 @@ header.header {
 	color: var(--sl-color-gray-3);
 }
 
-.w-footer__meta {
-	font-family: var(--sl-font-mono);
-	font-size: 0.75rem;
+.w-footer__social {
+	display: flex;
+	gap: var(--w-space-4);
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.w-footer__social li {
+	margin: 0;
+}
+
+.w-footer__social a {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.375rem;
+	color: var(--sl-color-gray-3);
+	text-decoration: none;
+	transition: color 0.15s ease;
+}
+
+.w-footer__social a:hover,
+.w-footer__social a:focus-visible {
+	color: var(--sl-color-text-accent);
 }
 
 /* ---------- 8. Responsive ------------------------------------------------ */

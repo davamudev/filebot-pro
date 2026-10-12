@@ -40,8 +40,11 @@ export default defineConfig({
       },
       logo: { src: './src/assets/logo.png', replacesTitle: false },
       favicon: '/favicon.svg',
+      social: [
+        { icon: 'github', label: 'GitHub', href: 'https://github.com/davamudev/filebot-pro' },
+        { icon: 'reddit', label: 'Reddit', href: 'https://www.reddit.com/r/filebotpro/' },
+      ],
       editLink: undefined,
-      lastUpdated: true,
       pagination: true,
       tableOfContents: { minHeadingLevel: 2, maxHeadingLevel: 3 },
       customCss: [

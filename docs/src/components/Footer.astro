@@ -1,12 +1,17 @@
 ---
-/** Page footer: Starlight's pagination plus our own metadata line. */
-import LastUpdated from 'virtual:starlight/components/LastUpdated'
+/** Page footer: Starlight's pagination plus our own line with the project links. */
+import { Icon } from '@astrojs/starlight/components'
 import Pagination from 'virtual:starlight/components/Pagination'
 // The image viewer hangs off the footer because it is the only override that
 // Starlight renders on every content page, and exactly once.
 import Lightbox from './Lightbox.astro'
 
 const year = new Date().getFullYear()
+
+const links = [
+	{ label: 'GitHub', icon: 'github', href: 'https://github.com/davamudev/filebot-pro' },
+	{ label: 'Reddit', icon: 'reddit', href: 'https://www.reddit.com/r/filebotpro/' },
+] as const
 ---
 
 <footer class="sl-flex w-page-footer">
@@ -14,9 +19,18 @@ const year = new Date().getFullYear()
 
 	<div class="w-footer">
 		<span>FileBot Pro · {year}</span>
-		<span class="w-footer__meta">
-			<LastUpdated />
-		</span>
+		<ul class="w-footer__social">
+			{
+				links.map(({ label, icon, href }) => (
+					<li>
+						<a href={href} rel="me noopener" target="_blank" title={label}>
+							<Icon name={icon} size="1.125rem" />
+							<span>{label}</span>
+						</a>
+					</li>
+				))
+			}
+		</ul>
 	</div>
 </footer>
 
