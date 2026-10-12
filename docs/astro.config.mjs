@@ -43,6 +43,7 @@ export default defineConfig({
       social: [
         { icon: 'github', label: 'GitHub', href: 'https://github.com/davamudev/filebot-pro' },
         { icon: 'reddit', label: 'Reddit', href: 'https://www.reddit.com/r/filebotpro/' },
+        { icon: 'email', label: 'Email', href: 'mailto:filebotpro@davamu.dev' },
       ],
       editLink: undefined,
       pagination: true,

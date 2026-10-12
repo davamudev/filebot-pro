@@ -811,7 +811,8 @@ header.header {
 
 .w-footer__social {
 	display: flex;
-	gap: var(--w-space-4);
+	flex-wrap: wrap;
+	gap: var(--w-space-2) var(--w-space-4);
 	margin: 0;
 	padding: 0;
 	list-style: none;

@@ -11,6 +11,7 @@ const year = new Date().getFullYear()
 const links = [
 	{ label: 'GitHub', icon: 'github', href: 'https://github.com/davamudev/filebot-pro' },
 	{ label: 'Reddit', icon: 'reddit', href: 'https://www.reddit.com/r/filebotpro/' },
+	{ label: 'filebotpro@davamu.dev', icon: 'email', href: 'mailto:filebotpro@davamu.dev' },
 ] as const
 ---
 
@@ -23,7 +24,11 @@ const links = [
 			{
 				links.map(({ label, icon, href }) => (
 					<li>
-						<a href={href} rel="me noopener" target="_blank" title={label}>
+						<a
+							href={href}
+							{...(href.startsWith('mailto:') ? {} : { rel: 'me noopener', target: '_blank' })}
+							title={label}
+						>
 							<Icon name={icon} size="1.125rem" />
 							<span>{label}</span>
 						</a>
