@@ -9,6 +9,7 @@
         "render:es": "remotion render promo-es ../public/video/filebot-pro-es.mp4",
         "render:posters": "remotion still promo-en-720p ../public/video/filebot-pro-en.jpg --frame=250 --image-format=jpeg --jpeg-quality=85 && remotion still promo-es-720p ../public/video/filebot-pro-es.jpg --frame=250 --image-format=jpeg --jpeg-quality=85",
         "render:720p": "remotion render promo-en-720p out/filebot-pro-promo-en-720p.mp4 --crf=20 --audio-bitrate=128k && remotion render promo-es-720p out/filebot-pro-promo-es-720p.mp4 --crf=20 --audio-bitrate=128k",
+        "render:banner": "remotion still reddit-banner ../assets/reddit-banner.png --scale=2",
         "render": "npm run music && npm run render:en && npm run render:es && npm run render:posters"
     },
     "dependencies": {

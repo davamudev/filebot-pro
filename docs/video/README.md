@@ -8,6 +8,7 @@ recreations of the app's dark theme with the same files and results as the scree
 npm install
 npm run render       # music, then ../public/video/filebot-pro-{en,es}.mp4 (1080p) and their posters (.jpg)
 npm run render:720p  # out/filebot-pro-promo-{en,es}-720p.mp4, under 10 MB for a GitHub README attachment
+npm run render:banner  # ../assets/reddit-banner.png, banner of r/filebotpro (1072x128 at 2x)
 npm run studio       # live preview and editing in the browser
 ```
 

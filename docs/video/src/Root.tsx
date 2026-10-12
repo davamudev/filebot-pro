@@ -1,7 +1,8 @@
 import React from 'react';
-import {AbsoluteFill, Composition} from 'remotion';
+import {AbsoluteFill, Composition, Still} from 'remotion';
 import {Promo, TOTAL_FRAMES} from './Promo';
 import {Lang} from './i18n';
+import {RedditBanner} from './RedditBanner';
 import timeline from './timeline.json';
 
 // The video is laid out at 1920x1080; the 720p version scales it down (small enough for a GitHub README, max 10 MB)
@@ -37,5 +38,6 @@ export const Root: React.FC = () => (
 				/>
 			</React.Fragment>
 		))}
+		<Still id="reddit-banner" component={RedditBanner} width={1072} height={128}/>
 	</>
 );
