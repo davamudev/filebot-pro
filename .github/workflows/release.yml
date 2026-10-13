@@ -1,7 +1,8 @@
 # Release pipeline, started by a version tag (v1.2.3) that must point to a commit of master and match app.version in
 # gradle.properties. Builds every package with the API keys of the repository secret API_KEYS (contents of
-# api-keys.properties, embedded at build time and never committed), publishes the Docker images to GHCR and attaches
-# all packages and their SHA-256 checksums to the GitHub release. The builds are not signed.
+# api-keys.properties, embedded at build time and never committed), publishes the Docker images to GHCR (and to Docker
+# Hub when the repository variable DOCKERHUB_USERNAME and the secret DOCKERHUB_TOKEN are set) and attaches all packages
+# and their SHA-256 checksums to the GitHub release. The builds are not signed.
 #
 #   git checkout master && git tag v1.2.3 && git push origin v1.2.3
 name: Release
@@ -206,7 +207,8 @@ jobs:
           path: dist/*
           if-no-files-found: error
 
-  # headless and gui images for linux/amd64 and linux/arm64: ghcr.io/<owner>/filebot-pro:1.2.3, :latest, :1.2.3-gui, :gui
+  # headless and gui images for linux/amd64 and linux/arm64: ghcr.io/<owner>/filebot-pro:1.2.3, :latest, :1.2.3-gui, :gui,
+  # also pushed as <DOCKERHUB_USERNAME>/filebot-pro when that repository variable is set
   docker:
     needs: verify
     runs-on: ubuntu-latest
@@ -229,10 +231,27 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - if: vars.DOCKERHUB_USERNAME != ''
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - id: images
+        env:
+          DOCKERHUB_USERNAME: ${{ vars.DOCKERHUB_USERNAME }}
+        run: |
+          {
+            echo 'list<<EOF'
+            echo "ghcr.io/$GITHUB_REPOSITORY_OWNER/filebot-pro"
+            if [ -n "$DOCKERHUB_USERNAME" ]; then echo "docker.io/$DOCKERHUB_USERNAME/filebot-pro"; fi
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+
       - id: meta
         uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5
         with:
-          images: ghcr.io/${{ github.repository_owner }}/filebot-pro
+          images: ${{ steps.images.outputs.list }}
           tags: |
             type=semver,pattern={{version}}
             type=raw,value=latest
@@ -258,7 +277,7 @@ jobs:
       - id: meta-gui
         uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5
         with:
-          images: ghcr.io/${{ github.repository_owner }}/filebot-pro
+          images: ${{ steps.images.outputs.list }}
           tags: |
             type=semver,pattern={{version}},suffix=-gui
             type=raw,value=gui

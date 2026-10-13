@@ -8,6 +8,7 @@ All notable changes to FileBot Pro.
 
 - Introduction video (English and Spanish) on the home page of the documentation.
 - Links to GitHub and the r/filebotpro subreddit in the documentation header and footer; the footer no longer shows the last updated date.
+- Docker images are also published to Docker Hub as `davamudev/filebot-pro` (same tags as GHCR: `latest`, `gui` and one per version).
 
 ### Changed
 
