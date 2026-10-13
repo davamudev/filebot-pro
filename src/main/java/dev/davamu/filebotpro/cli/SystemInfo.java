@@ -3,12 +3,9 @@ package dev.davamu.filebotpro.cli;
 import static dev.davamu.filebotpro.Execute.*;
 import static dev.davamu.filebotpro.Settings.*;
 import static dev.davamu.filebotpro.util.FileUtilities.*;
-import static dev.davamu.filebotpro.util.XPathUtilities.*;
-import static java.util.stream.Collectors.*;
 
 import java.io.File;
 import java.lang.reflect.Method;
-import java.net.URL;
 import java.nio.file.FileStore;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -23,14 +20,12 @@ import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.w3c.dom.Document;
 
 import com.sun.jna.Native;
 import com.sun.jna.Platform;
 
 import dev.davamu.filebotpro.ApplicationFolder;
-import dev.davamu.filebotpro.Cache;
-import dev.davamu.filebotpro.CacheType;
+import dev.davamu.filebotpro.UpdateCheck;
 import dev.davamu.filebotpro.WebServices;
 import dev.davamu.filebotpro.archive.Archive;
 import dev.davamu.filebotpro.archive.SevenZipLoader;
@@ -86,12 +81,16 @@ public final class SystemInfo {
 		out.accept("Package: " + getApplicationDeployment().toUpperCase());
 
 		// this application's own release feed (disabled when update.url is empty)
-		if (!getApplicationProperty("update.url").isEmpty()) {
+		if (UpdateCheck.isAvailable()) {
 			try {
-				String update = getAvailableUpdate();
-				if (update != null) {
+				UpdateCheck.Update update = UpdateCheck.getLatest();
+				if (UpdateCheck.isNewer(update)) {
 					out.accept("");
-					out.accept(String.format(" UPDATE AVAILABLE: %s ", update));
+					out.accept(String.format(" UPDATE AVAILABLE: %s (r%d) ", update.title(), update.revision()));
+					out.accept(" " + update.download());
+					if (!UpdateCheck.getInstructions().isEmpty()) {
+						out.accept(" " + UpdateCheck.getInstructions());
+					}
 				}
 			} catch (Exception e) {
 				out.accept("Update check failed: " + e);
@@ -183,15 +182,6 @@ public final class SystemInfo {
 			}
 		}
 		return stores.isEmpty() ? "NONE" : String.join(" | ", stores);
-	}
-
-	private static String getAvailableUpdate() throws Exception {
-		Cache cache = Cache.getCache(getApplicationName(), CacheType.Persistent);
-		Document dom = cache.xml(getApplicationProperty("update.url"), URL::new).expire(Cache.ONE_DAY).retry(0).get();
-		Map<String, String> update = streamElements(dom.getFirstChild()).collect(toMap(n -> n.getNodeName(), n -> n.getTextContent().trim(), (a, b) -> a));
-
-		int latest = Integer.parseInt(update.get("revision"));
-		return latest > getApplicationRevisionNumber() ? String.format("%s (r%d)", update.get("title"), latest) : null;
 	}
 
 	private SystemInfo() {

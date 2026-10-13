@@ -11,10 +11,14 @@ doméstico junto al cliente de descargas.
 
 | | |
 | --- | --- |
-| **Imagen** | `ghcr.io/davamudev/filebot-pro` |
+| **Imagen** | `ghcr.io/davamudev/filebot-pro`, también en Docker Hub como `davamudev/filebot-pro` (mismas etiquetas) |
 | **Etiquetas** | `latest` o `1.0.0` para la línea de comandos, `gui` o `1.0.0-gui` para la aplicación de escritorio en el navegador |
 | **Arquitecturas** | `linux/amd64` y `linux/arm64` (NAS x86-64 y ARM de 64 bits, y placas de un solo chip) |
 | **Incluye** | Java, MediaInfo, fpcalc, mkvpropedit, AtomicParsley y 7-Zip |
+
+Los ejemplos usan GHCR, que no limita las descargas. Para descargar de Docker Hub, escribe `davamudev/filebot-pro`
+donde pone `ghcr.io/davamudev/filebot-pro`; algunas aplicaciones de NAS (Container Manager de Synology, Unraid) buscan
+en Docker Hub por defecto.
 
 ## Carpetas
 
@@ -183,6 +187,9 @@ docker compose pull && docker compose up -d
 ```
 
 Los ajustes, el historial y las cachés se quedan en `/data`.
+
+Cuando sale una versión nueva, el log del contenedor lo indica (como mucho una vez al día). Para desactivar el aviso,
+añade `application.update=skip` a `/data/system.properties`.
 
 ## Construir la imagen
 

@@ -65,13 +65,14 @@ export const sections = [
 		icon: 'book',
 		kicker: { es: 'Consulta', en: 'Lookup' },
 		summary: {
-			es: 'Línea de comandos, claves API opcionales, herramientas nativas, carpetas de datos y atajos de teclado.',
-			en: 'Command line, optional API keys, native tools, data folders and keyboard shortcuts.',
+			es: 'Línea de comandos, claves API opcionales, herramientas nativas, carpetas de datos, atajos de teclado y notas de versión.',
+			en: 'Command line, optional API keys, native tools, data folders, keyboard shortcuts and release notes.',
 		},
 		items: [
 			{ label: { es: 'Línea de comandos', en: 'Command line' }, link: '/reference/command-line/' },
 			{ label: { es: 'Configuración', en: 'Configuration' }, link: '/reference/configuration/' },
 			{ label: { es: 'Atajos de teclado', en: 'Keyboard shortcuts' }, link: '/reference/shortcuts/' },
+			{ label: { es: 'Versiones', en: 'Releases' }, link: '/reference/releases/' },
 		],
 	},
 	{

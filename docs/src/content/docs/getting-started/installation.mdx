@@ -188,9 +188,30 @@ ready to use.
 
 ## Updating
 
-Replace the portable folder or install the new package over the old one (`sudo apt install ./<new>.deb`,
-`sudo dnf install ./<new>.rpm`). Settings, history and presets live in the
-[user data folder](/reference/configuration/#user-data) and are kept.
+FileBot Pro tells you when a new version is out, but does not update itself:
+
+- **Desktop app**: a dialog at startup with the release notes, **Download** (opens the release page), **Skip this
+  version** and **Later**. Turn it off in Help → **Check for updates at startup**.
+- **Command line**: a notice on stderr after the command, at most once a day and only in an interactive console, so
+  scripts and scheduled tasks never see it. `filebot-pro -script fn:sysinfo` also shows it.
+- **Docker**: a line in the container log (see [updating the image](/getting-started/docker/#updating)).
+
+To turn it off everywhere, add `application.update=skip` to the system properties (Help → **System properties…**) or
+pass `-Dapplication.update=skip`.
+
+What changed in each version is in the [release notes](/reference/releases/#release-notes). Then download the new
+version from the [releases page](https://github.com/davamudev/filebot-pro/releases/latest):
+
+| Package | How |
+|---|---|
+| Windows installer (`.msi`) | Run the new installer, it replaces the installed version |
+| Portable zip | Replace the application folder |
+| macOS (`.dmg`) | Replace the app in Applications |
+| Debian / Ubuntu | `sudo apt install ./<new>.deb` |
+| Fedora / RHEL | `sudo dnf install ./<new>.rpm` |
+| Synology | Package Center → Manual Install with the new `.spk` |
+
+Settings, history and presets live in the [user data folder](/reference/configuration/#user-data) and are kept.
 
 ## Uninstalling
 

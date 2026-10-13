@@ -4,6 +4,7 @@ import starlight from '@astrojs/starlight'
 import { sidebar } from './src/sidebar.mjs'
 import { wrapTables } from './src/rehype/wrap-tables.mjs'
 import { imagePlates } from './src/rehype/image-plates.mjs'
+import { releaseNotes } from './src/remark/release-notes.mjs'
 import { languageLabel } from './src/ec/language-label.mjs'
 
 export default defineConfig({
@@ -18,6 +19,8 @@ export default defineConfig({
     // logo's ink does not change with the theme, so it is the background that
     // has to stay put. See src/rehype/image-plates.mjs.
     rehypePlugins: [wrapTables, imagePlates],
+    // The release notes page shows the released versions of CHANGELOG.md.
+    remarkPlugins: [releaseNotes],
   },
   integrations: [
     starlight({

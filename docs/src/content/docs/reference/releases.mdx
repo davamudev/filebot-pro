@@ -1,0 +1,39 @@
+---
+title: Releases
+description: How FileBot Pro versions are numbered, how to see which one you have and what changed in each release.
+---
+
+## Version numbers
+
+Versions follow [semantic versioning](https://semver.org/), `MAJOR.MINOR.PATCH`:
+
+| Part | Changes when | Example |
+| --- | --- | --- |
+| `PATCH` | Only fixes | 1.0.0 → 1.0.1 |
+| `MINOR` | New features; formats, scripts and settings keep working | 1.0.1 → 1.1.0 |
+| `MAJOR` | Something you may have to adapt: formats, scripts, options or settings | 1.1.0 → 2.0.0 |
+
+Every build also carries a revision, `r` followed by the number of commits it was built from (`FileBot Pro 1.0.0 (r16)`).
+The [update check](/getting-started/installation/#updating) compares revisions, so a build is never offered an older one.
+
+## Which version you have
+
+- **Desktop app**: in the window title, and in Help → **About FileBot Pro**.
+- **Command line**: `filebot-pro -version`. `filebot-pro -script fn:sysinfo` also says whether a newer version is out.
+- **Docker**: the image tag (`1.0.0`, `1.0.0-gui`) or `docker run --rm ghcr.io/davamudev/filebot-pro -version`.
+
+## Where releases are published
+
+Every release is on the [GitHub releases page](https://github.com/davamudev/filebot-pro/releases) with the Windows,
+macOS and Linux packages, the portable zips, the Synology packages and a `SHA256SUMS.txt` to verify the downloads. The
+[Docker images](/getting-started/docker/) get a tag per version plus `latest` and `gui`.
+
+To install a new version over the one you have, see [updating](/getting-started/installation/#updating): settings,
+presets and history are kept.
+
+## Release notes
+
+Everything that changed in each version, newest first. The same notes are on the GitHub release and in the update
+dialog of the app.
+
+{/* release-notes */}

@@ -13,6 +13,7 @@ import java.util.logging.Level;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
@@ -20,6 +21,7 @@ import javax.swing.JRadioButtonMenuItem;
 import javax.swing.UIManager;
 
 import dev.davamu.filebotpro.ResourceManager;
+import dev.davamu.filebotpro.UpdateCheck;
 import dev.davamu.filebotpro.UserData;
 import dev.davamu.filebotpro.UserFiles;
 import dev.davamu.filebotpro.util.FileUtilities.ExtensionFileFilter;
@@ -83,6 +85,12 @@ public final class AppMenus {
 			JMenuItem restore = new JMenuItem("Restore user data…");
 			restore.addActionListener(e -> restoreUserData(e));
 			menu.add(restore);
+
+			if (UpdateCheck.isAvailable()) {
+				JCheckBoxMenuItem updates = new JCheckBoxMenuItem("Check for updates at startup", UpdateCheck.isEnabled());
+				updates.addActionListener(e -> UpdateCheck.setEnabled(updates.isSelected()));
+				menu.add(updates);
+			}
 
 			JMenuItem about = new JMenuItem("About " + getApplicationName());
 			about.addActionListener(e -> AboutDialog.showAbout(getWindow(button)));

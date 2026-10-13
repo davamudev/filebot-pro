@@ -1,0 +1,41 @@
+---
+title: Versiones
+description: Cómo se numeran las versiones de FileBot Pro, cómo saber cuál tienes y qué cambió en cada una.
+---
+
+## Números de versión
+
+Las versiones siguen el [versionado semántico](https://semver.org/lang/es/), `MAYOR.MENOR.PARCHE`:
+
+| Parte | Cambia cuando | Ejemplo |
+| --- | --- | --- |
+| `PARCHE` | Solo hay correcciones | 1.0.0 → 1.0.1 |
+| `MENOR` | Hay funciones nuevas; los formatos, scripts y ajustes siguen funcionando | 1.0.1 → 1.1.0 |
+| `MAYOR` | Hay algo que quizá tengas que adaptar: formatos, scripts, opciones o ajustes | 1.1.0 → 2.0.0 |
+
+Cada compilación lleva además una revisión, `r` seguida del número de commits a partir del que se compiló
+(`FileBot Pro 1.0.0 (r16)`). La [comprobación de actualizaciones](/es/getting-started/installation/#actualizar) compara
+revisiones, así que nunca te ofrece una más antigua.
+
+## Qué versión tienes
+
+- **Aplicación de escritorio**: en el título de la ventana y en Ayuda → **About FileBot Pro**.
+- **Línea de comandos**: `filebot-pro -version`. `filebot-pro -script fn:sysinfo` también indica si hay una versión
+  más nueva.
+- **Docker**: la etiqueta de la imagen (`1.0.0`, `1.0.0-gui`) o `docker run --rm ghcr.io/davamudev/filebot-pro -version`.
+
+## Dónde se publican
+
+Cada versión está en la [página de releases de GitHub](https://github.com/davamudev/filebot-pro/releases) con los
+paquetes de Windows, macOS y Linux, los zip portables, los paquetes de Synology y un `SHA256SUMS.txt` para verificar las
+descargas. Las [imágenes Docker](/es/getting-started/docker/) tienen una etiqueta por versión además de `latest` y `gui`.
+
+Para instalar una versión nueva encima de la que tienes, consulta [actualizar](/es/getting-started/installation/#actualizar):
+los ajustes, los presets y el historial se conservan.
+
+## Notas de versión
+
+Todo lo que cambió en cada versión, de la más reciente a la más antigua. Son las mismas notas de la release de GitHub
+y del diálogo de actualización de la aplicación, por eso están en inglés.
+
+{/* release-notes */}

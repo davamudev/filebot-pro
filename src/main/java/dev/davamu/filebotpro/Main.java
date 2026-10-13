@@ -1,7 +1,6 @@
 package dev.davamu.filebotpro;
 
 import static java.awt.GraphicsEnvironment.*;
-import static java.util.stream.Collectors.*;
 import static dev.davamu.filebotpro.ExitCode.*;
 import static dev.davamu.filebotpro.Logging.*;
 import static dev.davamu.filebotpro.MediaTypes.*;
@@ -9,18 +8,16 @@ import static dev.davamu.filebotpro.Settings.*;
 import static dev.davamu.filebotpro.ui.ThemeSupport.*;
 import static dev.davamu.filebotpro.util.FileUtilities.*;
 import static dev.davamu.filebotpro.util.FileUtilities.getChildren;
-import static dev.davamu.filebotpro.util.XPathUtilities.*;
 import static dev.davamu.filebotpro.util.ui.SwingUI.*;
 
 import java.awt.Dialog.ModalityType;
+import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Rectangle;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.URL;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -29,13 +26,16 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.swing.JDialog;
+import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.event.HyperlinkEvent;
 
 import org.kohsuke.args4j.CmdLineException;
-import org.w3c.dom.Document;
 
 import dev.davamu.filebotpro.cli.ArgumentBean;
 import dev.davamu.filebotpro.cli.ArgumentProcessor;
@@ -157,7 +157,9 @@ public class Main {
 
 			// CLI mode => run command-line interface and then exit
 			if (args.runCLI()) {
+				Runnable updateNotice = "fn:sysinfo".equals(args.script) ? () -> {} : UpdateCheck.startConsoleNotice();
 				int status = new ArgumentProcessor().run(args);
+				updateNotice.run();
 				System.exit(status);
 			}
 
@@ -232,11 +234,11 @@ public class Main {
 		}
 
 		// check for application updates
-		if (!"skip".equals(System.getProperty("application.update")) && !getApplicationProperty("update.url").isEmpty()) {
+		if (UpdateCheck.isEnabled()) {
 			try {
 				checkUpdate();
 			} catch (Throwable e) {
-				debug.log(Level.WARNING, "Failed to check for updates", e);
+				debug.log(Level.FINE, "Failed to check for updates", e);
 			}
 		}
 	}
@@ -331,46 +333,74 @@ public class Main {
 	 * Show update notifications if updates are available
 	 */
 	private static void checkUpdate() throws Exception {
-		Cache cache = Cache.getCache(getApplicationName(), CacheType.Persistent);
-		Document dom = cache.xml(getApplicationProperty("update.url"), URL::new).expire(Cache.ONE_WEEK).retry(0).get();
-
-		// flush to disk
-		cache.flush();
-
-		// parse update xml
-		Map<String, String> update = streamElements(dom.getFirstChild()).collect(toMap(n -> n.getNodeName(), n -> n.getTextContent().trim()));
-
-		// check if update is required
-		int latestRev = Integer.parseInt(update.get("revision"));
-		int currentRev = getApplicationRevisionNumber();
-
-		if (latestRev > currentRev && currentRev > 0) {
-			SwingUtilities.invokeLater(() -> {
-				JDialog dialog = new JDialog(JFrame.getFrames()[0], update.get("title"), ModalityType.APPLICATION_MODAL);
-				JPanel pane = new JPanel(new MigLayout("fill, nogrid, insets dialog"));
-				dialog.setContentPane(pane);
-
-				pane.add(new JLabel(ResourceManager.getApplicationLogo(48)), "aligny top");
-				pane.add(new JLabel(update.get("message")), "aligny top, gap 10, wrap paragraph:push");
-
-				pane.add(accent(newButton("Download", ResourceManager.getIcon("dialog.continue"), evt -> {
-					openURI(update.get("download"));
-					dialog.setVisible(false);
-				})), "tag ok");
-
-				pane.add(newButton("Details", ResourceManager.getIcon("action.report"), evt -> {
-					openURI(update.get("discussion"));
-				}), "tag help2");
-
-				pane.add(newButton("Ignore", ResourceManager.getIcon("dialog.cancel"), evt -> {
-					dialog.setVisible(false);
-				}), "tag cancel");
-
-				dialog.pack();
-				setOffsetLocation(dialog);
-				dialog.setVisible(true);
-			});
+		UpdateCheck.Update update = UpdateCheck.getAvailableUpdate();
+		if (update == null) {
+			return;
 		}
+
+		// Docker: updating means pulling a new image, a notification is enough
+		if ("docker".equals(getApplicationDeployment())) {
+			log.info(String.format("%s is available. %s", update.title(), UpdateCheck.getInstructions()));
+			return;
+		}
+
+		SwingUtilities.invokeLater(() -> {
+			JDialog dialog = new JDialog(JFrame.getFrames()[0], "Update available", ModalityType.APPLICATION_MODAL);
+			JPanel pane = new JPanel(new MigLayout("fill, nogrid, insets dialog"));
+			dialog.setContentPane(pane);
+
+			String message = String.format("<html><b>%s</b><br><br>%s<br>%s</html>", escapeHTML(update.message()), escapeHTML(UpdateCheck.getInstructions()), escapeHTML("You have " + getApplicationIdentifier() + "."));
+			pane.add(new JLabel(ResourceManager.getApplicationLogo(48)), "aligny top");
+			pane.add(new JLabel(message), "aligny top, gap 10, wmax 420, wrap paragraph:push");
+
+			// what's new since this version
+			List<UpdateCheck.Release> changes = UpdateCheck.getChanges(update);
+			if (!changes.isEmpty()) {
+				JEditorPane notes = new JEditorPane();
+				notes.setContentType("text/html");
+				notes.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, true);
+
+				// own style rules in the document (the HTMLEditorKit style sheet is shared by the whole application)
+				Font font = notes.getFont();
+				Font mono = UIManager.getFont("monospaced.font");
+				String css = String.join(" ", //
+						"body { margin: 4px; }", //
+						"p { margin-top: 0; margin-bottom: 4px; }", //
+						"p.version { font-weight: bold; font-size: " + (font.getSize() + 2) + "pt; margin-top: 4px; }", //
+						"p.section { font-weight: bold; margin-top: 6px; }", //
+						"ul { margin-left-ltr: 18px; margin-right-rtl: 18px; margin-top: 0; margin-bottom: 4px; }", //
+						"li { margin-bottom: 2px; }", //
+						"code { font-family: '" + (mono != null ? mono.getFamily() : Font.MONOSPACED) + "'; font-size: " + font.getSize() + "pt; background-color: " + toHex(UIManager.getColor("App.code.background")) + "; color: " + toHex(UIManager.getColor("App.code.foreground")) + "; }");
+				notes.setBackground(UIManager.getColor("App.surface"));
+				notes.setText("<html><head><style>" + css + "</style></head><body>" + UpdateCheck.toHTML(changes) + "</body></html>");
+				notes.setEditable(false);
+				notes.addHyperlinkListener(evt -> {
+					if (evt.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+						openURI(evt.getURL().toString());
+					}
+				});
+				notes.setCaretPosition(0);
+				pane.add(new JScrollPane(notes), "gapleft 58, w 480!, h 240!, wrap paragraph");
+			}
+
+			pane.add(accent(newButton("Download", ResourceManager.getIcon("dialog.continue"), evt -> {
+				openURI(update.download());
+				dialog.setVisible(false);
+			})), "tag ok");
+
+			pane.add(newButton("Skip this version", ResourceManager.getIcon("dialog.cancel"), evt -> {
+				UpdateCheck.ignore(update);
+				dialog.setVisible(false);
+			}), "tag help2");
+
+			pane.add(newButton("Later", ResourceManager.getIcon("dialog.cancel"), evt -> {
+				dialog.setVisible(false);
+			}), "tag cancel");
+
+			dialog.pack();
+			dialog.setLocationRelativeTo(dialog.getOwner());
+			dialog.setVisible(true);
+		});
 	}
 
 	/**

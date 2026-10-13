@@ -11,10 +11,14 @@ next to your download client.
 
 | | |
 | --- | --- |
-| **Image** | `ghcr.io/davamudev/filebot-pro` |
+| **Image** | `ghcr.io/davamudev/filebot-pro`, also on Docker Hub as `davamudev/filebot-pro` (same tags) |
 | **Tags** | `latest` or `1.0.0` for the command line, `gui` or `1.0.0-gui` for the desktop app in the browser |
 | **Architectures** | `linux/amd64` and `linux/arm64` (x86-64 and 64-bit ARM NAS devices and single-board computers) |
 | **Included** | Java, MediaInfo, fpcalc, mkvpropedit, AtomicParsley and 7-Zip |
+
+The examples use GHCR, which has no pull limits. To pull from Docker Hub instead, write `davamudev/filebot-pro` where
+they say `ghcr.io/davamudev/filebot-pro`; some NAS apps (Synology Container Manager, Unraid) search Docker Hub by
+default.
 
 ## Folders
 
@@ -180,6 +184,9 @@ docker compose pull && docker compose up -d
 ```
 
 Settings, history and caches stay in `/data`.
+
+When a new version is out, the container log says so (at most once a day). To turn the notice off, add
+`application.update=skip` to `/data/system.properties`.
 
 ## Building the image
 

@@ -126,7 +126,7 @@ de Synology no).
 | `-Ddev.davamu.filebotpro.media.ffprobe=<ruta>` | Ruta de ffprobe |
 | `-Ddev.davamu.filebotpro.archive.extractor=ShellExecutables` | Extrae con `7z` y `unrar` en lugar del 7-Zip integrado |
 | `-DuseExtendedFileAttributes=false` | No guarda datos en los archivos renombrados |
-| `-Dapplication.update=skip` | Omite la comprobación de actualizaciones al arrancar |
+| `-Dapplication.update=skip` | Desactiva el aviso de nuevas versiones (aplicación de escritorio y línea de comandos) |
 | `-Dcloud.google.geocode=<clave>` | Clave de Google Geocoding para la ubicación de las fotos; sustituye la clave `google.geocode` |
 | `-Dapplication.rename.history=false` | No guarda el historial de renombrados en el disco |
 | `-Dapplication.single.instance=false` | Permite una segunda instancia en ejecución (una sola instancia está activada por defecto) |
@@ -142,6 +142,7 @@ de Synology no).
 | `-DthreadPool=<n>` | Hilos para las sumas de verificación y la detección de tipos de archivo (por defecto: número de procesadores) |
 | `-Ddev.davamu.filebotpro.native.dir=<ruta>` | Carpeta que se busca primero para las herramientas nativas; `gradlew run` la define para compilaciones de desarrollo |
 
-La comprobación de actualizaciones busca una versión más nueva al arrancar la aplicación. Solo se ejecuta si
-`app.updateUrl` en `gradle.properties` tiene un valor; en este árbol de código está vacío, así que las compilaciones
-hechas a partir de él no comprueban actualizaciones.
+La comprobación de actualizaciones busca una versión más nueva (como mucho una vez al día) y solo avisa; nunca
+descarga ni instala nada. Consulta [actualizar](/es/getting-started/installation/#actualizar) para saber dónde aparece
+el aviso y cómo desactivarlo. Lee el `update.xml` de la última release de GitHub, definido por `app.updateUrl` en
+`gradle.properties`; las compilaciones con ese valor vacío, o sin revisión de git, nunca comprueban.

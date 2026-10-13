@@ -120,7 +120,7 @@ JVM options such as `-Xmx4g` only take effect in the `.cfg` file or in the `JAVA
 | `-Ddev.davamu.filebotpro.media.ffprobe=<path>` | Path to ffprobe |
 | `-Ddev.davamu.filebotpro.archive.extractor=ShellExecutables` | Extract archives with `7z` and `unrar` instead of the built-in 7-Zip |
 | `-DuseExtendedFileAttributes=false` | Do not store data on renamed files |
-| `-Dapplication.update=skip` | Skip the update check at startup |
+| `-Dapplication.update=skip` | Turn off the new release notice (desktop app and command line) |
 | `-Dcloud.google.geocode=<key>` | Google Geocoding key for photo locations; overrides the `google.geocode` key |
 | `-Dapplication.rename.history=false` | Do not save the rename history to disk |
 | `-Dapplication.single.instance=false` | Allow a second running instance (single instance is on by default) |
@@ -136,5 +136,7 @@ JVM options such as `-Xmx4g` only take effect in the `.cfg` file or in the `JAVA
 | `-DthreadPool=<n>` | Threads for checksum and file type work (default: number of processors) |
 | `-Ddev.davamu.filebotpro.native.dir=<path>` | Folder searched first for native tools, set by `gradlew run` for development builds |
 
-The update check looks for a newer release when the app starts. It only runs when `app.updateUrl` in
-`gradle.properties` is set; that value is empty in this source tree, so builds made from it do not check for updates.
+The update check looks for a newer release (at most once a day) and only tells you about it; it never downloads or
+installs anything. See [updating](/getting-started/installation/#updating) for where the notice shows up and how to
+turn it off. It reads the `update.xml` of the latest GitHub release, set by `app.updateUrl` in `gradle.properties`;
+builds made with an empty value, or without a git revision, never check.

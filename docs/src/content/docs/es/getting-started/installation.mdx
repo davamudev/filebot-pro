@@ -191,9 +191,32 @@ están listas para usar.
 
 ## Actualizar
 
-Sustituye la carpeta portable o instala el paquete nuevo encima del anterior (`sudo apt install ./<nuevo>.deb`,
-`sudo dnf install ./<nuevo>.rpm`). Los ajustes, el historial y los presets viven en la
-[carpeta de datos](/es/reference/configuration/#datos-de-usuario) y se conservan.
+FileBot Pro avisa cuando sale una versión nueva, pero no se actualiza solo:
+
+- **Aplicación de escritorio**: un diálogo al arrancar con las notas de versión, **Download** (abre la página de la
+  release), **Skip this version** y **Later**. Se desactiva en Ayuda → **Check for updates at startup**.
+- **Línea de comandos**: un aviso en stderr al terminar el comando, como mucho una vez al día y solo en una consola
+  interactiva, así que los scripts y las tareas programadas no lo ven. `filebot-pro -script fn:sysinfo` también lo
+  muestra.
+- **Docker**: una línea en el log del contenedor (consulta [actualizar la imagen](/es/getting-started/docker/#actualizar)).
+
+Para desactivarlo en todas partes, añade `application.update=skip` a las propiedades del sistema (Ayuda → **System
+properties…**) o pasa `-Dapplication.update=skip`.
+
+Lo que cambió en cada versión está en las [notas de versión](/es/reference/releases/#notas-de-versión). Después
+descarga la versión nueva de la [página de releases](https://github.com/davamudev/filebot-pro/releases/latest):
+
+| Paquete | Cómo |
+|---|---|
+| Instalador de Windows (`.msi`) | Ejecuta el instalador nuevo, sustituye la versión instalada |
+| Zip portable | Sustituye la carpeta de la aplicación |
+| macOS (`.dmg`) | Sustituye la aplicación en Aplicaciones |
+| Debian / Ubuntu | `sudo apt install ./<nuevo>.deb` |
+| Fedora / RHEL | `sudo dnf install ./<nuevo>.rpm` |
+| Synology | Centro de paquetes → Instalación manual con el `.spk` nuevo |
+
+Los ajustes, el historial y los presets viven en la [carpeta de datos](/es/reference/configuration/#datos-de-usuario)
+y se conservan.
 
 ## Desinstalar
 
