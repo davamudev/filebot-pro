@@ -61,8 +61,9 @@ not follow the pattern.
 ## Before opening a pull request
 
 - `./gradlew compileJava` passes (there is no test suite).
-- User-facing changes are documented in `CHANGELOG.md` and, where relevant, in the docs in both languages
-  (`docs/src/content/docs/` and `docs/src/content/docs/es/`).
+- User-facing changes to the app (desktop, CLI, scripts, Docker, packages) are documented in `CHANGELOG.md` and, where
+  relevant, in the docs in both languages (`docs/src/content/docs/` and `docs/src/content/docs/es/`). Changes to the
+  documentation site itself do not go in `CHANGELOG.md`: it becomes the release notes shown in the app.
 - Follow the conventions in `.editorconfig` (tabs in Java, 4 spaces elsewhere) and never commit `api-keys.properties`.
 - New dependencies must have a GPL-3.0-compatible license.
 

@@ -64,7 +64,9 @@ y falla si alguno no sigue el patrón. Las actualizaciones de Dependabot usan el
 ## Antes de abrir una pull request
 
 - `./gradlew compileJava` termina sin errores (no hay batería de pruebas).
-- Los cambios visibles para los usuarios están en `CHANGELOG.md` y, si procede, en esta documentación en los dos
-  idiomas (`docs/src/content/docs/` y `docs/src/content/docs/es/`).
+- Los cambios de la app visibles para los usuarios (escritorio, línea de comandos, scripts, Docker, paquetes) están en
+  `CHANGELOG.md` y, si procede, en esta documentación en los dos idiomas (`docs/src/content/docs/` y
+  `docs/src/content/docs/es/`). Los cambios de la propia web no van en `CHANGELOG.md`: de ahí salen las notas de versión
+  que muestra la app.
 - Sigue `.editorconfig` (tabuladores en Java, 4 espacios en el resto) y nunca subas `api-keys.properties`.
 - Las dependencias nuevas deben tener una licencia compatible con GPL-3.0.

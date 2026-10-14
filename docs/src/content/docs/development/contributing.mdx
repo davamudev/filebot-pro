@@ -63,7 +63,8 @@ request, and fails if one of them does not follow the pattern. Dependabot update
 ## Before opening a pull request
 
 - `./gradlew compileJava` passes (there is no test suite).
-- User-facing changes are in `CHANGELOG.md` and, where relevant, in this documentation in both languages
-  (`docs/src/content/docs/` and `docs/src/content/docs/es/`).
+- User-facing changes to the app (desktop, CLI, scripts, Docker, packages) are in `CHANGELOG.md` and, where relevant,
+  in this documentation in both languages (`docs/src/content/docs/` and `docs/src/content/docs/es/`). Changes to this
+  site itself do not go in `CHANGELOG.md`: it becomes the release notes shown in the app.
 - Follow `.editorconfig` (tabs in Java, 4 spaces elsewhere) and never commit `api-keys.properties`.
 - New dependencies must have a GPL-3.0-compatible license.
