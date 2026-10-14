@@ -24,6 +24,18 @@ import { Steps } from '@astrojs/starlight/components'
 
 </Steps>
 
+## A file matches the wrong series or movie
+
+This happens when several series or movies share a name (e.g. *Alfred Hitchcock Presents* from 1955 and from 1985).
+If you ticked the checkbox to remember the choice when you picked one, FileBot Pro picks it again every time it sees
+that name.
+
+- Hold `Shift` (or `Alt`) while you pick the source in the **Fetch Data** menu: FileBot Pro skips the automatic
+  detection and asks for the name or id. Type the id of the right one (the number in its URL on the website of the
+  source). See [Rename](/tools/rename/#new-names).
+- For a single file, right-click its new name and use **Edit Match** (`Ctrl`+`M`).
+- `Ctrl`+`Shift`+`Delete` clears the cache, remembered choices included, so the next **Fetch Data** asks again.
+
 ## Common messages
 
 OMDb and photo locations need your own key. Without it, the message names the key and the file to put

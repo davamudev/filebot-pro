@@ -25,6 +25,18 @@ import { Steps } from '@astrojs/starlight/components'
 
 </Steps>
 
+## Un archivo se empareja con la serie o película equivocada
+
+Pasa cuando varias series o películas se llaman igual (p. ej. *Alfred Hitchcock Presents* de 1955 y de 1985). Si al
+elegir una marcaste la casilla para recordar la elección, FileBot Pro la vuelve a elegir siempre que ve ese nombre.
+
+- Mantén pulsado `Mayús` (o `Alt`) al elegir la fuente en el menú **Fetch Data**: FileBot Pro se salta la detección
+  automática y te pide el nombre o el id. Escribe el id de la buena (el número de su URL en la web de la fuente).
+  Consulta [Renombrar](/es/tools/rename/#nombres-nuevos).
+- Para un solo archivo, haz clic derecho sobre su nombre nuevo y usa **Edit Match** (`Ctrl`+`M`).
+- `Ctrl`+`Mayús`+`Supr` borra la caché, incluidas las elecciones recordadas, así que el siguiente **Fetch Data**
+  vuelve a preguntar.
+
 ## Mensajes habituales
 
 OMDb y la ubicación de las fotos necesitan tu propia clave. Sin ella, el mensaje indica la clave y el
