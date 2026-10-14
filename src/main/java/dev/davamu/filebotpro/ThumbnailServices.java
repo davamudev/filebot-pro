@@ -34,12 +34,16 @@ import dev.davamu.filebotpro.web.SearchResult;
 import dev.davamu.filebotpro.web.ThumbnailProvider.ResolutionVariant;
 
 /**
- * Poster thumbnails for the selection dialogs, downloaded from the image server of each database. The poster of each option is known
- * from the search itself, so there are no additional API requests: one small image per option that is shown, cached for 6 months.
+ * Poster thumbnails for the selection dialogs, downloaded from the image server of each database. The poster of each option is usually
+ * known from the search itself; options from the local index, nfo files or xattr need one (cached) API request for their record. Then one
+ * small image per option that is shown, cached for 6 months.
  */
 public final class ThumbnailServices {
 
 	private static final int SIZE = 48;
+
+	// options further down the list rarely matter, and each unknown poster costs one API request
+	private static final int MAX_OPTIONS = 30;
 
 	public static Map<SearchResult, Icon> getThumbnails(List<? extends SearchResult> keys, ResolutionVariant variant, Function<SearchResult, URI> poster) throws Exception {
 		Cache cache = Cache.getCache("thumbnail_" + variant.ordinal(), CacheType.Persistent);
@@ -48,8 +52,12 @@ public final class ThumbnailServices {
 		Map<URI, SearchResult> requested = new LinkedHashMap<URI, SearchResult>();
 		Map<URI, CompletableFuture<HttpResponse<byte[]>>> requests = new LinkedHashMap<URI, CompletableFuture<HttpResponse<byte[]>>>();
 
-		for (SearchResult key : keys) {
-			URI image = poster.apply(key);
+		// posters that were not part of a search need a lookup each, so resolve them in parallel and only for the first options
+		Map<SearchResult, CompletableFuture<URI>> posters = new LinkedHashMap<SearchResult, CompletableFuture<URI>>();
+		keys.stream().limit(MAX_OPTIONS).forEach(key -> posters.put(key, CompletableFuture.supplyAsync(() -> poster.apply(key), WebServices.requestThreadPool)));
+
+		for (SearchResult key : posters.keySet()) {
+			URI image = posters.get(key).join();
 			if (image != null) {
 				byte[] bytes = (byte[]) cache.get(image.toString());
 				if (bytes != null) {

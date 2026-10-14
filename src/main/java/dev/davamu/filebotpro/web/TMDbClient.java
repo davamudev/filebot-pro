@@ -363,6 +363,11 @@ public class TMDbClient implements MovieIdentificationService, ArtworkProvider {
 
 	public URI getPosterThumbnail(String key, ResolutionVariant variant) {
 		try {
+			// options that did not come from an online search (local index, nfo or xattr) need the record itself (cached like any other request)
+			if (!posters.containsKey(key)) {
+				putPoster(key, getString(request(key, emptyMap(), Locale.ROOT), "poster_path"));
+			}
+
 			URL url = resolveImage(posters.get(key), variant == ResolutionVariant.NORMAL ? "w92" : "w185");
 			return url == null ? null : url.toURI();
 		} catch (Exception e) {

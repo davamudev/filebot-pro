@@ -198,7 +198,14 @@ public final class WebServices {
 
 		@Override
 		public Map<SearchResult, Icon> getThumbnails(List<SearchResult> keys, ResolutionVariant variant) throws Exception {
-			return ThumbnailServices.getThumbnails(keys, variant, k -> getPosterThumbnail("movie/" + (k instanceof Movie m ? m.getTmdbId() : k.getId()), variant));
+			return ThumbnailServices.getThumbnails(keys, variant, k -> {
+				int tmdbId = k instanceof Movie m ? m.getTmdbId() : k.getId();
+				if (tmdbId > 0) {
+					return getPosterThumbnail("movie/" + tmdbId, variant);
+				}
+				// TMDb also resolves movie records by IMDb id
+				return k instanceof Movie m && m.getImdbId() > 0 ? getPosterThumbnail(String.format("movie/tt%07d", m.getImdbId()), variant) : null;
+			});
 		}
 	}
 

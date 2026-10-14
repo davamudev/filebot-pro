@@ -2,6 +2,12 @@
 
 All notable changes to FileBot Pro.
 
+## [Unreleased]
+
+### Fixed
+
+- The movie and series selection dialogs show the poster of every option, including matches from the built-in index, nfo files or file metadata (before, only results of an online search had one, so some dialogs showed no posters at all).
+
 ## [1.1.0] - 2026-10-13
 
 ### Added

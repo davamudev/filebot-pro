@@ -236,6 +236,14 @@ public class TheTVDBClient extends AbstractEpisodeListProvider implements Artwor
 
 	public URI getPosterThumbnail(int id) {
 		try {
+			// options that did not come from an online search (local index, nfo or xattr) need the series record itself
+			if (!posters.containsKey(id)) {
+				String poster = getString(getMap(requestJson("series/" + id, Cache.ONE_MONTH), "data"), "image");
+				if (poster != null) {
+					posters.put(id, poster);
+				}
+			}
+
 			URL url = resolveImage(posters.get(id));
 			return url == null ? null : url.toURI();
 		} catch (Exception e) {
