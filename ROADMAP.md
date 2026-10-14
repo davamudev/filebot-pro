@@ -18,6 +18,7 @@
 |:---:|---|---|
 | 📋 | **APT repository** | Own repository: add it once, then `sudo apt install filebot-pro` and updates through `apt upgrade` |
 | 📋 | **Windows Explorer integration** | "Send to" entry and a context menu action to open files and folders in FileBot Pro |
+| 📋 | **Spanish subtitle variants** | Separate Spain (`sp`) and Latin American (`ea`) Spanish when searching OpenSubtitles, instead of always sending `es`; needs a real search comparing `es`, `sp` and `ea` first. Also add a separator and headings to the language selector so the "preferred" and "all languages" sections are not mistaken for duplicates, and clarify the "Mexican Spanish" label |
 
 ## 🔭 Later
 
