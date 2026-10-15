@@ -19,6 +19,7 @@ Nothing pending right now: the next items will come from the [Later](#-later) li
 
 | Status | Item | Details |
 |:---:|---|---|
+| 📋 | **Auto-updated detection data** | Scheduled GitHub Actions workflow in this repository that runs `updateData` (e.g. weekly) and publishes the `.xz` indexes as assets of a fixed `data` pre-release. The app downloads them about once a week into the `data` cache and falls back to the bundled copy when offline or on first start, so movie, series, anime and disc data stay current between releases. Option to turn it off; mention the weekly request in the docs (EN + ES) |
 | 📋 | **Background service** | Folder watcher as a Windows service / scheduled task, systemd unit or launchd agent |
 | 📋 | **Simpler APT setup** | Shorten the repository setup to a few steps. A one-line install script (`curl … \| sh`) that adds the repository and installs the package. For a manual setup without a script, embed the public key in `filebot-pro.sources` (`Signed-By:` with the key block, apt 2.3.10 or later) so the separate `.asc` download goes away. Update the installation guide (EN + ES) |
 | 📋 | **More package managers** | winget, Scoop, Homebrew, Flatpak (Flathub), Snap, AUR |
