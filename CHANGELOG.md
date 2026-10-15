@@ -6,22 +6,22 @@ All notable changes to FileBot Pro.
 
 ### Added
 
-- APT repository for Ubuntu and Debian: add it once and FileBot Pro installs with `sudo apt install filebot-pro` and updates with the rest of the system (see the installation guide).
-- `filebot-pro` on the `PATH` on Windows and macOS. The Windows installer adds it with an "Add filebot-pro to the PATH" checkbox, checked by default (`ADD_TO_PATH=0` turns it off in silent installs), and removes it on uninstall. On macOS, Help → Install 'filebot-pro' command… links `/usr/local/bin/filebot-pro` after asking for the administrator password (and removes it again); the `.pkg` installer creates the same link.
-- Windows Explorer integration: folders, drives, video and subtitle files get an "Open in FileBot Pro" entry in their right-click menu (on Windows 11, under "Show more options"), and "Send to → FileBot Pro" opens any selection. The installer adds both with a checkbox, checked by default (`EXPLORER_INTEGRATION=0` turns it off in silent installs), and removes them on uninstall.
+- APT repository for Ubuntu and Debian: install and update with `apt` (see the installation guide).
+- `filebot-pro` command on the `PATH` on Windows (installer option) and macOS (Help → Install 'filebot-pro' command…).
+- "Open in FileBot Pro" and "Send to → FileBot Pro" in the Windows Explorer right-click menu (installer option).
 
 ### Changed
 
-- Spanish subtitles from OpenSubtitles: **Spanish** also finds the subtitles tagged Spanish (EU), and **Latin American Spanish** (formerly "Mexican Spanish") finds the ones tagged Spanish (LA), listed first. Before, both only searched the generic Spanish subtitles, so titles with only Spain or Latin American subtitles found nothing.
-- The language selector shows the recently used languages and the full list under their own headings, so the languages at the top no longer look like duplicates.
-- Opening several files at once while FileBot Pro is already open (Explorer starts one launch per file) loads all of them together instead of only the last one, and the window comes to the front on Windows.
-- The Windows installer lets you choose whether to create the desktop and Start menu shortcuts, and no longer creates shortcuts for `filebot-pro`, the command-line launcher.
+- OpenSubtitles: **Spanish** also finds subtitles from Spain, and **Latin American Spanish** (formerly "Mexican Spanish") the Latin American ones.
+- The language selector separates recently used languages from the full list.
+- Opening several files from Explorer while FileBot Pro is running loads all of them and brings the window to the front.
+- The Windows installer lets you choose the desktop and Start menu shortcuts.
 
 ### Fixed
 
-- The movie and series selection dialogs show the poster of every option, including matches from the built-in index, nfo files or file metadata (before, only results of an online search had one, so some dialogs showed no posters at all).
-- The `.deb` package installs on Ubuntu 22.04 and Debian 12: it depended on `libasound2t64`, which only exists on Ubuntu 24.04 and Debian 13 or later, and now accepts `libasound2` as well. Its Maintainer field also shows a contact address instead of `<Unknown>`.
-- The `.deb` and `.rpm` packages install on servers and containers without a desktop: adding the menu entry failed when the system had no menu folders, which left the `.deb` half-configured and without the `filebot-pro` command.
+- Movie and series selection dialogs show a poster for every option, not only for online search results.
+- The `.deb` package installs on Ubuntu 22.04 and Debian 12.
+- The `.deb` and `.rpm` packages install on servers and containers without a desktop.
 
 ## [1.1.0] - 2026-10-13
 
