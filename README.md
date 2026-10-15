@@ -116,7 +116,7 @@ filebot-pro -script fn:sysinfo
 
 ## Roadmap
 
-Nothing pending right now; see [ROADMAP.md](ROADMAP.md) for what comes later. Each version tag publishes the packages to GitHub releases, the `.deb` to the APT repository and the Docker image to GHCR.
+See [ROADMAP.md](ROADMAP.md).
 
 ## Development
 
