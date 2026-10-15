@@ -289,7 +289,7 @@ val prepareJpackageResources = tasks.register<Sync>("prepareJpackageResources") 
     if (isX11) {
         val tokenPattern = Regex("@\\{([^}]+)}")
         from(packagingDir.dir("linux")) {
-            exclude("*.properties")
+            exclude("*.properties", "apt/**")
             filter { line: String -> tokenPattern.replace(line) { linuxTokens[it.groupValues[1]] ?: it.value } }
             // jpackage looks up overrides by their public name
             rename("^desktop$", "$appName.desktop")

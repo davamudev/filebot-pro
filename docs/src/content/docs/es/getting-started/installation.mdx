@@ -64,14 +64,23 @@ MediaInfo, fpcalc, mkvpropedit y AtomicParsley vienen incluidos en los dos.
 
 <Steps>
 
-1. Instala el paquete con `apt` desde la carpeta donde lo descargaste:
+1. Añade el repositorio de FileBot Pro (firmado con su propia clave) e instala el paquete:
 
    ```bash
-   sudo apt install ./filebot-pro_1.0.0-1_amd64.deb
+   sudo install -d -m 0755 /etc/apt/keyrings
+   sudo wget -qO /etc/apt/keyrings/filebot-pro.asc https://apt.davamu.dev/filebot-pro.asc
+   sudo wget -qO /etc/apt/sources.list.d/filebot-pro.sources https://apt.davamu.dev/filebot-pro.sources
+   sudo apt update
+   sudo apt install filebot-pro
    ```
 
    `apt` instala también los paquetes recomendados: MediaInfo, fpcalc (`chromaprint-tools`), mkvtoolnix y
-   AtomicParsley. Las propiedades multimedia, el reconocimiento de música y la escritura de metadatos funcionan desde el principio.
+   AtomicParsley. Las propiedades multimedia, el reconocimiento de música y la escritura de metadatos funcionan desde el
+   principio. Las versiones nuevas llegan con el resto de actualizaciones (`sudo apt update && sudo apt upgrade` o el
+   Actualizador de software).
+
+   Sin el repositorio, instala el paquete descargado desde su carpeta con
+   `sudo apt install ./filebot-pro_1.0.0-1_amd64.deb`; cada actualización es entonces una descarga nueva.
 
 2. Abre **FileBot Pro** desde el menú de aplicaciones o escribe `filebot-pro` en una terminal.
 
@@ -212,7 +221,7 @@ descarga la versión nueva de la [página de releases](https://github.com/davamu
 | Instalador de Windows (`.msi`) | Ejecuta el instalador nuevo, sustituye la versión instalada |
 | Zip portable | Sustituye la carpeta de la aplicación |
 | macOS (`.dmg`) | Sustituye la aplicación en Aplicaciones |
-| Debian / Ubuntu | `sudo apt install ./<nuevo>.deb` |
+| Debian / Ubuntu | Con el repositorio, `sudo apt update && sudo apt upgrade`; si no, `sudo apt install ./<nuevo>.deb` |
 | Fedora / RHEL | `sudo dnf install ./<nuevo>.rpm` |
 | Synology | Centro de paquetes → Instalación manual con el `.spk` nuevo |
 
@@ -224,7 +233,7 @@ y se conservan.
 | Sistema | Cómo |
 | --- | --- |
 | Windows | **Configuración → Aplicaciones**, o borra la carpeta portable |
-| Ubuntu, Debian | `sudo apt remove filebot-pro` |
+| Ubuntu, Debian | `sudo apt remove filebot-pro` y, para quitar el repositorio, `sudo rm /etc/apt/sources.list.d/filebot-pro.sources /etc/apt/keyrings/filebot-pro.asc` |
 | Fedora | `sudo dnf remove filebot-pro` |
 | macOS | Mueve **FileBot Pro** de **Aplicaciones** a la papelera. Si instalaste el comando `filebot-pro`, quítalo antes con Ayuda → **Remove 'filebot-pro' command…** |
 

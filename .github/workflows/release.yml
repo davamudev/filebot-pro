@@ -3,7 +3,8 @@
 # api-keys.properties, embedded at build time and never committed), publishes the Docker images to GHCR (and to Docker
 # Hub when the repository variable DOCKERHUB_USERNAME and the secret DOCKERHUB_TOKEN are set) and attaches all packages
 # and their SHA-256 checksums to the GitHub release, plus the update.xml that installed versions check for new releases
-# (app.updateUrl points to releases/latest/download/update.xml). The builds are not signed.
+# (app.updateUrl points to releases/latest/download/update.xml), then adds the .deb to the APT repository (apt.yml).
+# The builds are not signed.
 #
 #   git checkout master && git tag v1.2.3 && git push origin v1.2.3
 name: Release
@@ -360,3 +361,9 @@ jobs:
           awk -v v="$VERSION" '/^## \[/ { if (found) exit; found = index($0, "[" v "]") > 0; next } found' CHANGELOG.md > notes.md
           [ -s notes.md ] || echo "FileBot Pro $VERSION" > notes.md
           gh release create "$GITHUB_REF_NAME" dist/* --verify-tag --title "FileBot Pro $VERSION" --notes-file notes.md
+
+  # adds the .deb to the APT repository (skipped until the repository variable CLOUDFLARE_ACCOUNT_ID is set)
+  apt:
+    needs: release
+    uses: ./.github/workflows/apt.yml
+    secrets: inherit

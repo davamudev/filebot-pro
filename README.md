@@ -40,7 +40,7 @@ Download the packages from [GitHub releases](https://github.com/davamudev/filebo
 | System | Download | Install |
 |---|---|---|
 | Windows 10/11 | `FileBot-Pro-<version>-windows-portable.zip` or `.msi` (`-windows-arm64-portable.zip` for ARM) | Unzip and start `FileBot Pro.exe`, or run the installer |
-| Ubuntu / Debian | `filebot-pro_<version>-1_amd64.deb` | `sudo apt install ./filebot-pro_<version>-1_amd64.deb` |
+| Ubuntu / Debian | [APT repository](https://filebotpro.davamu.dev/getting-started/installation/) or `filebot-pro_<version>-1_amd64.deb` | `sudo apt install filebot-pro` once the repository is added, or `sudo apt install ./filebot-pro_<version>-1_amd64.deb` |
 | Fedora / openSUSE | `filebot-pro-<version>-1.x86_64.rpm` | `sudo dnf install ./filebot-pro-<version>-1.x86_64.rpm` |
 | Other Linux | `FileBot-Pro-<version>-linux-portable.zip` | Unzip and run `bin/FileBot Pro` |
 | macOS | `FileBot Pro-<version>-arm64.dmg` (Apple Silicon) or `-x64.dmg` (Intel) | Drag the app into **Applications** |
@@ -116,7 +116,7 @@ filebot-pro -script fn:sysinfo
 
 ## Roadmap
 
-Next up: an APT repository (`apt install filebot-pro`) and Windows Explorer integration. See [ROADMAP.md](ROADMAP.md). Each version tag publishes the packages to GitHub releases and the Docker image to GHCR.
+Next up: Windows Explorer integration. See [ROADMAP.md](ROADMAP.md). Each version tag publishes the packages to GitHub releases, the `.deb` to the APT repository and the Docker image to GHCR.
 
 ## Development
 

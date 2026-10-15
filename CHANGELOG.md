@@ -6,6 +6,7 @@ All notable changes to FileBot Pro.
 
 ### Added
 
+- APT repository for Ubuntu and Debian: add it once and FileBot Pro installs with `sudo apt install filebot-pro` and updates with the rest of the system (see the installation guide).
 - `filebot-pro` on the `PATH` on Windows and macOS. The Windows installer adds it with an "Add filebot-pro to the PATH" checkbox, checked by default (`ADD_TO_PATH=0` turns it off in silent installs), and removes it on uninstall. On macOS, Help → Install 'filebot-pro' command… links `/usr/local/bin/filebot-pro` after asking for the administrator password (and removes it again); the `.pkg` installer creates the same link.
 
 ### Changed

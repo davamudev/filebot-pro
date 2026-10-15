@@ -92,6 +92,27 @@ that version in `CHANGELOG.md`.
 All release builds embed the API keys of the repository secret `API_KEYS` (the contents of `api-keys.properties`);
 the workflow stops if the secret is missing and warns about every missing key.
 
+### APT repository
+
+After publishing, the `APT repository` workflow (`.github/workflows/apt.yml`) regenerates the APT repository at
+`https://apt.davamu.dev`: a Cloudflare Worker (`packaging/linux/apt/worker`) that serves the indexes of the `.deb`
+packages of the last three releases, signed with the repository key (`packaging/linux/apt/update-repository.sh`), and
+redirects the package downloads to the release assets on GitHub. Nothing is stored on Cloudflare and the Workers Free
+plan never bills: index requests are static assets (free and unlimited) and over the daily limit the redirects answer
+`429`. The packages listed in the indexes must stay on GitHub, so after deleting a release run the workflow from
+**Actions → APT repository → Run workflow**.
+
+The workflow is skipped until these are set in the repository settings:
+
+| Name | Kind | Value |
+| --- | --- | --- |
+| `CLOUDFLARE_ACCOUNT_ID` | Variable | Cloudflare account ID |
+| `CLOUDFLARE_API_TOKEN` | Secret | API token from the **Edit Cloudflare Workers** template, with the `davamu.dev` zone (the first deploy creates the `apt.davamu.dev` custom domain) |
+| `APT_GPG_PRIVATE_KEY` | Secret | Armored private signing key (`gpg --armor --export-secret-keys <fingerprint>`) |
+| `APT_GPG_PASSPHRASE` | Secret | Passphrase of the key, if it has one |
+
+The public key is published as `filebot-pro.asc` next to the indexes.
+
 ## Other tasks
 
 | Task | What it does |

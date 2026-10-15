@@ -1,0 +1,21 @@
+// Cloudflare Worker of the APT repository, deployed by .github/workflows/apt.yml (npx wrangler deploy) with the
+// indexes generated into public/. CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN come from the environment.
+{
+	"$schema": "https://unpkg.com/wrangler@4.137.0/config-schema.json",
+	"name": "filebot-pro-apt",
+	"main": "src/index.js",
+	"compatibility_date": "2026-09-01",
+	"workers_dev": false,
+	"routes": [
+		{ "pattern": "apt.davamu.dev", "custom_domain": true }
+	],
+	// requests that match a file are served without running the Worker (free and unlimited)
+	"assets": {
+		"directory": "./public",
+		"not_found_handling": "none"
+	},
+	"vars": {
+		"GITHUB_REPOSITORY": "davamudev/filebot-pro",
+		"INSTALL_GUIDE": "https://filebotpro.davamu.dev/getting-started/installation/"
+	}
+}

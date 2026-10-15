@@ -64,14 +64,22 @@ MediaInfo, fpcalc, mkvpropedit and AtomicParsley are included in both.
 
 <Steps>
 
-1. Install the package with `apt`, from the folder you downloaded it to:
+1. Add the FileBot Pro repository (signed with its own key) and install the package:
 
    ```bash
-   sudo apt install ./filebot-pro_1.0.0-1_amd64.deb
+   sudo install -d -m 0755 /etc/apt/keyrings
+   sudo wget -qO /etc/apt/keyrings/filebot-pro.asc https://apt.davamu.dev/filebot-pro.asc
+   sudo wget -qO /etc/apt/sources.list.d/filebot-pro.sources https://apt.davamu.dev/filebot-pro.sources
+   sudo apt update
+   sudo apt install filebot-pro
    ```
 
    `apt` also installs the recommended packages: MediaInfo, fpcalc (`chromaprint-tools`), mkvtoolnix and
-   AtomicParsley. Media properties, music matching and metadata writing work out of the box.
+   AtomicParsley. Media properties, music matching and metadata writing work out of the box. New versions arrive with
+   your other updates (`sudo apt update && sudo apt upgrade` or the Software Updater).
+
+   Without the repository, install the downloaded package from its folder with
+   `sudo apt install ./filebot-pro_1.0.0-1_amd64.deb`; every update is then a new download.
 
 2. Start **FileBot Pro** from the application menu, or type `filebot-pro` in a terminal.
 
@@ -209,7 +217,7 @@ version from the [releases page](https://github.com/davamudev/filebot-pro/releas
 | Windows installer (`.msi`) | Run the new installer, it replaces the installed version |
 | Portable zip | Replace the application folder |
 | macOS (`.dmg`) | Replace the app in Applications |
-| Debian / Ubuntu | `sudo apt install ./<new>.deb` |
+| Debian / Ubuntu | With the repository, `sudo apt update && sudo apt upgrade`; otherwise `sudo apt install ./<new>.deb` |
 | Fedora / RHEL | `sudo dnf install ./<new>.rpm` |
 | Synology | Package Center → Manual Install with the new `.spk` |
 
@@ -220,7 +228,7 @@ Settings, history and presets live in the [user data folder](/reference/configur
 | System | How |
 | --- | --- |
 | Windows | **Settings → Apps**, or delete the portable folder |
-| Ubuntu, Debian | `sudo apt remove filebot-pro` |
+| Ubuntu, Debian | `sudo apt remove filebot-pro`, then remove the repository with `sudo rm /etc/apt/sources.list.d/filebot-pro.sources /etc/apt/keyrings/filebot-pro.asc` |
 | Fedora | `sudo dnf remove filebot-pro` |
 | macOS | Move **FileBot Pro** from **Applications** to the trash. If you installed the `filebot-pro` command, remove it first with **Help** › **Remove 'filebot-pro' command…** |
 

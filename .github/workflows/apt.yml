@@ -1,0 +1,68 @@
+# APT repository at https://apt.davamu.dev: a Cloudflare Worker (packaging/linux/apt/worker) that serves the signed
+# indexes of the .deb packages of the last 3 GitHub releases as static assets and redirects the package downloads to
+# the release assets, so nothing is stored on Cloudflare and the Workers Free plan has no billing (over its limits it
+# answers 429). Called by the Release workflow after publishing; run it by hand (Actions -> APT repository -> Run
+# workflow) to regenerate the repository, e.g. after deleting a release.
+#
+# Skipped until the repository variable CLOUDFLARE_ACCOUNT_ID is set. Also needs the secrets CLOUDFLARE_API_TOKEN
+# (API token from the "Edit Cloudflare Workers" template, with the davamu.dev zone) and APT_GPG_PRIVATE_KEY (armored
+# private signing key; APT_GPG_PASSPHRASE if it has a passphrase).
+name: APT repository
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    if: vars.CLOUDFLARE_ACCOUNT_ID != ''
+    # one run at a time, every run replaces the whole repository
+    concurrency:
+      group: apt-repository
+      cancel-in-progress: false
+    runs-on: ubuntu-latest
+    env:
+      APT_URL: https://apt.davamu.dev
+      WORKER_DIR: packaging/linux/apt/worker
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      # every package listed in the indexes must stay a release asset, the Worker redirects to it
+      - name: Packages
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for tag in $(gh release list --repo "$GITHUB_REPOSITORY" --exclude-drafts --exclude-pre-releases --limit 3 --json tagName --jq '.[].tagName'); do
+            gh release download "$tag" --repo "$GITHUB_REPOSITORY" --pattern '*.deb' --dir debs || echo "::warning::$tag has no .deb"
+          done
+          ls -l debs
+
+      - name: Signing key
+        env:
+          APT_GPG_PRIVATE_KEY: ${{ secrets.APT_GPG_PRIVATE_KEY }}
+        run: |
+          if [ -z "$APT_GPG_PRIVATE_KEY" ]; then
+            echo "::error::The repository secret APT_GPG_PRIVATE_KEY is not set."
+            exit 1
+          fi
+          printf '%s\n' "$APT_GPG_PRIVATE_KEY" | gpg --batch --import
+
+      - name: Indexes
+        env:
+          APT_GPG_PASSPHRASE: ${{ secrets.APT_GPG_PASSPHRASE }}
+        run: sh packaging/linux/apt/update-repository.sh "$WORKER_DIR/public" debs/*.deb
+
+      - name: Deploy
+        working-directory: ${{ env.WORKER_DIR }}
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: npx --yes wrangler@4.137.0 deploy
+
+      - name: Check
+        run: |
+          curl -fsS "$APT_URL/dists/stable/InRelease" | head -n 12
+          curl -fsSI "$APT_URL/$(grep -m1 '^Filename:' "$WORKER_DIR/public/dists/stable/main/binary-amd64/Packages" | cut -d' ' -f2)" | grep -i '^location:'

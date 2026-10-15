@@ -96,6 +96,27 @@ notas de la versión son su sección de `CHANGELOG.md`.
 Todas las compilaciones de versión incluyen las claves API del secreto del repositorio `API_KEYS` (el contenido de
 `api-keys.properties`); el workflow se detiene si falta el secreto y avisa de cada clave que falte.
 
+### Repositorio APT
+
+Después de publicar, el workflow `APT repository` (`.github/workflows/apt.yml`) regenera el repositorio APT de
+`https://apt.davamu.dev`: un Worker de Cloudflare (`packaging/linux/apt/worker`) que sirve los índices de los paquetes
+`.deb` de las tres últimas versiones, firmados con la clave del repositorio (`packaging/linux/apt/update-repository.sh`),
+y redirige las descargas de los paquetes a los archivos de la versión en GitHub. No se guarda nada en Cloudflare y el
+plan gratuito de Workers nunca cobra: los índices son archivos estáticos (gratis y sin límite) y, por encima del límite
+diario, las redirecciones responden `429`. Los paquetes que aparecen en los índices tienen que seguir en GitHub, así
+que después de borrar una versión ejecuta el workflow desde **Actions → APT repository → Run workflow**.
+
+El workflow se omite hasta que estén configurados en los ajustes del repositorio:
+
+| Nombre | Tipo | Valor |
+| --- | --- | --- |
+| `CLOUDFLARE_ACCOUNT_ID` | Variable | ID de la cuenta de Cloudflare |
+| `CLOUDFLARE_API_TOKEN` | Secreto | Token de API de la plantilla **Edit Cloudflare Workers**, con la zona `davamu.dev` (el primer despliegue crea el dominio `apt.davamu.dev`) |
+| `APT_GPG_PRIVATE_KEY` | Secreto | Clave privada de firma en formato armored (`gpg --armor --export-secret-keys <huella>`) |
+| `APT_GPG_PASSPHRASE` | Secreto | Contraseña de la clave, si tiene |
+
+La clave pública se publica como `filebot-pro.asc` junto a los índices.
+
 ## Otras tareas
 
 | Tarea | Qué hace |
