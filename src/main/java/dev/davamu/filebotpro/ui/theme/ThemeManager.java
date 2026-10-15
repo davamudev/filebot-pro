@@ -23,6 +23,7 @@ import com.formdev.flatlaf.FlatLightLaf;
 import com.formdev.flatlaf.extras.FlatAnimatedLafChange;
 import com.formdev.flatlaf.fonts.inter.FlatInterFont;
 import com.formdev.flatlaf.fonts.jetbrains_mono.FlatJetBrainsMonoFont;
+import com.formdev.flatlaf.util.SystemInfo;
 
 import net.miginfocom.swing.SwingComponentWrapper;
 
@@ -45,6 +46,25 @@ public final class ThemeManager {
 	private static ScheduledFuture<?> systemAppearancePolling;
 
 	public static void install() {
+		// on macOS bundled fonts get no fallback for missing glyphs, so Chinese, Japanese or Korean file names would show empty boxes,
+		// while the system fonts fall back to the right font for every script
+		if (!SystemInfo.isMacOS) {
+			installBundledFonts();
+		}
+
+		FlatLaf.registerCustomDefaultsSource(ThemeManager.class.getPackageName());
+
+		// MigLayout platform paddings are meant for native look and feels and would clip FlatLaf components by a pixel or two
+		SwingComponentWrapper.setVisualPaddingEnabled(false);
+
+		theme = getInitialTheme();
+		apply(false);
+		updateSystemAppearanceMonitor();
+
+		NativeWindowAppearance.install(dark);
+	}
+
+	private static void installBundledFonts() {
 		try {
 			FlatInterFont.install();
 			FlatLaf.setPreferredFontFamily(FlatInterFont.FAMILY);
@@ -56,18 +76,6 @@ public final class ThemeManager {
 		} catch (Throwable e) {
 			debug.log(Level.WARNING, e, e::toString);
 		}
-
-		// load FlatLaf.properties, FlatLightLaf.properties and FlatDarkLaf.properties from this package
-		FlatLaf.registerCustomDefaultsSource(ThemeManager.class.getPackageName());
-
-		// MigLayout platform paddings are meant for native look and feels and would clip FlatLaf components by a pixel or two
-		SwingComponentWrapper.setVisualPaddingEnabled(false);
-
-		theme = getInitialTheme();
-		apply(false);
-		updateSystemAppearanceMonitor();
-
-		NativeWindowAppearance.install(dark);
 	}
 
 	/**

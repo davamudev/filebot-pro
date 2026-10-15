@@ -7,6 +7,7 @@ All notable changes to FileBot Pro.
 ### Fixed
 
 - The new release dialog adapts to its window size.
+- Chinese, Japanese and Korean file names display correctly on macOS.
 
 ## [1.2.0] - 2026-10-15
 
