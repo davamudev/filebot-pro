@@ -2,6 +2,12 @@
 
 All notable changes to FileBot Pro.
 
+## [Unreleased]
+
+### Fixed
+
+- The new release dialog adapts to its window size.
+
 ## [1.2.0] - 2026-10-15
 
 ### Added
