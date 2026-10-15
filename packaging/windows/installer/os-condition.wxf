@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
     Replaces the os-condition.wxf template of jpackage (resource dir override): it is the only WiX fragment that main.wxs
-    always references, so it also carries the branded WixUI bitmaps and the PATH entry. Keep the OS condition in sync
-    with the JDK template.
+    always references, so it also carries the branded WixUI bitmaps, the PATH entry and the Explorer integration. Keep the
+    OS condition in sync with the JDK template.
 
-    @{installerDir} is replaced with the absolute path of packaging/windows/installer by the prepareJpackageResources task.
+    @{installerDir} (absolute path of packaging/windows/installer), @{appName} (name of the GUI launcher) and @{appId} are
+    replaced by the prepareJpackageResources task.
     The bitmaps are rendered by generateIcons.
 -->
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
@@ -29,9 +30,52 @@
             </Component>
         </DirectoryRef>
 
+        <!--
+            Windows Explorer integration, checkbox of ShortcutPromptDlg.wxs, checked by default; silent installs opt out with
+            EXPLORER_INTEGRATION=0. "Open in FileBot Pro" in the context menu of folders, folder backgrounds, drives, video and
+            subtitle files (Windows 11: under "Show more options"). Explorer starts one process per selected file, the running
+            instance merges them (SingleInstance.java). Video and subtitle extensions as in packaging/mac/*.properties.
+        -->
+        <Property Id="EXPLORER_INTEGRATION" Value="1" Secure="yes"/>
+        <DirectoryRef Id="INSTALLDIR">
+            <Component Id="cExplorerMenu" Guid="3E0F6C1B-8A4D-4B57-9C2E-61D7F0A85B34">
+                <Condition><![CDATA[EXPLORER_INTEGRATION = "1"]]></Condition>
+                <?foreach type in Directory;Drive;SystemFileAssociations\.mkv;SystemFileAssociations\.mk3d;SystemFileAssociations\.mp4;SystemFileAssociations\.m4v;SystemFileAssociations\.avi;SystemFileAssociations\.mov;SystemFileAssociations\.wmv;SystemFileAssociations\.mpg;SystemFileAssociations\.mpeg;SystemFileAssociations\.ts;SystemFileAssociations\.m2ts;SystemFileAssociations\.webm;SystemFileAssociations\.flv;SystemFileAssociations\.ogm;SystemFileAssociations\.3gp;SystemFileAssociations\.srt;SystemFileAssociations\.ass;SystemFileAssociations\.ssa;SystemFileAssociations\.sub;SystemFileAssociations\.idx;SystemFileAssociations\.smi ?>
+                <RegistryKey Root="HKMU" Key="Software\Classes\$(var.type)\shell\@{appId}" ForceDeleteOnUninstall="yes">
+                    <RegistryValue Type="string" Value="Open in @{appName}"/>
+                    <RegistryValue Name="Icon" Type="string" Value="[INSTALLDIR]@{appName}.exe"/>
+                    <RegistryValue Key="command" Type="string" Value="&quot;[INSTALLDIR]@{appName}.exe&quot; &quot;%1&quot;"/>
+                </RegistryKey>
+                <?endforeach?>
+                <!-- right-click on the empty space of a folder window: %V is that folder -->
+                <RegistryKey Root="HKMU" Key="Software\Classes\Directory\Background\shell\@{appId}" ForceDeleteOnUninstall="yes">
+                    <RegistryValue Type="string" Value="Open in @{appName}" KeyPath="yes"/>
+                    <RegistryValue Name="Icon" Type="string" Value="[INSTALLDIR]@{appName}.exe"/>
+                    <RegistryValue Key="command" Type="string" Value="&quot;[INSTALLDIR]@{appName}.exe&quot; &quot;%V&quot;"/>
+                </RegistryKey>
+            </Component>
+        </DirectoryRef>
+
+        <!--
+            "Send to" shortcut: all the selected files in one launch, also for selections of more than 15 files (the context menu
+            entries only show up for smaller selections). The Send To folder belongs to the user who runs the setup.
+        -->
+        <DirectoryRef Id="TARGETDIR">
+            <Directory Id="SendToFolder"/>
+        </DirectoryRef>
+        <DirectoryRef Id="SendToFolder">
+            <Component Id="cSendTo" Guid="9B4D2A7E-5C3F-4E81-A6D0-2F8C7B19E4A5">
+                <Condition><![CDATA[EXPLORER_INTEGRATION = "1"]]></Condition>
+                <Shortcut Id="SendToShortcut" Name="@{appName}" Target="[INSTALLDIR]@{appName}.exe" WorkingDirectory="INSTALLDIR"/>
+                <RegistryValue Root="HKCU" Key="Software\@{appName}\Installer" Name="SendToShortcut" Type="integer" Value="1" KeyPath="yes"/>
+            </Component>
+        </DirectoryRef>
+
         <!-- fragment contents must be referenced, main.wxs references this component group -->
         <ComponentGroup Id="FragmentOsCondition">
             <ComponentRef Id="cAddToPath"/>
+            <ComponentRef Id="cExplorerMenu"/>
+            <ComponentRef Id="cSendTo"/>
         </ComponentGroup>
     </Fragment>
 </Wix>

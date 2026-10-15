@@ -243,6 +243,11 @@ public class ArgumentBean {
 				continue;
 			}
 
+			// Windows: a quoted drive root ("D:\" from the Explorer context menu) arrives as D:" because \" escapes the quote
+			if (File.separatorChar == '\\' && it.endsWith("\"")) {
+				it = it.substring(0, it.length() - 1) + '\\';
+			}
+
 			// resolve relative paths
 			File file = new File(it);
 

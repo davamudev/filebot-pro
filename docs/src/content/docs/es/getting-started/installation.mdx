@@ -54,8 +54,13 @@ haz clic en **Más información** y después en **Ejecutar de todos modos**. En 
 </Steps>
 
 **Instalador**: ejecuta `FileBot-Pro-1.0.0.msi` y abre **FileBot Pro** desde el menú de inicio o el acceso directo
-del escritorio. El instalador pregunta si quieres crear cada acceso directo y añadir `filebot-pro` al `PATH` (todo viene marcado).
-Para una instalación silenciosa sin la entrada del `PATH`: `msiexec /i FileBot-Pro-1.0.0.msi /qn ADD_TO_PATH=0`.
+del escritorio. El instalador pregunta si quieres crear cada acceso directo, añadir `filebot-pro` al `PATH` y añadir
+FileBot Pro al menú contextual del Explorador (todo viene marcado). Para una instalación silenciosa sin la entrada del `PATH`
+ni la integración con el Explorador: `msiexec /i FileBot-Pro-1.0.0.msi /qn ADD_TO_PATH=0 EXPLORER_INTEGRATION=0`.
+
+Con la integración con el Explorador, las carpetas, unidades y archivos de vídeo y subtítulos muestran **Open in FileBot Pro**
+al hacer clic derecho (en Windows 11, dentro de **Mostrar más opciones**), y **Enviar a → FileBot Pro** abre cualquier
+selección, también de más de 15 archivos. Si FileBot Pro ya está abierto, los archivos van a esa ventana.
 
 MediaInfo, fpcalc, mkvpropedit y AtomicParsley vienen incluidos en los dos.
 

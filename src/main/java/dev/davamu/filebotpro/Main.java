@@ -60,6 +60,9 @@ import net.miginfocom.swing.MigLayout;
 
 public class Main {
 
+	/** this instance receives the files of later launches (and loads its own file arguments through SingleInstance) */
+	private static boolean singleInstance;
+
 	public static void main(String[] argv) {
 		try {
 			// early so that options like -Dapplication.dir apply before anything reads them
@@ -140,9 +143,13 @@ public class Main {
 				X11AppUtilities.relaunchForNonReparentingWindowManager();
 			}
 
-			// desktop app already open => pass the files to that window and exit
-			if (!args.runCLI() && !isHeadless() && args.mode == null && SingleInstance.isEnabled() && SingleInstance.forward(args.getFiles(false))) {
-				System.exit(SUCCESS);
+			// desktop app already open => pass the files to that window and exit, otherwise accept the files of later launches
+			if (!args.runCLI() && !isHeadless() && args.mode == null && SingleInstance.isEnabled()) {
+				List<File> files = args.getFiles(false);
+				if (SingleInstance.forward(files)) {
+					System.exit(SUCCESS);
+				}
+				singleInstance = SingleInstance.start(files);
 			}
 
 			// optional native tools and libraries (MediaInfo, fpcalc, ffprobe, ...)
@@ -203,9 +210,9 @@ public class Main {
 	}
 
 	private static void onStart(ArgumentBean args) throws Exception {
-		// publish file arguments
+		// publish file arguments (single instance: loaded together with the files of other launches)
 		List<File> files = args.getFiles(false);
-		if (files.size() > 0) {
+		if (files.size() > 0 && !singleInstance) {
 			SwingEventBus.getInstance().post(new FileTransferable(files));
 		}
 
@@ -312,7 +319,7 @@ public class Main {
 		frame.setVisible(true);
 
 		// receive the files of later launches and bring this window to the front
-		SingleInstance.listen(files -> {
+		SingleInstance.onLaunch(files -> {
 			if ((frame.getExtendedState() & JFrame.ICONIFIED) != 0) {
 				frame.setExtendedState(frame.getExtendedState() & ~JFrame.ICONIFIED);
 			}

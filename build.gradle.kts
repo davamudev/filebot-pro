@@ -273,7 +273,7 @@ val prepareJpackageInput = tasks.register<Sync>("prepareJpackageInput") {
 /** Linux packages install into /opt/<package name>; the deb/rpm templates link the command-line launcher to /usr/bin. */
 val linuxInstallDir = "/opt/$appId"
 
-// jpackage --resource-dir: WiX template overrides for the Windows installer (branded dialog bitmaps, shortcuts and PATH dialog),
+// jpackage --resource-dir: WiX template overrides for the Windows installer (branded dialog bitmaps, shortcuts, PATH and Explorer integration dialog),
 // deb/rpm templates for Linux (filebot-pro on the PATH, MediaInfo and fpcalc as recommended packages, dock icon),
 // postinstall script for the macOS .pkg (filebot-pro on the PATH).
 // The deb Depends line is fixed in packaging/linux/control instead of jpackage's PACKAGE_DEFAULT_DEPENDENCIES: those are
@@ -281,16 +281,19 @@ val linuxInstallDir = "/opt/$appId"
 // breaks installs on Ubuntu 22.04 and Debian 12. Review the list when the bundled runtime links new system libraries
 val prepareJpackageResources = tasks.register<Sync>("prepareJpackageResources") {
     group = "distribution"
-    val installerDir = packagingDir.dir("windows/installer").asFile.path
+    // local values only: filter lambdas must not reference script properties (configuration cache)
+    val windowsTokens = mapOf("installerDir" to packagingDir.dir("windows/installer").asFile.path, "appName" to appName, "appId" to appId)
     val linuxTokens = mapOf("appId" to appId, "installDir" to linuxInstallDir, "wmClass" to appId)
-    inputs.property("installerDir", installerDir)
+    val macTokens = mapOf("appName" to appName, "appId" to appId)
+    val tokenPattern = Regex("@\\{([^}]+)}")
+    inputs.property("windowsTokens", windowsTokens)
     inputs.property("linuxTokens", linuxTokens)
+    inputs.property("macTokens", macTokens)
     from(packagingDir.dir("windows/installer")) {
         include("*.wxf", "*.wxs")
-        filter { line: String -> line.replace("@{installerDir}", installerDir) }
+        filter { line: String -> tokenPattern.replace(line) { windowsTokens[it.groupValues[1]] ?: it.value } }
     }
     if (isX11) {
-        val tokenPattern = Regex("@\\{([^}]+)}")
         from(packagingDir.dir("linux")) {
             exclude("*.properties", "apt/**")
             filter { line: String -> tokenPattern.replace(line) { linuxTokens[it.groupValues[1]] ?: it.value } }
@@ -303,7 +306,7 @@ val prepareJpackageResources = tasks.register<Sync>("prepareJpackageResources") 
         // .pkg postinstall script: links the command-line launcher to /usr/local/bin
         from(packagingDir.dir("mac")) {
             include("postinstall")
-            filter { line: String -> line.replace("@{appName}", appName).replace("@{appId}", appId) }
+            filter { line: String -> tokenPattern.replace(line) { macTokens[it.groupValues[1]] ?: it.value } }
         }
     }
     into(jpackageResources)
@@ -329,7 +332,7 @@ fun jpackageArguments(type: String, dest: Provider<Directory>, deployment: Strin
             addAll(listOf("--add-launcher", "$appId=" + packagingDir.file("windows/console-launcher.properties").asFile.path))
             if (type != "app-image") {
                 addAll(listOf("--resource-dir", jpackageResources.get().asFile.path))
-                // desktop and Start menu shortcuts (GUI launcher only) and the PATH entry, each one can be turned off in a setup dialog
+                // desktop and Start menu shortcuts (GUI launcher only), the PATH entry and the Explorer integration, each one can be turned off in a setup dialog
                 addAll(listOf("--win-menu", "--win-shortcut", "--win-shortcut-prompt", "--win-dir-chooser", "--win-menu-group", appName))
                 addAll(listOf("--win-upgrade-uuid", "6f0c2a5e-1d8b-4c3e-9f57-2b1f0e7c4a91"))
             }

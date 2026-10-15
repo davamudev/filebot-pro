@@ -17,6 +17,8 @@ import com.sun.jna.platform.win32.W32Errors;
 import com.sun.jna.platform.win32.WTypes.LPWSTR;
 import com.sun.jna.platform.win32.WinDef.UINT;
 import com.sun.jna.platform.win32.WinDef.UINTByReference;
+import com.sun.jna.win32.StdCallLibrary;
+import com.sun.jna.win32.W32APIOptions;
 
 public class WinAppUtilities {
 
@@ -39,6 +41,25 @@ public class WinAppUtilities {
 		}
 
 		return packageFullName.getValue();
+	}
+
+	/**
+	 * Let another process take the foreground (Windows only lets the process the user is interacting with do that)
+	 */
+	public static void allowSetForegroundWindow(int pid) {
+		try {
+			User32.INSTANCE.AllowSetForegroundWindow(pid);
+		} catch (Throwable t) {
+			debug.log(Level.WARNING, t.getMessage(), t);
+		}
+	}
+
+	private interface User32 extends StdCallLibrary {
+
+		User32 INSTANCE = Native.load("user32", User32.class, W32APIOptions.DEFAULT_OPTIONS);
+
+		boolean AllowSetForegroundWindow(int dwProcessId);
+
 	}
 
 	public static void initializeApplication(String aumid) {

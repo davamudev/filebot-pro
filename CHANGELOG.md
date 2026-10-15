@@ -9,8 +9,11 @@ All notable changes to FileBot Pro.
 - APT repository for Ubuntu and Debian: add it once and FileBot Pro installs with `sudo apt install filebot-pro` and updates with the rest of the system (see the installation guide).
 - `filebot-pro` on the `PATH` on Windows and macOS. The Windows installer adds it with an "Add filebot-pro to the PATH" checkbox, checked by default (`ADD_TO_PATH=0` turns it off in silent installs), and removes it on uninstall. On macOS, Help → Install 'filebot-pro' command… links `/usr/local/bin/filebot-pro` after asking for the administrator password (and removes it again); the `.pkg` installer creates the same link.
 
+- Windows Explorer integration: folders, drives, video and subtitle files get an "Open in FileBot Pro" entry in their right-click menu (on Windows 11, under "Show more options"), and "Send to → FileBot Pro" opens any selection. The installer adds both with a checkbox, checked by default (`EXPLORER_INTEGRATION=0` turns it off in silent installs), and removes them on uninstall.
+
 ### Changed
 
+- Opening several files at once while FileBot Pro is already open (Explorer starts one launch per file) loads all of them together instead of only the last one, and the window comes to the front on Windows.
 - The Windows installer lets you choose whether to create the desktop and Start menu shortcuts, and no longer creates shortcuts for `filebot-pro`, the command-line launcher.
 
 ### Fixed
