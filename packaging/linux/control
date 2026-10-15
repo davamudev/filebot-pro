@@ -6,7 +6,7 @@ Priority: optional
 Architecture: APPLICATION_ARCH
 Provides: APPLICATION_PACKAGE
 Description: APPLICATION_DESCRIPTION
-Depends: PACKAGE_DEFAULT_DEPENDENCIES PACKAGE_CUSTOM_DEPENDENCIES
+Depends: libasound2t64 | libasound2, libbsd0, libc6, libmd0, libx11-6, libxau6, libxcb1, libxdmcp6, libxext6, libxi6, libxrender1, libxtst6, xdg-utils
 Recommends: libmediainfo0v5 | libmediainfo0t64, libchromaprint-tools, mkvtoolnix, atomicparsley
 Installed-Size: APPLICATION_INSTALLED_SIZE
 APPLICATION_HOMEPAGE

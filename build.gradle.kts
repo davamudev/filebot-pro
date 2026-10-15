@@ -275,7 +275,10 @@ val linuxInstallDir = "/opt/$appId"
 
 // jpackage --resource-dir: WiX template overrides for the Windows installer (branded dialog bitmaps, shortcuts and PATH dialog),
 // deb/rpm templates for Linux (filebot-pro on the PATH, MediaInfo and fpcalc as recommended packages, dock icon),
-// postinstall script for the macOS .pkg (filebot-pro on the PATH)
+// postinstall script for the macOS .pkg (filebot-pro on the PATH).
+// The deb Depends line is fixed in packaging/linux/control instead of jpackage's PACKAGE_DEFAULT_DEPENDENCIES: those are
+// looked up on the build machine, and ubuntu-latest names ALSA libasound2t64 (Ubuntu 24.04+, Debian 13+ only), which
+// breaks installs on Ubuntu 22.04 and Debian 12. Review the list when the bundled runtime links new system libraries
 val prepareJpackageResources = tasks.register<Sync>("prepareJpackageResources") {
     group = "distribution"
     val installerDir = packagingDir.dir("windows/installer").asFile.path
