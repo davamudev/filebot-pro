@@ -8,6 +8,7 @@ All notable changes to FileBot Pro.
 
 - The new release dialog adapts to its window size.
 - Chinese, Japanese and Korean file names display correctly on macOS.
+- Series with one- or two-character Chinese, Japanese or Korean titles (e.g. 三体) are detected.
 
 ## [1.2.0] - 2026-10-15
 
