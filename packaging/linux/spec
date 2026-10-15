@@ -91,6 +91,8 @@ sed -i -e 's/.*/%dir "&"/' %{package_filelist}
 %post
 package_type=rpm
 LAUNCHER_AS_SERVICE_SCRIPTS
+# xdg-desktop-menu fails without these folders (servers and containers without a desktop)
+mkdir -p /usr/share/applications /usr/share/desktop-directories /etc/xdg/menus
 DESKTOP_COMMANDS_INSTALL
 LAUNCHER_AS_SERVICE_COMMANDS_INSTALL
 

@@ -17,6 +17,7 @@ All notable changes to FileBot Pro.
 
 - The movie and series selection dialogs show the poster of every option, including matches from the built-in index, nfo files or file metadata (before, only results of an online search had one, so some dialogs showed no posters at all).
 - The `.deb` package installs on Ubuntu 22.04 and Debian 12: it depended on `libasound2t64`, which only exists on Ubuntu 24.04 and Debian 13 or later, and now accepts `libasound2` as well. Its Maintainer field also shows a contact address instead of `<Unknown>`.
+- The `.deb` and `.rpm` packages install on servers and containers without a desktop: adding the menu entry failed when the system had no menu folders, which left the `.deb` half-configured and without the `filebot-pro` command.
 
 ## [1.1.0] - 2026-10-13
 

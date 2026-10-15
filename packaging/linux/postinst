@@ -22,6 +22,8 @@ LAUNCHER_AS_SERVICE_SCRIPTS
 
 case "$1" in
     configure)
+        # xdg-desktop-menu fails without these folders (servers and containers without a desktop)
+        mkdir -p /usr/share/applications /usr/share/desktop-directories /etc/xdg/menus
 DESKTOP_COMMANDS_INSTALL
 LAUNCHER_AS_SERVICE_COMMANDS_INSTALL
         # command-line launcher on the PATH
