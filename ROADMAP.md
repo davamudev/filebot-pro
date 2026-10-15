@@ -27,6 +27,7 @@
 | Status | Item | Details |
 |:---:|---|---|
 | 📋 | **Background service** | Folder watcher as a Windows service / scheduled task, systemd unit or launchd agent |
+| 📋 | **Simpler APT setup** | Shorten the repository setup to a few steps. A one-line install script (`curl … \| sh`) that adds the repository and installs the package. For a manual setup without a script, embed the public key in `filebot-pro.sources` (`Signed-By:` with the key block, apt 2.3.10 or later) so the separate `.asc` download goes away. Update the installation guide (EN + ES) |
 | 📋 | **More package managers** | winget, Scoop, Homebrew, Flatpak (Flathub), Snap, AUR |
 
 ## 💡 Ideas
