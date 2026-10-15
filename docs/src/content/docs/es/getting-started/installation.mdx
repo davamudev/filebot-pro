@@ -54,7 +54,8 @@ haz clic en **Más información** y después en **Ejecutar de todos modos**. En 
 </Steps>
 
 **Instalador**: ejecuta `FileBot-Pro-1.0.0.msi` y abre **FileBot Pro** desde el menú de inicio o el acceso directo
-del escritorio. El instalador pregunta si quieres crear cada acceso directo (los dos vienen marcados).
+del escritorio. El instalador pregunta si quieres crear cada acceso directo y añadir `filebot-pro` al `PATH` (todo viene marcado).
+Para una instalación silenciosa sin la entrada del `PATH`: `msiexec /i FileBot-Pro-1.0.0.msi /qn ADD_TO_PATH=0`.
 
 MediaInfo, fpcalc, mkvpropedit y AtomicParsley vienen incluidos en los dos.
 
@@ -160,10 +161,10 @@ abre la aplicación de escritorio; con argumentos ejecuta el comando y termina.
 
 | Sistema | Comando |
 | --- | --- |
-| Windows | `filebot-pro.exe` en la carpeta portable o en la de instalación (`C:\Program Files\FileBot Pro`) |
+| Windows | `filebot-pro`, en el `PATH` con el instalador (abre una terminal nueva después de instalar). Portable: `filebot-pro.exe` en la carpeta |
 | Ubuntu, Debian, Fedora | `filebot-pro`, ya está en el `PATH` |
 | Otro Linux | `FileBot Pro/bin/filebot-pro` |
-| macOS | `"/Applications/FileBot Pro.app/Contents/MacOS/FileBot Pro"` |
+| macOS | `filebot-pro` después de Ayuda → **Install 'filebot-pro' command…** en la aplicación, que pide la contraseña de administrador. Sin eso: `"/Applications/FileBot Pro.app/Contents/MacOS/FileBot Pro"` |
 
 ```bash
 filebot-pro -script fn:sysinfo                        # versiones, herramientas nativas y carpeta de datos
@@ -225,7 +226,7 @@ y se conservan.
 | Windows | **Configuración → Aplicaciones**, o borra la carpeta portable |
 | Ubuntu, Debian | `sudo apt remove filebot-pro` |
 | Fedora | `sudo dnf remove filebot-pro` |
-| macOS | Mueve **FileBot Pro** de **Aplicaciones** a la papelera |
+| macOS | Mueve **FileBot Pro** de **Aplicaciones** a la papelera. Si instalaste el comando `filebot-pro`, quítalo antes con Ayuda → **Remove 'filebot-pro' command…** |
 
 La [carpeta de datos](/es/reference/configuration/#datos-de-usuario) se conserva; bórrala también para eliminar
 los ajustes, el historial y las cachés.

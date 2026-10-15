@@ -5,6 +5,7 @@
 gradlew text eol=lf
 *.sh text eol=lf
 packaging/linux/** text eol=lf
+packaging/mac/postinstall text eol=lf
 *.bat text eol=crlf
 
 # Binary files

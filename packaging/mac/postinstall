@@ -1,0 +1,15 @@
+#!/usr/bin/env sh
+
+# Replaces the postinstall template of jpackage for the .pkg installer (resource dir override); the first three commands
+# are those of the JDK template, keep them in sync. jpackage fills in the install and app locations (the app location is
+# <name>.app/Contents/app), the prepareJpackageResources task the app name and id.
+
+chown root:wheel "INSTALL_LOCATION"
+chmod a+rX "INSTALL_LOCATION"
+chmod +r "APP_LOCATION/"*.jar
+
+# command-line launcher on the PATH, the same link as Help -> "Install 'filebot-pro' command" in the app
+mkdir -p /usr/local/bin
+ln -sf "$(dirname "APP_LOCATION")/MacOS/@{appName}" "/usr/local/bin/@{appId}"
+
+exit 0

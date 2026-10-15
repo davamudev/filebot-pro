@@ -54,7 +54,8 @@ PC**: click **More info**, then **Run anyway**. On macOS, see the macOS tab belo
 </Steps>
 
 **Installer**: run `FileBot-Pro-1.0.0.msi` and start **FileBot Pro** from the start menu or the desktop shortcut.
-Setup asks whether to create each shortcut (both are checked by default).
+Setup asks whether to create each shortcut and whether to add `filebot-pro` to the `PATH` (all checked by default).
+For a silent install without the `PATH` entry: `msiexec /i FileBot-Pro-1.0.0.msi /qn ADD_TO_PATH=0`.
 
 MediaInfo, fpcalc, mkvpropedit and AtomicParsley are included in both.
 
@@ -159,10 +160,10 @@ the desktop app; with arguments it runs the command and exits.
 
 | System | Command |
 | --- | --- |
-| Windows | `filebot-pro.exe` in the portable folder or in the install folder (`C:\Program Files\FileBot Pro`) |
+| Windows | `filebot-pro`, on the `PATH` with the installer (open a new terminal after installing). Portable: `filebot-pro.exe` in the folder |
 | Ubuntu, Debian, Fedora | `filebot-pro`, already on the `PATH` |
 | Other Linux | `FileBot Pro/bin/filebot-pro` |
-| macOS | `"/Applications/FileBot Pro.app/Contents/MacOS/FileBot Pro"` |
+| macOS | `filebot-pro` after **Help** › **Install 'filebot-pro' command…** in the app, which asks for the administrator password. Without it: `"/Applications/FileBot Pro.app/Contents/MacOS/FileBot Pro"` |
 
 ```bash
 filebot-pro -script fn:sysinfo                        # versions, native tools and data folder
@@ -221,7 +222,7 @@ Settings, history and presets live in the [user data folder](/reference/configur
 | Windows | **Settings → Apps**, or delete the portable folder |
 | Ubuntu, Debian | `sudo apt remove filebot-pro` |
 | Fedora | `sudo dnf remove filebot-pro` |
-| macOS | Move **FileBot Pro** from **Applications** to the trash |
+| macOS | Move **FileBot Pro** from **Applications** to the trash. If you installed the `filebot-pro` command, remove it first with **Help** › **Remove 'filebot-pro' command…** |
 
 The [user data folder](/reference/configuration/#user-data) is kept; delete it as well to remove settings,
 history and caches.

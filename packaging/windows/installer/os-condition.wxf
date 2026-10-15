@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
     Replaces the os-condition.wxf template of jpackage (resource dir override): it is the only WiX fragment that main.wxs
-    always references, so it also carries the branded WixUI bitmaps. Keep the OS condition in sync with the JDK template.
+    always references, so it also carries the branded WixUI bitmaps and the PATH entry. Keep the OS condition in sync
+    with the JDK template.
 
     @{installerDir} is replaced with the absolute path of packaging/windows/installer by the prepareJpackageResources task.
     The bitmaps are rendered by generateIcons.
@@ -16,7 +17,21 @@
         <WixVariable Id="WixUIDialogBmp" Value="@{installerDir}\installer-dialog.bmp"/>
         <WixVariable Id="WixUIBannerBmp" Value="@{installerDir}\installer-banner.bmp"/>
 
+        <!--
+            Install folder on the system PATH, so filebot-pro.exe runs from any terminal. Checkbox of ShortcutPromptDlg.wxs,
+            checked by default; silent installs opt out with ADD_TO_PATH=0. Uninstalling removes the entry again.
+        -->
+        <Property Id="ADD_TO_PATH" Value="1" Secure="yes"/>
+        <DirectoryRef Id="INSTALLDIR">
+            <Component Id="cAddToPath" Guid="7506BC5C-BF01-4DD7-A82B-F7994E629720" KeyPath="yes">
+                <Condition><![CDATA[ADD_TO_PATH = "1"]]></Condition>
+                <Environment Id="PathEnvironment" Name="PATH" Value="[INSTALLDIR]" Action="set" Part="last" System="yes" Permanent="no"/>
+            </Component>
+        </DirectoryRef>
+
         <!-- fragment contents must be referenced, main.wxs references this component group -->
-        <ComponentGroup Id="FragmentOsCondition"/>
+        <ComponentGroup Id="FragmentOsCondition">
+            <ComponentRef Id="cAddToPath"/>
+        </ComponentGroup>
     </Fragment>
 </Wix>

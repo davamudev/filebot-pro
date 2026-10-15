@@ -99,7 +99,7 @@ On Windows, downloaded tools are bundled by the next `portableZip` / `jpackage`.
 
 ## Command line
 
-Every build includes a `filebot-pro` command: `filebot-pro.exe` next to `FileBot Pro.exe` on Windows, `/usr/bin/filebot-pro` with the `.deb` / `.rpm` packages, `bin/filebot-pro` in the Linux portable folder and `FileBot Pro.app/Contents/MacOS/FileBot Pro` on macOS (from source: `./gradlew installDist`, then `build/install/filebot-pro/bin/filebot-pro`). Without arguments it opens the desktop app; on Linux it also runs without a desktop session, e.g. over SSH.
+Every build includes a `filebot-pro` command: `filebot-pro.exe` next to `FileBot Pro.exe` on Windows (on the `PATH` with the installer), `/usr/bin/filebot-pro` with the `.deb` / `.rpm` packages, `bin/filebot-pro` in the Linux portable folder and `FileBot Pro.app/Contents/MacOS/FileBot Pro` on macOS (`/usr/local/bin/filebot-pro` after Help → Install 'filebot-pro' command…; from source: `./gradlew installDist`, then `build/install/filebot-pro/bin/filebot-pro`). Without arguments it opens the desktop app; on Linux it also runs without a desktop session, e.g. over SSH.
 
 ```bash
 filebot-pro -rename "/media/TV" -r --db TVmaze --action test --format "{n}/Season {s}/{n} - {s00e00} - {t}"

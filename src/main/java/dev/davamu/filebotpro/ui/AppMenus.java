@@ -9,6 +9,7 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.logging.Level;
 
 import javax.swing.ButtonGroup;
@@ -24,6 +25,7 @@ import dev.davamu.filebotpro.ResourceManager;
 import dev.davamu.filebotpro.UpdateCheck;
 import dev.davamu.filebotpro.UserData;
 import dev.davamu.filebotpro.UserFiles;
+import dev.davamu.filebotpro.platform.mac.CommandLineTool;
 import dev.davamu.filebotpro.util.FileUtilities.ExtensionFileFilter;
 import dev.davamu.filebotpro.ui.theme.Theme;
 import dev.davamu.filebotpro.ui.theme.ThemeManager;
@@ -86,6 +88,10 @@ public final class AppMenus {
 			restore.addActionListener(e -> restoreUserData(e));
 			menu.add(restore);
 
+			if (CommandLineTool.isAvailable()) {
+				menu.add(createCommandLineToolItem());
+			}
+
 			if (UpdateCheck.isAvailable()) {
 				JCheckBoxMenuItem updates = new JCheckBoxMenuItem("Check for updates at startup", UpdateCheck.isEnabled());
 				updates.addActionListener(e -> UpdateCheck.setEnabled(updates.isSelected()));
@@ -134,6 +140,26 @@ public final class AppMenus {
 		} catch (Exception e) {
 			log.log(Level.WARNING, "Failed to restore user data: " + e.getMessage(), e);
 		}
+	}
+
+	/**
+	 * Install or remove the filebot-pro command in /usr/local/bin (macOS app bundle, asks for the administrator password)
+	 */
+	private static JMenuItem createCommandLineToolItem() {
+		String command = getApplicationId();
+		boolean installed = CommandLineTool.isInstalled();
+
+		JMenuItem item = new JMenuItem(String.format(installed ? "Remove '%s' command…" : "Install '%s' command…", command));
+		item.addActionListener(evt -> CompletableFuture.runAsync(() -> {
+			try {
+				if (installed ? CommandLineTool.remove() : CommandLineTool.install()) {
+					log.info(installed ? String.format("Removed %s", CommandLineTool.getLink()) : String.format("Installed %s: run %s in the Terminal", CommandLineTool.getLink(), command));
+				}
+			} catch (Exception e) {
+				log.log(Level.WARNING, String.format("Failed to %s the %s command: %s", installed ? "remove" : "install", command, e.getMessage()), e);
+			}
+		}));
+		return item;
 	}
 
 	private static JMenuItem createLink(String title, String uri) {

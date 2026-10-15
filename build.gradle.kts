@@ -273,8 +273,9 @@ val prepareJpackageInput = tasks.register<Sync>("prepareJpackageInput") {
 /** Linux packages install into /opt/<package name>; the deb/rpm templates link the command-line launcher to /usr/bin. */
 val linuxInstallDir = "/opt/$appId"
 
-// jpackage --resource-dir: WiX template overrides for the Windows installer (branded dialog bitmaps),
-// deb/rpm templates for Linux (filebot-pro on the PATH, MediaInfo and fpcalc as recommended packages, dock icon)
+// jpackage --resource-dir: WiX template overrides for the Windows installer (branded dialog bitmaps, shortcuts and PATH dialog),
+// deb/rpm templates for Linux (filebot-pro on the PATH, MediaInfo and fpcalc as recommended packages, dock icon),
+// postinstall script for the macOS .pkg (filebot-pro on the PATH)
 val prepareJpackageResources = tasks.register<Sync>("prepareJpackageResources") {
     group = "distribution"
     val installerDir = packagingDir.dir("windows/installer").asFile.path
@@ -282,7 +283,7 @@ val prepareJpackageResources = tasks.register<Sync>("prepareJpackageResources") 
     inputs.property("installerDir", installerDir)
     inputs.property("linuxTokens", linuxTokens)
     from(packagingDir.dir("windows/installer")) {
-        include("*.wxf")
+        include("*.wxf", "*.wxs")
         filter { line: String -> line.replace("@{installerDir}", installerDir) }
     }
     if (isX11) {
@@ -293,6 +294,13 @@ val prepareJpackageResources = tasks.register<Sync>("prepareJpackageResources") 
             // jpackage looks up overrides by their public name
             rename("^desktop$", "$appName.desktop")
             rename("^spec$", "$appId.spec")
+        }
+    }
+    if (isMac) {
+        // .pkg postinstall script: links the command-line launcher to /usr/local/bin
+        from(packagingDir.dir("mac")) {
+            include("postinstall")
+            filter { line: String -> line.replace("@{appName}", appName).replace("@{appId}", appId) }
         }
     }
     into(jpackageResources)
@@ -318,7 +326,7 @@ fun jpackageArguments(type: String, dest: Provider<Directory>, deployment: Strin
             addAll(listOf("--add-launcher", "$appId=" + packagingDir.file("windows/console-launcher.properties").asFile.path))
             if (type != "app-image") {
                 addAll(listOf("--resource-dir", jpackageResources.get().asFile.path))
-                // desktop and Start menu shortcuts (GUI launcher only), each one can be turned off in a setup dialog
+                // desktop and Start menu shortcuts (GUI launcher only) and the PATH entry, each one can be turned off in a setup dialog
                 addAll(listOf("--win-menu", "--win-shortcut", "--win-shortcut-prompt", "--win-dir-chooser", "--win-menu-group", appName))
                 addAll(listOf("--win-upgrade-uuid", "6f0c2a5e-1d8b-4c3e-9f57-2b1f0e7c4a91"))
             }
@@ -327,6 +335,9 @@ fun jpackageArguments(type: String, dest: Provider<Directory>, deployment: Strin
             addAll(listOf("--mac-package-identifier", appIdentifier, "--mac-package-name", appName))
             // Finder "Open With" menu for video and subtitle files (opened by the Desktop open file handler)
             listOf("video", "subtitle").forEach { addAll(listOf("--file-associations", packagingDir.file("mac/$it.properties").asFile.path)) }
+            if (type != "app-image") {
+                addAll(listOf("--resource-dir", jpackageResources.get().asFile.path))
+            }
         }
         else -> {
             // second launcher without a menu entry for command-line usage, linked to /usr/bin by the deb/rpm packages
