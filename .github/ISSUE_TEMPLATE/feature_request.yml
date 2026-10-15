@@ -1,0 +1,47 @@
+name: Feature request
+description: Suggest a new feature or an improvement
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please check the [roadmap](https://github.com/davamudev/filebot-pro/blob/develop/ROADMAP.md) and [existing issues](https://github.com/davamudev/filebot-pro/issues?q=is%3Aissue) first, it may already be planned.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What are you trying to do and what makes it hard today?
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: How would you like it to work?
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives
+      description: Workarounds or other solutions you have considered.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      multiple: true
+      options:
+        - Rename
+        - Episodes
+        - Subtitles
+        - SFV
+        - Filter / List
+        - Format expressions
+        - CLI / scripts
+        - Docker / packages
+        - Other
+  - type: textarea
+    id: extra
+    attributes:
+      label: Additional context
+      description: Screenshots, mockups or examples.

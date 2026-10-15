@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentation
+    url: https://filebotpro.davamu.dev
+    about: Guides, format expressions and CLI reference.
+  - name: FAQ
+    url: https://filebotpro.davamu.dev/help/faq/
+    about: Answers to common questions.

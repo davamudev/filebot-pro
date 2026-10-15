@@ -1,0 +1,81 @@
+name: Bug report
+description: Something doesn't work as expected
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a problem. Please check the [troubleshooting guide](https://filebotpro.davamu.dev/help/troubleshooting/) and [existing issues](https://github.com/davamudev/filebot-pro/issues?q=is%3Aissue) first.
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: A clear description of the problem.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: What did you do? Include file names, the format expression or the CLI command if relevant.
+      placeholder: |
+        1. Open the Rename panel
+        2. Load `Show.Name.S01E01.mkv`
+        3. Match with TheMovieDB
+        4. ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What did you expect to happen instead?
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: FileBot Pro version
+      description: Shown in the About dialog or with `filebot-pro -version`.
+      placeholder: "1.2.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options:
+        - Windows
+        - macOS
+        - Linux
+        - Docker
+        - Synology
+    validations:
+      required: true
+  - type: dropdown
+    id: interface
+    attributes:
+      label: Interface
+      options:
+        - Desktop app
+        - CLI
+        - Script (fn:amc, ...)
+    validations:
+      required: true
+  - type: textarea
+    id: sysinfo
+    attributes:
+      label: System info
+      description: Output of `filebot-pro -script fn:sysinfo`.
+      render: text
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Relevant log output or stack trace. Errors are written to `error.log` in the FileBot Pro data folder.
+      render: text
+  - type: textarea
+    id: extra
+    attributes:
+      label: Additional context
+      description: Screenshots or anything else that may help.
