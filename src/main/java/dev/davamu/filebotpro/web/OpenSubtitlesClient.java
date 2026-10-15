@@ -19,6 +19,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -314,6 +315,11 @@ public class OpenSubtitlesClient implements SubtitleProvider, VideoHashSubtitleS
 				}
 			}
 
+			// regional Spanish variants ("ea" or "sp") before plain "es" if both have been searched for
+			if (Objects.toString(parameters.get("languages"), "").contains(",")) {
+				subtitles.sort(Comparator.comparing(s -> "es".equals(((OpenSubtitlesSubtitleDescriptor) s).getLanguage())));
+			}
+
 			return subtitles;
 		});
 	}
@@ -545,13 +551,34 @@ public class OpenSubtitlesClient implements SubtitleProvider, VideoHashSubtitleS
 			return country.equals("br") ? "pt-br" : "pt-pt";
 		case "zh":
 			return country.equals("tw") || country.equals("hk") || "Hant".equals(locale.getScript()) ? "zh-tw" : "zh-cn";
+		case "es":
+			return LATIN_AMERICA.contains(country) ? "ea" : "es";
 		}
 
 		return language;
 	}
 
+	/**
+	 * Countries that use Latin American Spanish (e.g. es-MX or es-419)
+	 */
+	private static final Set<String> LATIN_AMERICA = Set.of("419", "ar", "bo", "cl", "co", "cr", "cu", "do", "ec", "gt", "hn", "mx", "ni", "pa", "pe", "pr", "py", "sv", "us", "uy", "ve");
+
+	/**
+	 * Language codes to search for (comma separated and sorted as required by the API)
+	 */
 	protected String getLanguageFilter(Locale locale) {
-		return getLanguageCode(locale);
+		String language = getLanguageCode(locale);
+
+		// Spanish subtitles are tagged "es" (most of them, from Spain and Latin America alike), "ea" (Latin America) or
+		// "sp" (Spain), and searching one code never returns the others, so search the regional variant together with "es"
+		if ("ea".equals(language)) {
+			return "ea,es";
+		}
+		if ("es".equals(language)) {
+			return "es,sp";
+		}
+
+		return language;
 	}
 
 	public Cache getCache(String section) {

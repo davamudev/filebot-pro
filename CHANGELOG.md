@@ -13,6 +13,8 @@ All notable changes to FileBot Pro.
 
 ### Changed
 
+- Spanish subtitles from OpenSubtitles: **Spanish** also finds the subtitles tagged Spanish (EU), and **Latin American Spanish** (formerly "Mexican Spanish") finds the ones tagged Spanish (LA), listed first. Before, both only searched the generic Spanish subtitles, so titles with only Spain or Latin American subtitles found nothing.
+- The language selector shows the recently used languages and the full list under their own headings, so the languages at the top no longer look like duplicates.
 - Opening several files at once while FileBot Pro is already open (Explorer starts one launch per file) loads all of them together instead of only the last one, and the window comes to the front on Windows.
 - The Windows installer lets you choose whether to create the desktop and Start menu shortcuts, and no longer creates shortcuts for `filebot-pro`, the command-line launcher.
 
