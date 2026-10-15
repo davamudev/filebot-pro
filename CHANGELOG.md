@@ -4,6 +4,10 @@ All notable changes to FileBot Pro.
 
 ## [Unreleased]
 
+### Changed
+
+- The Windows installer lets you choose whether to create the desktop and Start menu shortcuts, and no longer creates shortcuts for `filebot-pro`, the command-line launcher.
+
 ### Fixed
 
 - The movie and series selection dialogs show the poster of every option, including matches from the built-in index, nfo files or file metadata (before, only results of an online search had one, so some dialogs showed no posters at all).

@@ -318,7 +318,8 @@ fun jpackageArguments(type: String, dest: Provider<Directory>, deployment: Strin
             addAll(listOf("--add-launcher", "$appId=" + packagingDir.file("windows/console-launcher.properties").asFile.path))
             if (type != "app-image") {
                 addAll(listOf("--resource-dir", jpackageResources.get().asFile.path))
-                addAll(listOf("--win-menu", "--win-shortcut", "--win-dir-chooser", "--win-menu-group", appName))
+                // desktop and Start menu shortcuts (GUI launcher only), each one can be turned off in a setup dialog
+                addAll(listOf("--win-menu", "--win-shortcut", "--win-shortcut-prompt", "--win-dir-chooser", "--win-menu-group", appName))
                 addAll(listOf("--win-upgrade-uuid", "6f0c2a5e-1d8b-4c3e-9f57-2b1f0e7c4a91"))
             }
         }
