@@ -2,6 +2,12 @@
 
 All notable changes to FileBot Pro.
 
+## [Unreleased]
+
+### Fixed
+
+- Chinese and Japanese episode numbers like 第01集 or 第1話 are detected.
+
 ## [1.2.1] - 2026-10-15
 
 ### Fixed

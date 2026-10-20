@@ -32,11 +32,16 @@ public class SeasonEpisodeMatcher {
 
 	public SeasonEpisodeMatcher(SeasonEpisodeFilter sanity, boolean strict) {
 		// define variables
-		SeasonEpisodePattern Season_00_Episode_00, S00E00SEQ, S00E00, SxE1_SxE2, SxE, Dot101, E01E02SEQ, EP0, Num101_TOKEN, E1of2, Num101_SUBSTRING;
+		SeasonEpisodePattern Season_00_Episode_00, CJK_Episode_00, S00E00SEQ, S00E00, SxE1_SxE2, SxE, Dot101, E01E02SEQ, EP0, Num101_TOKEN, E1of2, Num101_SUBSTRING;
 
 		// match patterns like Season 01 Episode 02, ...
 		Season_00_Episode_00 = new SeasonEpisodePattern(null, "(?<!\\p{Alnum})(?i:season|series)[^\\p{Alnum}]{0,3}(\\d{1,4})[^\\p{Alnum}]{0,3}(?i:episode)[^\\p{Alnum}]{0,3}((\\d{1,3}(\\D|$))+)[^\\p{Alnum}]{0,3}(?!\\p{Digit})", m -> {
 			return range(m.group(1), m.group(2));
+		});
+
+		// match chinese and japanese patterns like 第01集, 第1話, 第3回, 第2季 第01集, ...
+		CJK_Episode_00 = new SeasonEpisodePattern(null, "(?:第(\\d{1,4})[季部][^\\p{Alnum}]{0,3})?第(\\d{1,4})[集话話回]", m -> {
+			return single(m.group(1), m.group(2));
 		});
 
 		// match patterns like S01E01-E05, S100E01-E05, S2010E01-E05
@@ -91,9 +96,9 @@ public class SeasonEpisodeMatcher {
 
 		// only use S00E00 and SxE pattern in strict mode
 		if (strict) {
-			patterns = new SeasonEpisodeParser[] { Season_00_Episode_00, S00E00SEQ, S00E00, SxE1_SxE2, SxE, Dot101 };
+			patterns = new SeasonEpisodeParser[] { Season_00_Episode_00, CJK_Episode_00, S00E00SEQ, S00E00, SxE1_SxE2, SxE, Dot101 };
 		} else {
-			patterns = new SeasonEpisodeParser[] { Season_00_Episode_00, S00E00SEQ, S00E00, SxE1_SxE2, SxE, Dot101, E01E02SEQ, new SeasonEpisodeUnion(EP0, Num101_TOKEN, E1of2), Num101_SUBSTRING };
+			patterns = new SeasonEpisodeParser[] { Season_00_Episode_00, CJK_Episode_00, S00E00SEQ, S00E00, SxE1_SxE2, SxE, Dot101, E01E02SEQ, new SeasonEpisodeUnion(EP0, Num101_TOKEN, E1of2), Num101_SUBSTRING };
 		}
 
 		// season folder pattern for complementing partial sxe info from filename
