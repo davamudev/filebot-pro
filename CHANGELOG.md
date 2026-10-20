@@ -7,6 +7,7 @@ All notable changes to FileBot Pro.
 ### Fixed
 
 - Chinese and Japanese episode numbers like 第01集 or 第1話 are detected.
+- Cached series, episode and artwork data is reused instead of downloaded again on every run.
 
 ## [1.2.1] - 2026-10-15
 

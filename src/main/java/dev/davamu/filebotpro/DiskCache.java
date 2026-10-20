@@ -37,7 +37,7 @@ final class DiskCache {
 	 * Cache files live in the user folder, but treat them as untrusted anyway: only plain data types and our own classes
 	 * may be deserialized.
 	 */
-	private static final ObjectInputFilter FILTER = ObjectInputFilter.Config.createFilter("java.lang.*;java.util.*;java.time.*;java.math.*;java.net.URI;dev.davamu.filebotpro.**;!*");
+	private static final ObjectInputFilter FILTER = ObjectInputFilter.Config.createFilter("java.lang.*;java.util.*;java.time.*;java.math.*;java.net.URI;java.net.URL;dev.davamu.filebotpro.**;!*");
 
 	private final Path folder;
 	private final Duration defaultTimeToLive;
