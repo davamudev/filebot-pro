@@ -28,7 +28,7 @@ public final class UserData {
 	private static final String HISTORY = "history.xml";
 
 	// plain files in the user folder that are copied as they are
-	private static final String[] FILES = { "api-keys.properties", "system.properties", "mediainfo-views.json", "pad.groovy" };
+	private static final String[] FILES = { "api-keys.properties", "system.properties", "mediainfo-views.json", "mediainfo-column-widths.json", "pad.groovy" };
 
 	public static List<String> export(File zip) throws Exception {
 		List<String> entries = new ArrayList<String>();

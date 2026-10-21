@@ -11,6 +11,8 @@ import static dev.davamu.filebotpro.util.FileUtilities.*;
 import static dev.davamu.filebotpro.util.ui.SwingUI.*;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -35,7 +37,12 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.TableColumnModelEvent;
+import javax.swing.event.TableColumnModelListener;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
 import dev.davamu.filebotpro.ResourceManager;
@@ -51,11 +58,18 @@ class MediaInfoTool extends Tool<MediaInfoTool.MediaInfoData> {
 
 	private static final PreferencesEntry<String> persistentSelectedView = Settings.forPackage(MediaInfoTool.class).entry("mediainfo.view").defaultValue(MediaInfoView.DEFAULT.getName());
 
+	private static final int MIN_COLUMN_WIDTH = 50;
+	private static final int DEFAULT_COLUMN_WIDTH = 150;
+
 	private JTable table = new JTable(new MediaInfoTableModel());
 
 	private final List<MediaInfoView> views = MediaInfoView.load();
 	private final DefaultComboBoxModel<MediaInfoView> viewModel = new DefaultComboBoxModel<MediaInfoView>();
 	private final JComboBox<MediaInfoView> viewCombo = new JComboBox<MediaInfoView>(viewModel);
+
+	// column widths set by the user, by view name and column name
+	private final Map<String, Map<String, Integer>> columnWidths = MediaInfoView.loadColumnWidths();
+	private boolean columnWidthsChanged = false;
 
 	private MediaInfoData data = new MediaInfoData(emptyList(), emptyMap());
 	private boolean updatingViews = false;
@@ -76,6 +90,45 @@ class MediaInfoTool extends Tool<MediaInfoTool.MediaInfoData> {
 
 		JScrollPane scrollPane = new JScrollPane(table);
 		scrollPane.setBorder(createEmptyBorder());
+
+		// remember column widths of each view while the user resizes columns, and save them once done
+		table.getColumnModel().addColumnModelListener(new TableColumnModelListener() {
+
+			@Override
+			public void columnMarginChanged(ChangeEvent evt) {
+				TableColumn column = table.getTableHeader().getResizingColumn();
+				if (column != null) {
+					columnWidths.computeIfAbsent(getSelectedView().getName(), k -> new LinkedHashMap<String, Integer>()).put(column.getHeaderValue().toString(), column.getWidth());
+					columnWidthsChanged = true;
+				}
+			}
+
+			@Override
+			public void columnAdded(TableColumnModelEvent evt) {
+			}
+
+			@Override
+			public void columnRemoved(TableColumnModelEvent evt) {
+			}
+
+			@Override
+			public void columnMoved(TableColumnModelEvent evt) {
+			}
+
+			@Override
+			public void columnSelectionChanged(ListSelectionEvent evt) {
+			}
+		});
+
+		table.getTableHeader().addMouseListener(new MouseAdapter() {
+
+			@Override
+			public void mouseReleased(MouseEvent evt) {
+				if (columnWidthsChanged) {
+					saveColumnWidths();
+				}
+			}
+		});
 
 		// custom views: user defined selection and order of columns
 		updateViewModel(views.stream().filter(v -> v.getName().equals(persistentSelectedView.getValue())).findFirst().orElse(MediaInfoView.DEFAULT));
@@ -173,8 +226,12 @@ class MediaInfoTool extends Tool<MediaInfoTool.MediaInfoData> {
 		return editor.getView();
 	}
 
-	private void addView(MediaInfoView view) {
+	private void addView(MediaInfoView view, MediaInfoView source) {
 		if (view != null) {
+			// new views start with the column widths of the view they are based on
+			if (source != null) {
+				copyColumnWidths(source.getName(), view.getName(), false);
+			}
 			views.add(view);
 			saveViews(view);
 		}
@@ -185,27 +242,49 @@ class MediaInfoTool extends Tool<MediaInfoTool.MediaInfoData> {
 
 		// the default view can't be changed, start a new view with all the current columns instead
 		if (view.isDefault()) {
-			addView(showViewEditor("New View", new MediaInfoView(getUniqueViewName("My View"), data.getColumns()), null, evt));
+			addView(showViewEditor("New View", new MediaInfoView(getUniqueViewName("My View"), data.getColumns()), null, evt), view);
 			return;
 		}
 
 		MediaInfoView edit = showViewEditor("Edit View", view, view, evt);
 		if (edit != null) {
+			copyColumnWidths(view.getName(), edit.getName(), true);
 			views.set(views.indexOf(view), edit);
 			saveViews(edit);
 		}
 	}
 
 	private void newView(ActionEvent evt) {
-		addView(showViewEditor("New View", new MediaInfoView(getUniqueViewName("My View"), emptyList()), null, evt));
+		addView(showViewEditor("New View", new MediaInfoView(getUniqueViewName("My View"), emptyList()), null, evt), null);
 	}
 
 	private void duplicateView(ActionEvent evt) {
 		MediaInfoView view = getSelectedView();
 		if (view.isDefault()) {
-			addView(showViewEditor("New View", new MediaInfoView(getUniqueViewName("My View"), data.getColumns()), null, evt));
+			addView(showViewEditor("New View", new MediaInfoView(getUniqueViewName("My View"), data.getColumns()), null, evt), view);
 		} else {
-			addView(showViewEditor("Duplicate View", new MediaInfoView(getUniqueViewName(view.getName() + " copy"), view.getColumns()), null, evt));
+			addView(showViewEditor("Duplicate View", new MediaInfoView(getUniqueViewName(view.getName() + " copy"), view.getColumns()), null, evt), view);
+		}
+	}
+
+	private void copyColumnWidths(String from, String to, boolean move) {
+		if (from.equals(to)) {
+			return;
+		}
+
+		Map<String, Integer> widths = move ? columnWidths.remove(from) : columnWidths.get(from);
+		if (widths != null) {
+			columnWidths.put(to, new LinkedHashMap<String, Integer>(widths));
+			saveColumnWidths();
+		}
+	}
+
+	private void saveColumnWidths() {
+		columnWidthsChanged = false;
+		try {
+			MediaInfoView.storeColumnWidths(columnWidths);
+		} catch (Exception e) {
+			debug.log(Level.WARNING, e, () -> "Failed to save MediaInfo column widths: " + e.getMessage());
 		}
 	}
 
@@ -227,6 +306,7 @@ class MediaInfoTool extends Tool<MediaInfoTool.MediaInfoData> {
 		}
 
 		MediaInfoView renamed = view.rename(name);
+		copyColumnWidths(view.getName(), renamed.getName(), true);
 		views.set(views.indexOf(view), renamed);
 		saveViews(renamed);
 	}
@@ -240,6 +320,9 @@ class MediaInfoTool extends Tool<MediaInfoTool.MediaInfoData> {
 		int option = JOptionPane.showConfirmDialog(getWindow(evt.getSource()), String.format("Delete the view \"%s\"?", view.getName()), "Delete View", JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
 		if (option == JOptionPane.OK_OPTION) {
 			views.remove(view);
+			if (columnWidths.remove(view.getName()) != null) {
+				saveColumnWidths();
+			}
 			saveViews(MediaInfoView.DEFAULT);
 		}
 	}
@@ -346,8 +429,13 @@ class MediaInfoTool extends Tool<MediaInfoTool.MediaInfoData> {
 		table.setModel(new MediaInfoTableModel(data.files, columns, data.values));
 		table.setAutoResizeMode(table.getRowCount() > 0 ? JTable.AUTO_RESIZE_OFF : JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
 
+		// restore the column widths the user has set for this view
+		Map<String, Integer> widths = columnWidths.getOrDefault(view.getName(), emptyMap());
 		TableColumnModel columnModel = table.getColumnModel();
-		IntStream.range(0, columnModel.getColumnCount()).forEach(i -> columnModel.getColumn(i).setMinWidth(150));
+		IntStream.range(0, columnModel.getColumnCount()).mapToObj(columnModel::getColumn).forEach(column -> {
+			column.setMinWidth(MIN_COLUMN_WIDTH);
+			column.setPreferredWidth(widths.getOrDefault(column.getHeaderValue().toString(), DEFAULT_COLUMN_WIDTH));
+		});
 	}
 
 	private static class MediaInfoKey implements Comparable<MediaInfoKey> {

@@ -4,6 +4,10 @@ All notable changes to FileBot Pro.
 
 ## [Unreleased]
 
+### Changed
+
+- The MediaInfo table in the Filter panel remembers the column widths of each view.
+
 ### Fixed
 
 - Matching no longer fails now and then with "Response data is null".

@@ -27,6 +27,7 @@ class MediaInfoView {
 	public static final MediaInfoView DEFAULT = new MediaInfoView("Default", null);
 
 	private static final File STORE = ApplicationFolder.AppData.resolve("mediainfo-views.json");
+	private static final File WIDTHS_STORE = ApplicationFolder.AppData.resolve("mediainfo-column-widths.json");
 
 	private final String name;
 	private final List<String> columns;
@@ -136,6 +137,40 @@ class MediaInfoView {
 		} else {
 			STORE.getParentFile().mkdirs();
 			writeFile(toJson(views).getBytes(UTF_8), STORE);
+		}
+	}
+
+	/**
+	 * @return column widths set by the user, by view name and column name
+	 */
+	public static Map<String, Map<String, Integer>> loadColumnWidths() {
+		Map<String, Map<String, Integer>> widths = new LinkedHashMap<String, Map<String, Integer>>();
+		try {
+			if (WIDTHS_STORE.isFile() && new JsonSlurper().parseText(readTextFile(WIDTHS_STORE)) instanceof Map<?, ?> json) {
+				json.forEach((view, columns) -> {
+					if (columns instanceof Map<?, ?> map) {
+						Map<String, Integer> w = new LinkedHashMap<String, Integer>();
+						map.forEach((column, width) -> {
+							if (width instanceof Number n && n.intValue() > 0) {
+								w.put(column.toString(), n.intValue());
+							}
+						});
+						widths.put(view.toString(), w);
+					}
+				});
+			}
+		} catch (Exception e) {
+			debug.log(Level.WARNING, e, () -> "Failed to read MediaInfo column widths: " + WIDTHS_STORE);
+		}
+		return widths;
+	}
+
+	public static void storeColumnWidths(Map<String, Map<String, Integer>> widths) throws IOException {
+		if (widths.isEmpty()) {
+			WIDTHS_STORE.delete();
+		} else {
+			WIDTHS_STORE.getParentFile().mkdirs();
+			writeFile(JsonOutput.prettyPrint(JsonOutput.toJson(widths)).getBytes(UTF_8), WIDTHS_STORE);
 		}
 	}
 
