@@ -253,10 +253,9 @@ public class CachedResource<K, R> implements Resource<R> {
 		// create cache with the same config
 		Resource<Cache> etagStorage = Resource.lazy(() -> Cache.getCache(cache.getName() + "_etag", cache.getCacheType()));
 
-		// make sure value cache contains key, otherwise ignore previously stored etag
 		return fetchIfNoneMatch(url -> {
 			try {
-				return cache.get(key.transform(url)) == null ? null : etagStorage.get().get(key.transform(url));
+				return etagStorage.get().get(key.transform(url));
 			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}
@@ -271,7 +270,9 @@ public class CachedResource<K, R> implements Resource<R> {
 
 	public static Fetch fetchIfNoneMatch(Function<URL, Object> etagRetrieve, BiConsumer<URL, String> etagStore) {
 		return (url, lastModified) -> {
-			Object etagValue = etagRetrieve.apply(url);
+			// only send the stored etag if the caller has cached data to reuse (lastModified > 0), otherwise a 304 Not Modified
+			// leaves nothing to return (e.g. another thread stored the value and etag since the caller looked at the cache)
+			Object etagValue = lastModified > 0 ? etagRetrieve.apply(url) : null;
 			debug.fine(WebRequest.log(url, lastModified, etagValue));
 			try {
 				return WebRequest.fetch(url, etagValue == null ? lastModified : 0, etagValue, null, storeETag(url, etagStore, etag -> !etag.equals(etagValue)));

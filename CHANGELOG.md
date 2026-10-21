@@ -2,6 +2,12 @@
 
 All notable changes to FileBot Pro.
 
+## [Unreleased]
+
+### Fixed
+
+- Matching no longer fails now and then with "Response data is null".
+
 ## [1.2.2] - 2026-10-21
 
 ### Fixed
