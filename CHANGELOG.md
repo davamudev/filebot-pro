@@ -7,6 +7,7 @@ All notable changes to FileBot Pro.
 ### Fixed
 
 - Matching no longer fails now and then with "Response data is null".
+- Renaming skips files that were moved or renamed outside FileBot Pro instead of failing.
 
 ## [1.2.2] - 2026-10-21
 

@@ -14,6 +14,8 @@ import static dev.davamu.filebotpro.util.ui.SwingUI.*;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -76,7 +78,11 @@ class RenameAction extends AbstractAction {
 			// prepare rename map (abort and notify the user if background computation is still in progress)
 			Map<File, File> renameMap = null;
 			try {
-				renameMap = validate(model.getRenameMap(), window);
+				renameMap = removeMissingFiles(model.getRenameMap());
+				if (renameMap.isEmpty()) {
+					return;
+				}
+				renameMap = validate(renameMap, window);
 			} catch (Exception e) {
 				log.log(Level.WARNING, e::getMessage);
 			}
@@ -220,6 +226,32 @@ class RenameAction extends AbstractAction {
 		}
 	}
 
+	/**
+	 * Files that have been moved, renamed or deleted by another program since they were loaded can't be renamed anymore,
+	 * so they are removed from the rename map and from the list instead of failing the whole batch.
+	 */
+	private Map<File, File> removeMissingFiles(Map<File, File> renameMap) {
+		List<File> missing = renameMap.keySet().stream().filter(RenameAction::isMissing).collect(toList());
+		if (missing.isEmpty()) {
+			return renameMap;
+		}
+
+		missing.forEach(f -> {
+			renameMap.remove(f);
+			model.matches().remove(model.files().indexOf(f));
+		});
+
+		boolean single = missing.size() == 1;
+		String names = missing.stream().limit(5).map(File::getName).collect(joining(", ")) + (missing.size() > 5 ? ", …" : "");
+		log.warning(String.format("%d %s no longer %s and %s been removed from the list: %s", missing.size(), single ? "file" : "files", single ? "exists" : "exist", single ? "has" : "have", names));
+		return renameMap;
+	}
+
+	private static boolean isMissing(File file) {
+		// broken symlinks still exist
+		return !Files.exists(file.toPath(), LinkOption.NOFOLLOW_LINKS);
+	}
+
 	private Map<File, File> validate(Map<File, File> renameMap, Window parent) {
 		// rename map values as modifiable list
 		List<File> destinationPathView = new AbstractList<File>() {
@@ -288,6 +320,13 @@ class RenameAction extends AbstractAction {
 				File source = mapping.getKey();
 				File destination = resolve(mapping.getKey(), mapping.getValue());
 				long size = work.applyAsLong(source);
+
+				// skip files that have disappeared while renaming the previous ones
+				if (isMissing(source)) {
+					log.warning(message("File no longer exists", source));
+					done += size;
+					continue;
+				}
 
 				if (!equalsCaseSensitive(source, destination)) {
 					action.rename(source, destination);
