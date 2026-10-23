@@ -188,7 +188,7 @@ public class AnidbClient extends AbstractEpisodeListProvider implements ArtworkP
 
 	@Override
 	public URI getEpisodeListLink(SearchResult searchResult) {
-		return URI.create("http://anidb.net/a" + searchResult.getId());
+		return URI.create("https://anidb.net/a" + searchResult.getId());
 	}
 
 	/**
@@ -229,7 +229,7 @@ public class AnidbClient extends AbstractEpisodeListProvider implements ArtworkP
 	 */
 	public SearchResult[] getAnimeTitles() throws Exception {
 		// get data file (unzip and cache)
-		byte[] bytes = getCache("root").bytes("anime-titles.dat.gz", n -> new URL("http://anidb.net/api/" + n)).get();
+		byte[] bytes = getCache("root").bytes("anime-titles.dat.gz", n -> new URL("https://anidb.net/api/" + n)).get();
 
 		// <aid>|<type>|<language>|<title>
 		// type: 1=primary title (one per anime), 2=synonyms (multiple per anime), 3=shorttitles (multiple per anime), 4=official title (one per language)
