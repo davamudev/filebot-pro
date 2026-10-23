@@ -788,12 +788,14 @@ public class CmdlineOperations implements CmdlineInterface {
 					File source = it.getKey();
 					File destination = it.getValue();
 					ConflictAction action = conflictAction;
+					File overridden = null;
 
 					// resolve destination
 					if (!destination.isAbsolute()) {
 						// same folder, different name
 						destination = resolve(source, destination);
 					}
+					File original = destination;
 
 					if (!destination.equals(source) && existsNoFollowLinks(destination) && conflictResolver != null) {
 						// custom conflict action may choose another destination or a standard conflict action
@@ -830,10 +832,15 @@ public class CmdlineOperations implements CmdlineInterface {
 
 							// do not actually delete files in test mode
 							if (renameAction != StandardRenameAction.TEST) {
+								// move the existing file aside, it is only deleted once the replacement is in place
+								overridden = new File(destination.getParentFile(), destination.getName() + ".filebot-old");
 								try {
-									delete(destination);
+									if (existsNoFollowLinks(overridden)) {
+										delete(overridden);
+									}
+									java.nio.file.Files.move(destination.toPath(), overridden.toPath());
 								} catch (Exception e) {
-									log.warning(format("[%s] Failed to delete [%s]: %s", action, destination, e));
+									throw new IOException(String.format("[%s] Failed to replace [%s]: %s", action, destination, e), e);
 								}
 							}
 						}
@@ -847,7 +854,19 @@ public class CmdlineOperations implements CmdlineInterface {
 					// rename file, throw exception on failure
 					if (!destination.equals(source) && !destination.exists()) {
 						log.info(format("[%s] from [%s] to [%s]", renameAction, source, destination));
-						destination = renameAction.rename(source, destination);
+						try {
+							destination = renameAction.rename(source, destination);
+						} catch (IOException e) {
+							restoreOverridden(overridden, original);
+							throw e;
+						}
+						if (overridden != null) {
+							try {
+								delete(overridden);
+							} catch (Exception e) {
+								log.warning(format("Failed to delete [%s]: %s", overridden, e));
+							}
+						}
 
 						// in-memory xattr metadata of both paths is outdated now
 						xattr.invalidate(source, destination);
@@ -858,6 +877,7 @@ public class CmdlineOperations implements CmdlineInterface {
 						// update history and xattr metadata right away
 						historySequence = writeHistory(renameAction, source, destination, metaInfo.get(source), historySequence);
 					} else {
+						restoreOverridden(overridden, original);
 						log.info(format("Skipped [%s] because [%s] already exists", source, destination));
 					}
 				} catch (IOException e) {
@@ -886,6 +906,16 @@ public class CmdlineOperations implements CmdlineInterface {
 		}
 
 		return new ArrayList<File>(renameLog.values());
+	}
+
+	private void restoreOverridden(File overridden, File destination) {
+		if (overridden != null && overridden.exists() && !destination.exists()) {
+			try {
+				java.nio.file.Files.move(overridden.toPath(), destination.toPath());
+			} catch (Exception e) {
+				log.warning(format("Failed to restore [%s] from [%s]: %s", destination, overridden, e));
+			}
+		}
 	}
 
 	protected History.Sequence writeHistory(RenameAction action, File source, File destination, Object metaInfo, History.Sequence sequence) {

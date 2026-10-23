@@ -6,6 +6,7 @@ All notable changes to FileBot Pro.
 
 ### Fixed
 
+- `--conflict override` keeps the old file until its replacement is in place.
 - Remote scripts with the same name from different servers no longer share a cached copy.
 - Oversized server responses are rejected without reserving their size in memory.
 - Updating with the MSI installer keeps the install folder and the options chosen in the setup.
