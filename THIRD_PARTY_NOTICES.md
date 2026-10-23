@@ -41,7 +41,7 @@ Bundled with every build (licenses as declared by each project):
 | [args4j:args4j](http://args4j.kohsuke.org/) | 2.37 | MIT License |
 | [ca.weblite:java-objc-bridge](https://github.com/shannah/Java-Objective-C-Bridge) | 1.2 | Apache License, Version 2.0 |
 | [com.adobe.xmp:xmpcore](https://www.adobe.com/devnet/xmp/library/eula-xmp-library-java.html) | 6.1.11 | The BSD 3-Clause License (BSD3) |
-| [com.cedarsoftware:json-io](https://github.com/jdereg/json-io) | 4.12.0 | The Apache Software License, Version 2.0 |
+| [com.cedarsoftware:json-io](https://github.com/jdereg/json-io) | 4.14.1 | The Apache Software License, Version 2.0 |
 | [com.dampcake:bencode](http://github.com/dampcake/bencode) | 1.4.2 | The Apache Software License, Version 2.0 |
 | [com.drewnoakes:metadata-extractor](https://drewnoakes.com/code/exif/) | 2.21.0 | The Apache Software License, Version 2.0 |
 | [com.fifesoft:rsyntaxtextarea](https://github.com/bobbylight/rsyntaxtextarea) | 3.6.3 | BSD-3-Clause |
@@ -101,13 +101,20 @@ License 1.1.
 
 ## Native tools and Java runtime
 
-- The Windows builds include [MediaInfo](https://mediaarea.net/en/MediaInfo) (BSD-2-Clause),
-  [Chromaprint](https://acoustid.org/chromaprint) `fpcalc`, [MKVToolNix](https://mkvtoolnix.download/) `mkvpropedit`
-  (GPL-2.0) and [AtomicParsley](https://github.com/wez/atomicparsley) (GPL-2.0) as separate programs. The license
+- The Windows builds include [MediaInfo](https://mediaarea.net/en/MediaInfo) 26.10 (BSD-2-Clause),
+  [Chromaprint](https://acoustid.org/chromaprint) 1.6.1 `fpcalc` (MIT / LGPL-2.1), [MKVToolNix](https://mkvtoolnix.download/) 102.0 `mkvpropedit`
+  (GPL-2.0) and [AtomicParsley](https://github.com/wez/atomicparsley) 20240608 (GPL-2.0) as separate programs. The license
   texts of `fpcalc` and AtomicParsley are in `native/licenses`; the MediaInfo and MKVToolNix texts are not copied there
   yet, see their project pages.
 - The self-contained builds (portable and installers) bundle a Java runtime; its license files are in
   `runtime/legal`.
+- The Synology packages (`.spk`) bundle the [Eclipse Temurin](https://adoptium.net/) 25 Java runtime (GPL-2.0 with
+  Classpath Exception) built from the pinned release in `build.gradle.kts`.
+- The Docker images are based on `eclipse-temurin:25-jre` (Ubuntu) and install MediaInfo (`libmediainfo0v5`, BSD-2-Clause),
+  `libchromaprint-tools` (`fpcalc`), MKVToolNix, AtomicParsley (GPL-2.0) and 7-Zip (LGPL / unRAR restriction) from the Ubuntu
+  repositories. The `gui` image adds Xvfb, openbox, x11vnc (GPL-2.0), noVNC (MPL-2.0) and websockify (LGPL-3.0). Their
+  versions are those of the Ubuntu release of the base image (`filebot-pro -script fn:sysinfo` prints them); each package
+  keeps its license text in `/usr/share/doc/<package>/copyright` inside the image.
 
 ## Online services
 
