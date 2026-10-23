@@ -37,6 +37,7 @@ import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 import org.fife.ui.rsyntaxtextarea.TextEditorPane;
 import org.fife.ui.rsyntaxtextarea.Theme;
 import org.fife.ui.rtextarea.RTextScrollPane;
+import org.fife.ui.rtextarea.TextMode;
 
 import dev.davamu.filebotpro.ApplicationFolder;
 import dev.davamu.filebotpro.ResourceManager;
@@ -107,7 +108,7 @@ public class GroovyPad extends JFrame {
 	protected TextEditorPane output;
 
 	protected RTextScrollPane createEditor(Theme theme) {
-		editor = new TextEditorPane(TextEditorPane.INSERT_MODE, false);
+		editor = new TextEditorPane(TextMode.INSERT, false);
 		theme.apply(editor);
 
 		editor.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_GROOVY);
@@ -141,7 +142,7 @@ public class GroovyPad extends JFrame {
 	}
 
 	protected RTextScrollPane createOutputLog(Theme theme) throws IOException {
-		output = new TextEditorPane(TextEditorPane.INSERT_MODE, false);
+		output = new TextEditorPane(TextMode.INSERT, false);
 		theme.apply(output);
 
 		output.setEditable(false);
