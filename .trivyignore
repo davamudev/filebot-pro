@@ -1,0 +1,4 @@
+# Findings of `trivy image` for the Docker images that do not apply to FileBot Pro
+
+# glazedlists 1.11.0: XML deserialization in BeanXMLByteCoder (ca.odell.glazedlists.impl.io), which FileBot Pro never uses
+CVE-2023-31890

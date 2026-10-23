@@ -34,10 +34,11 @@ RUN --mount=type=secret,id=apikeys,target=/src/api-keys.properties,required=fals
 
 FROM eclipse-temurin:25-jre@sha256:dbb43d81099eec91e0800226ed2296d03146ee7857165b95112372ad0d67e87f AS headless
 
-# native tools: MediaInfo (media properties), fpcalc (AcoustID), mkvpropedit and AtomicParsley (--apply metadata), 7-Zip
+# native tools: MediaInfo (media properties), fpcalc (AcoustID), mkvpropedit and AtomicParsley (--apply metadata), 7-Zip.
+# The Pebble service manager of the base image is never run, but image scanners report the Go runtime it is built with
 RUN apt-get update \
     && apt-get install -y --no-install-recommends libmediainfo0v5 libchromaprint-tools mkvtoolnix atomicparsley 7zip \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* /usr/bin/pebble
 
 COPY --from=build /src/build/install/filebot-pro /opt/filebot-pro
 COPY packaging/docker/entrypoint.sh /usr/local/bin/entrypoint.sh

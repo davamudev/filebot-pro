@@ -14,6 +14,7 @@ All notable changes to FileBot Pro.
 
 ### Fixed
 
+- Docker: the images no longer ship an unused program that image scanners flag.
 - Renaming episodes warns about files that look like movies, a sign of the wrong `--db`.
 - `fn:sysinfo` no longer shows a garbled AtomicParsley version on Linux and Docker.
 - The desktop app saves each renamed file to the history right away, and the command line skips files that disappeared instead of failing.
