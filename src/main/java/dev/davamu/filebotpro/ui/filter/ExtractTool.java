@@ -32,6 +32,7 @@ import dev.davamu.filebotpro.ResourceManager;
 import dev.davamu.filebotpro.archive.Archive;
 import dev.davamu.filebotpro.archive.FileMapper;
 import dev.davamu.filebotpro.cli.ConflictAction;
+import dev.davamu.filebotpro.cli.ExtractOperation;
 import dev.davamu.filebotpro.util.FileUtilities;
 import dev.davamu.filebotpro.util.ui.LoadingOverlayPane;
 import dev.davamu.filebotpro.util.ui.ProgressMonitor;
@@ -229,24 +230,8 @@ class ExtractTool extends Tool<TableModel> {
 							continue;
 						}
 
-						boolean skip = true;
-						for (FileInfo future : filter == null || forceExtractAll ? outputMapping : selection) {
-							if (conflictAction == ConflictAction.AUTO) {
-								skip &= (future.toFile().exists() && future.getLength() == future.toFile().length());
-							} else {
-								skip &= (future.toFile().exists());
-							}
-						}
-
-						if (!skip || conflictAction == ConflictAction.OVERRIDE) {
-							if (filter == null || forceExtractAll) {
-								// extract all files
-								archive.extract(outputMapper.getOutputDir());
-							} else {
-								// extract files selected by the given filter
-								archive.extract(outputMapper.getOutputDir(), outputMapper.newPathFilter(selection));
-							}
-						}
+						// apply the conflict action to each file so that existing files are only replaced if requested
+						ExtractOperation.extract(archive, outputMapper, filter == null || forceExtractAll ? outputMapping : selection, conflictAction);
 					} finally {
 						archive.close();
 					}

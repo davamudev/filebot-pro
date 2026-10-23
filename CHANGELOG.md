@@ -7,6 +7,7 @@ All notable changes to FileBot Pro.
 ### Fixed
 
 - `fn:amc` refreshes the Plex library again.
+- Extracting archives no longer overwrites existing files unless `--conflict override` is set.
 
 ## [1.3.0] - 2026-10-22
 

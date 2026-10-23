@@ -1482,38 +1482,8 @@ public class CmdlineOperations implements CmdlineInterface {
 					continue;
 				}
 
-				boolean skip = true;
-				for (FileInfo future : filter == null || forceExtractAll ? outputMapping : selection) {
-					if (conflict == ConflictAction.AUTO) {
-						skip &= (future.toFile().exists() && future.getLength() == future.toFile().length());
-					} else {
-						skip &= (future.toFile().exists());
-					}
-				}
-
-				if (!skip || conflict == ConflictAction.OVERRIDE) {
-					if (filter == null || forceExtractAll) {
-						log.finest("Extracting files " + outputMapping);
-
-						// extract all files
-						archive.extract(outputMapper.getOutputDir());
-
-						for (FileInfo it : outputMapping) {
-							extractedFiles.add(it.toFile());
-						}
-					} else {
-						log.finest("Extracting files " + selection);
-
-						// extract files selected by the given filter
-						archive.extract(outputMapper.getOutputDir(), outputMapper.newPathFilter(selection));
-
-						for (FileInfo it : selection) {
-							extractedFiles.add(it.toFile());
-						}
-					}
-				} else {
-					log.finest("Skipped extracting files " + selection);
-				}
+				// apply the conflict action to each file so that existing files are only replaced if requested
+				extractedFiles.addAll(ExtractOperation.extract(archive, outputMapper, filter == null || forceExtractAll ? outputMapping : selection, conflict));
 			} finally {
 				archive.close();
 			}
