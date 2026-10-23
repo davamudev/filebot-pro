@@ -128,7 +128,7 @@ Open pull requests against `develop`. Commit messages and PR titles follow [Conv
 
 ## License
 
-FileBot Pro is a fork of [FileBot](https://www.filebot.net) **4.7.9** by Reinhard Pointner, the last release published as free software under the GNU General Public License. As a derivative work it is distributed under the same terms, the [GNU General Public License v3.0](LICENSE.md), so it is fully legal to use and share. Modifications © 2026 [DaVaMu](https://davamu.dev).
+FileBot Pro is a fork of [FileBot](https://www.filebot.net) **4.7.9** by Reinhard Pointner, the last release published as free software under the GNU General Public License. As a derivative work it is distributed under the same terms, the [GNU General Public License v3.0](LICENSE.md), so you may use and share it under those terms (see [third-party notices](THIRD_PARTY_NOTICES.md) for the licenses of its dependencies). Modifications © 2026 [DaVaMu](https://davamu.dev).
 
 You are free to:
 

@@ -72,8 +72,8 @@ Bundled with every build (licenses as declared by each project):
 | [net.arnx:jsonic](http://jsonic.sourceforge.jp/) | 1.2.11 | The Apache Software License, Version 2.0 |
 | [net.java.dev.jna:jna](https://github.com/java-native-access/jna) | 5.19.1 | Apache-2.0 / LGPL-2.1-or-later |
 | [net.java.dev.jna:jna-platform](https://github.com/java-native-access/jna) | 5.19.1 | Apache-2.0 / LGPL-2.1-or-later |
-| [net.sf.sevenzipjbinding:sevenzipjbinding](http://sevenzipjbind.sourceforge.net/) | 23.01-2.2 | LGPL / unRAR restriction |
-| [net.sf.sevenzipjbinding:sevenzipjbinding-all-platforms](http://sevenzipjbind.sourceforge.net/) | 23.01-2.2 | LGPL / unRAR restriction |
+| [net.sf.sevenzipjbinding:sevenzipjbinding](http://sevenzipjbind.sourceforge.net/) | 23.01-2.2 | LGPL / unRAR restriction (see below) |
+| [net.sf.sevenzipjbinding:sevenzipjbinding-all-platforms](http://sevenzipjbind.sourceforge.net/) | 23.01-2.2 | LGPL / unRAR restriction (see below) |
 | [one.util:streamex](https://github.com/amaembo/streamex) | 0.9.0 | Apache License, Version 2.0 |
 | [org.apache.commons:commons-lang3](https://commons.apache.org/proper/commons-lang/) | 3.17.0 | Apache-2.0 |
 | [org.apache.commons:commons-vfs2](https://commons.apache.org/proper/commons-vfs/) | 2.10.0 | Apache-2.0 |
@@ -118,3 +118,10 @@ any of them.
 
 This product uses the TMDB API but is not endorsed or certified by [TMDB](https://www.themoviedb.org). The data sources
 are credited in the app under **Help → About FileBot Pro**.
+
+## 7-Zip-JBinding and unRAR
+
+7-Zip-JBinding bundles the 7-Zip code, which includes the unRAR decoder. Its license forbids using the code to recreate
+the RAR compression algorithm, a restriction that the GPL does not allow to add to GPL-licensed software. FileBot Pro
+only reads RAR archives with it. Its compatibility with the GPL-3.0 has not been reviewed by a lawyer: whoever
+redistributes FileBot Pro (packages, images, repositories) should check it for their case.
