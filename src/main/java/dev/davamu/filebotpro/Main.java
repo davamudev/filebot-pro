@@ -133,6 +133,7 @@ public class Main {
 				if (args.exportData) {
 					log.info(format("Export %s to [%s]", UserData.export(zip), zip));
 				} else {
+					log.warning("Only restore backups you made yourself: a backup can change system properties and API keys");
 					log.info(format("Restore %s from [%s]", UserData.restore(zip), zip));
 				}
 				System.exit(SUCCESS);

@@ -129,7 +129,7 @@ public final class AppMenus {
 		}
 
 		Component parent = getWindow(evt.getSource());
-		String message = "Settings and presets will be replaced and the history will be merged.\nRestart the application afterwards to apply all settings.";
+		String message = "Settings and presets will be replaced and the history will be merged.\nRestart the application afterwards to apply all settings.\n\nOnly restore backups you made yourself: a backup can change system properties and API keys,\nso one from an untrusted source may redirect requests or run unwanted code.";
 		if (JOptionPane.showConfirmDialog(parent, message, "Restore user data", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE) != JOptionPane.OK_OPTION) {
 			return;
 		}

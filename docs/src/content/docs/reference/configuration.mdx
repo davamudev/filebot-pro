@@ -78,7 +78,8 @@ filebot-pro -import-data "FileBot-Pro-backup.zip"
 :::caution
 The backup contains your API keys (`api-keys.properties`), `system.properties`, and the OpenSubtitles login from the
 settings. The login password is encrypted with your Windows account (DPAPI) on Windows and only base64 encoded on
-macOS and Linux, so keep the file private and do not share it.
+macOS and Linux, so keep the file private and do not share it. Only restore backups you made yourself: a backup
+from someone else can change `system.properties` and your API keys.
 :::
 
 ## Start options
