@@ -220,8 +220,8 @@ jobs:
           path: dist/*
           if-no-files-found: error
 
-  # headless and gui images for linux/amd64 and linux/arm64: ghcr.io/<owner>/filebot-pro:1.2.3, :latest, :1.2.3-gui, :gui,
-  # also pushed as <DOCKERHUB_USERNAME>/filebot-pro when that repository variable is set
+  # headless and gui images for linux/amd64 and linux/arm64 under staging tags (:1.2.3-staging, :1.2.3-gui-staging); the
+  # docker-publish job gives them their final tags once the whole release succeeded
   docker:
     needs: verify
     runs-on: ubuntu-latest
@@ -266,8 +266,7 @@ jobs:
         with:
           images: ${{ steps.images.outputs.list }}
           tags: |
-            type=semver,pattern={{version}}
-            type=raw,value=latest
+            type=raw,value=${{ needs.verify.outputs.version }}-staging
 
       # .git is not part of the build context
       - id: revision
@@ -292,8 +291,7 @@ jobs:
         with:
           images: ${{ steps.images.outputs.list }}
           tags: |
-            type=semver,pattern={{version}},suffix=-gui
-            type=raw,value=gui
+            type=raw,value=${{ needs.verify.outputs.version }}-gui-staging
 
       - uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
         with:
@@ -370,6 +368,40 @@ jobs:
           awk -v v="$VERSION" '/^## \[/ { if (found) exit; found = index($0, "[" v "]") > 0; next } found' CHANGELOG.md > notes.md
           [ -s notes.md ] || echo "FileBot Pro $VERSION" > notes.md
           gh release create "$GITHUB_REF_NAME" dist/* --verify-tag --title "FileBot Pro $VERSION" --notes-file notes.md
+
+  # final tags of the images (ghcr.io/<owner>/filebot-pro:1.2.3, :latest, :1.2.3-gui, :gui, also <DOCKERHUB_USERNAME>/filebot-pro
+  # when that repository variable is set), only after the release was created
+  docker-publish:
+    needs: [verify, release]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+
+      - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - if: vars.DOCKERHUB_USERNAME != ''
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          username: ${{ vars.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - env:
+          VERSION: ${{ needs.verify.outputs.version }}
+          DOCKERHUB_USERNAME: ${{ vars.DOCKERHUB_USERNAME }}
+        run: |
+          images="ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/filebot-pro"
+          if [ -n "$DOCKERHUB_USERNAME" ]; then images="$images docker.io/${DOCKERHUB_USERNAME,,}/filebot-pro"; fi
+          for image in $images; do
+            docker buildx imagetools create -t "$image:$VERSION" -t "$image:latest" "$image:$VERSION-staging"
+            docker buildx imagetools create -t "$image:$VERSION-gui" -t "$image:gui" "$image:$VERSION-gui-staging"
+          done
 
   # adds the .deb to the APT repository (skipped until the repository variable CLOUDFLARE_ACCOUNT_ID is set)
   apt:
