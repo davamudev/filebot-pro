@@ -97,6 +97,15 @@ jobs:
           done
           mv build/distributions/*.spk dist/
 
+      # the rpm must not own system folders such as /usr/bin, otherwise it conflicts with the filesystem package of Fedora
+      - name: Test rpm on Fedora
+        run: |
+          docker run --rm -v "$PWD/dist:/dist:ro" fedora:latest sh -ec '
+            dnf install -y /dist/*.rpm
+            test -x /usr/bin/filebot-pro
+            dnf remove -y filebot-pro
+          '
+
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: linux

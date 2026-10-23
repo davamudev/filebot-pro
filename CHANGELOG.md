@@ -9,6 +9,7 @@ All notable changes to FileBot Pro.
 - `fn:amc` refreshes the Plex library again.
 - Extracting archives no longer overwrites existing files unless `--conflict override` is set.
 - The rename history is saved right away, so moves can be reverted even if the process is killed (e.g. `fn:watcher` in Docker).
+- The `.rpm` package installs on Fedora.
 
 ## [1.3.0] - 2026-10-22
 
