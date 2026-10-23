@@ -19,6 +19,13 @@ if [ "$(id -u)" = "0" ]; then
 	# settings, caches and logs
 	mkdir -p /data
 	chown "$PUID:$PGID" /data
+	# a changed PUID / PGID must also take over what the previous user created (not the media a user may keep in the volume)
+	for entry in /data/cache /data/.java /data/.cache /data/.filebot-pro; do
+		if [ -e "$entry" ]; then
+			chown -R "$PUID:$PGID" "$entry"
+		fi
+	done
+	find /data -maxdepth 1 -type f -exec chown "$PUID:$PGID" {} +
 
 	exec setpriv --reuid="$PUID" --regid="$PGID" --clear-groups /opt/filebot-pro/bin/filebot-pro "$@"
 fi

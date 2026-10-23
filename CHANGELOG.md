@@ -6,6 +6,7 @@ All notable changes to FileBot Pro.
 
 ### Fixed
 
+- The Docker image starts after changing `PUID` or `PGID` on an existing data folder.
 - The command line returns `100` when everything was skipped and an error when `-exec` fails.
 - Extended attribute metadata with escaped type names is ignored.
 - Renaming refuses destinations that end up outside of the `--output` folder.
