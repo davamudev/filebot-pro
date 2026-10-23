@@ -43,6 +43,9 @@ jobs:
           mkdir samples && touch "samples/Example.Movie.2020.mkv"
           $bin -rename samples --db file --action test --format "{fn}-renamed"
 
+      - name: Command line end-to-end checks
+        run: packaging/tests/e2e-cli.sh
+
   docker:
     runs-on: ubuntu-latest
     strategy:
