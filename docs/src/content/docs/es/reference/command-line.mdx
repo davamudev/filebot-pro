@@ -206,4 +206,6 @@ filebot-pro -rename --db TheMovieDB -- "-nombre raro-.mkv"
 | `1` | Error |
 | `3` | Fallo |
 | `4` | Cancelado |
-| `100` | Nada que hacer |
+| `100` | Nada que hacer: se omitieron todos los archivos (por ejemplo porque el destino ya existe), o `-find` no encontró archivos |
+
+`-exec` devuelve `1` si el comando falla con algún archivo.

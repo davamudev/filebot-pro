@@ -201,4 +201,6 @@ filebot-pro -rename --db TheMovieDB -- "-weird name-.mkv"
 | `1` | Error |
 | `3` | Failure |
 | `4` | Aborted |
-| `100` | Nothing to do |
+| `100` | Nothing to do: every file was skipped (for example because the destination already exists), or `-find` matched no files |
+
+`-exec` returns `1` if the command fails for any file.
