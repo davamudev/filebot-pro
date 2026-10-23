@@ -1,0 +1,14 @@
+#!/bin/sh
+# Command-line launcher of the Synology package, linked to /usr/local/bin/@{appId}. Settings, caches and logs are kept in
+# ~/.@{appId} of the user that runs it, or in the folder given by FILEBOT_PRO_DATA.
+PACKAGE=/var/packages/@{appId}/target
+
+export JAVA_HOME="$PACKAGE/jre"
+FILEBOT_PRO_OPTS="-Djava.awt.headless=true -Dapplication.deployment=spk $FILEBOT_PRO_OPTS"
+if [ -n "$FILEBOT_PRO_DATA" ]; then
+	# single quotes keep a folder name with spaces in one JVM option (the start script splits the options with xargs)
+	FILEBOT_PRO_OPTS="-Dapplication.dir='$FILEBOT_PRO_DATA' $FILEBOT_PRO_OPTS"
+fi
+export FILEBOT_PRO_OPTS
+
+exec "$PACKAGE/app/bin/@{appId}" "$@"

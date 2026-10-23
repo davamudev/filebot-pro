@@ -6,6 +6,7 @@ All notable changes to FileBot Pro.
 
 ### Fixed
 
+- Synology: a data folder with spaces in its name works.
 - The `.rpm` package declares the graphics and audio libraries it needs.
 - The Filter panel tells you when MediaInfo is missing.
 - The Windows shell copy and move no longer freeze the window.
