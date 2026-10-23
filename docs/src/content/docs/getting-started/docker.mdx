@@ -130,6 +130,9 @@ services:
 | `VNC_PASSWORD` | | Password of the browser view. Required: the container refuses to start without it unless `VNC_ALLOW_NO_PASSWORD=true` (no authentication: only on a trusted network or behind an authenticating reverse proxy) |
 | `DISPLAY_WIDTH`, `DISPLAY_HEIGHT` | `1600`, `900` | Size of the virtual screen |
 
+The VNC password only uses its first 8 characters, and the browser view is served over plain HTTP: publish port 5800 only
+on `127.0.0.1` (`"127.0.0.1:5800:5800"`) or behind a reverse proxy with TLS and authentication.
+
 The app starts again when you close its window. Settings, presets and history live in `/data`, like in the
 command-line image.
 

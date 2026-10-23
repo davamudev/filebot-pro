@@ -131,6 +131,9 @@ services:
 | `VNC_PASSWORD` | | Contraseña de la vista en el navegador. Obligatoria: el contenedor no arranca sin ella salvo con `VNC_ALLOW_NO_PASSWORD=true` (sin autenticación: solo en una red de confianza o tras un proxy inverso con autenticación) |
 | `DISPLAY_WIDTH`, `DISPLAY_HEIGHT` | `1600`, `900` | Tamaño de la pantalla virtual |
 
+La contraseña VNC solo usa sus 8 primeros caracteres y la vista en el navegador se sirve por HTTP sin cifrar: publica el
+puerto 5800 solo en `127.0.0.1` (`"127.0.0.1:5800:5800"`) o detrás de un proxy inverso con TLS y autenticación.
+
 La aplicación vuelve a arrancar cuando cierras su ventana. Los ajustes, presets e historial se guardan en `/data`,
 igual que en la imagen de línea de comandos.
 

@@ -66,7 +66,7 @@ services:
     container_name: filebot-pro-gui
     restart: unless-stopped
     ports:
-      - "5800:5800"
+      - "127.0.0.1:5800:5800"   # plain HTTP and an 8 character VNC password: do not expose it, use a reverse proxy with TLS
     environment:
       - PUID=1000
       - PGID=1000
