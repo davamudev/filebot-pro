@@ -34,6 +34,7 @@ All notable changes to FileBot Pro.
 - The command line returns `100` when everything was skipped and an error when `-exec` fails.
 - Extended attribute metadata with escaped type names is ignored.
 - Renaming refuses destinations that end up outside of the `--output` folder.
+- Names from online databases can no longer add `..` folders to a rename format.
 - `fn:amc` refreshes the Plex library again.
 - Extracting archives no longer overwrites existing files unless `--conflict override` is set.
 - The rename history is saved right away, so moves can be reverted even if the process is killed (e.g. `fn:watcher` in Docker).

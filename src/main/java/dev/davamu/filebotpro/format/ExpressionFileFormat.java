@@ -4,6 +4,8 @@ import static dev.davamu.filebotpro.similarity.Normalization.*;
 import static dev.davamu.filebotpro.util.FileUtilities.*;
 import static dev.davamu.filebotpro.util.RegularExpressions.*;
 
+import java.util.Arrays;
+
 import javax.script.Bindings;
 import javax.script.ScriptException;
 
@@ -39,7 +41,22 @@ public class ExpressionFileFormat extends ExpressionFormat {
 	@Override
 	protected String normalizeResult(CharSequence value) {
 		// normalize unicode space characters and remove newline characters
-		return normalizePathSeparators(replaceSpace(stripCRLF(value), " ").trim());
+		return neutralizeParentSegments(normalizePathSeparators(replaceSpace(stripCRLF(value), " ").trim()));
+	}
+
+	/**
+	 * Values that reach the result through objects (e.g. {info.title}) are not sanitized by the bindings, so ".." segments that the format itself does not contain must not navigate out of the destination folder
+	 */
+	protected String neutralizeParentSegments(String path) {
+		int allowed = (int) Arrays.stream(getExpression().split("[/\\\\]")).filter(it -> it.trim().equals("..")).count();
+
+		String[] segments = path.split("/", -1);
+		for (int i = 0; i < segments.length; i++) {
+			if (segments[i].trim().equals("..") && allowed-- <= 0) {
+				segments[i] = "__";
+			}
+		}
+		return String.join("/", segments);
 	}
 
 	protected String stripCRLF(CharSequence value) {
