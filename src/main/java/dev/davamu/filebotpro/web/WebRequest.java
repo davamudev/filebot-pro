@@ -92,6 +92,9 @@ public final class WebRequest {
 	/** Upper bound for a single response body held in memory */
 	public static final long MAX_RESPONSE_BYTES = 256L * 1024 * 1024;
 
+	/** Largest buffer reserved up front from the announced Content-Length, the buffer grows on demand */
+	private static final int MAX_INITIAL_BUFFER_BYTES = 8 * 1024 * 1024;
+
 	public static URLConnection openConnection(URL url) throws IOException {
 		URLConnection connection = url.openConnection();
 		connection.setConnectTimeout(CONNECT_TIMEOUT_MILLIS);
@@ -222,7 +225,12 @@ public final class WebRequest {
 			responseParameters.accept(connection.getHeaderFields());
 		}
 
-		ByteBufferOutputStream buffer = new ByteBufferOutputStream(contentLength >= 0 ? contentLength : BUFFER_SIZE);
+		if (contentLength > MAX_RESPONSE_BYTES) {
+			throw new ResponseTooLargeException("Response too large (limit: " + MAX_RESPONSE_BYTES + " bytes)");
+		}
+
+		// never trust the announced length for the initial allocation, the buffer grows on demand
+		ByteBufferOutputStream buffer = new ByteBufferOutputStream(contentLength >= 0 ? Math.min(contentLength, MAX_INITIAL_BUFFER_BYTES) : BUFFER_SIZE);
 		try {
 			// read all
 			buffer.transferFully(inputStream);
@@ -282,7 +290,12 @@ public final class WebRequest {
 		}
 		inputStream = limit(inputStream);
 
-		ByteBufferOutputStream buffer = new ByteBufferOutputStream(contentLength >= 0 ? contentLength : BUFFER_SIZE);
+		if (contentLength > MAX_RESPONSE_BYTES) {
+			throw new ResponseTooLargeException("Response too large (limit: " + MAX_RESPONSE_BYTES + " bytes)");
+		}
+
+		// never trust the announced length for the initial allocation, the buffer grows on demand
+		ByteBufferOutputStream buffer = new ByteBufferOutputStream(contentLength >= 0 ? Math.min(contentLength, MAX_INITIAL_BUFFER_BYTES) : BUFFER_SIZE);
 		try {
 			// read all
 			buffer.transferFully(inputStream);
