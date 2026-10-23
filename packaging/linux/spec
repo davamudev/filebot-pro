@@ -25,6 +25,10 @@ Autoreq: 0
 Requires: PACKAGE_DEFAULT_DEPENDENCIES PACKAGE_CUSTOM_DEPENDENCIES
 %endif
 
+# libraries of the embedded runtime (libawt_xawt.so, libjsound.so). The package is built on Ubuntu, where the default dependencies
+# are not computed for RPM based systems, so they are listed by soname (same names on Fedora, openSUSE and RHEL, 64-bit only)
+Requires: libX11.so.6()(64bit), libXext.so.6()(64bit), libXi.so.6()(64bit), libXrender.so.1()(64bit), libXtst.so.6()(64bit), libasound.so.2()(64bit), libfreetype.so.6()(64bit)
+
 # optional native tools: MediaInfo (media properties) and fpcalc (AcoustID)
 Recommends: libmediainfo
 Recommends: chromaprint-tools

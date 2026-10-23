@@ -6,6 +6,7 @@ All notable changes to FileBot Pro.
 
 ### Fixed
 
+- The `.rpm` package declares the graphics and audio libraries it needs.
 - The Filter panel tells you when MediaInfo is missing.
 - The Windows shell copy and move no longer freeze the window.
 - The help of `--action` and `--mode` lists all values.
