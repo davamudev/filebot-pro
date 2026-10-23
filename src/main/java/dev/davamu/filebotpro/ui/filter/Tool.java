@@ -18,6 +18,7 @@ import javax.swing.tree.TreeNode;
 
 import org.apache.commons.io.FileUtils;
 
+import dev.davamu.filebotpro.mediainfo.MediaInfoException;
 import dev.davamu.filebotpro.ui.filter.FileTree.FileNode;
 import dev.davamu.filebotpro.ui.filter.FileTree.FolderNode;
 import dev.davamu.filebotpro.util.ui.LoadingOverlayPane;
@@ -85,6 +86,10 @@ abstract class Tool<M> extends JComponent {
 
 					if (cause instanceof InterruptedException || cause instanceof CancellationException) {
 						debug.log(Level.FINEST, e, e::toString); // if it happens, it is supposed to
+					} else if (cause instanceof MediaInfoException) {
+						// the native library is missing: tell the user instead of showing an empty panel
+						log.log(Level.WARNING, cause.getMessage());
+						debug.log(Level.FINE, e, e::toString);
 					} else {
 						debug.log(Level.WARNING, e, e::toString); // should not happen
 					}

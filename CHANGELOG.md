@@ -6,6 +6,7 @@ All notable changes to FileBot Pro.
 
 ### Fixed
 
+- The Filter panel tells you when MediaInfo is missing.
 - The Windows shell copy and move no longer freeze the window.
 - The help of `--action` and `--mode` lists all values.
 - Invalid `--action`, `--conflict` and `--order` values show a usage message instead of a stack trace.
