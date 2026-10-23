@@ -14,6 +14,7 @@ All notable changes to FileBot Pro.
 
 ### Fixed
 
+- `fn:sysinfo` no longer shows a garbled AtomicParsley version on Linux and Docker.
 - The desktop app saves each renamed file to the history right away, and the command line skips files that disappeared instead of failing.
 - Docker: the desktop image restarts the app with a growing delay after crashes, and the images report their health.
 - Docker: the desktop image no longer leaves root-owned cache files in `/data`.

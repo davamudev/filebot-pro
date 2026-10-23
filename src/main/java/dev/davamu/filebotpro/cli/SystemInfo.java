@@ -137,7 +137,9 @@ public final class SystemInfo {
 		List<String> found = new ArrayList<String>();
 		tools.forEach((name, version) -> {
 			try {
-				found.add(name + "/" + versionNumber(version.call()));
+				// some builds do not print a version at all (e.g. AtomicParsley of Debian and Ubuntu)
+				Matcher m = VERSION_NUMBER.matcher(version.call());
+				found.add(m.find() ? name + "/" + m.group() : name);
 			} catch (Exception e) {
 				// tool not installed
 			}
