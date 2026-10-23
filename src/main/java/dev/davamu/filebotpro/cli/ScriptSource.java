@@ -74,7 +74,8 @@ public enum ScriptSource {
 		public ScriptProvider getScriptProvider(String input) throws Exception {
 			URI parent = new URI(input).resolve(".");
 
-			return n -> getCache().text(n, s -> parent.resolve(s + ".groovy").toURL()).expire(Duration.ZERO).get();
+			// key the cache by the full URL so scripts with the same name from different origins never share a cached copy
+			return n -> getCache().text(parent.resolve(n + ".groovy").toString(), s -> new URI(s).toURL()).expire(Duration.ZERO).get();
 		}
 	},
 
