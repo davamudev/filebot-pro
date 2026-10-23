@@ -47,6 +47,7 @@ import java.util.stream.Stream;
 import groovy.lang.Closure;
 
 import dev.davamu.filebotpro.CacheManager;
+import dev.davamu.filebotpro.ExitCode;
 import dev.davamu.filebotpro.History;
 import dev.davamu.filebotpro.HistorySpooler;
 import dev.davamu.filebotpro.Language;
@@ -667,12 +668,12 @@ public class CmdlineOperations implements CmdlineInterface {
 		// resolve against output dir
 		if (outputDir != null && !newFile.isAbsolute()) {
 			newFile = new File(outputDir, newFile.getPath());
-		}
 
 			// values from online databases must not be able to move files out of the output folder (e.g. with ../ in a title)
 			if (!newFile.toPath().toAbsolutePath().normalize().startsWith(outputDir.toPath().toAbsolutePath().normalize())) {
 				throw new CmdlineException(String.format("Failed to process [%s] because the destination [%s] is outside of the output folder [%s]", original, newFile, outputDir));
 			}
+		}
 
 		if (isInvalidFilePath(newFile) && !isUnixFS()) {
 			log.config("Stripping invalid characters from new path: " + newName);
@@ -698,6 +699,15 @@ public class CmdlineOperations implements CmdlineInterface {
 	}
 
 	private Map<File, File> renameLog = emptyMap();
+
+	private int execFailures = 0;
+
+	/**
+	 * Number of -exec commands of the last rename that did not succeed
+	 */
+	public int getExecFailures() {
+		return execFailures;
+	}
 
 	private Closure<?> conflictResolver = null;
 
@@ -754,6 +764,7 @@ public class CmdlineOperations implements CmdlineInterface {
 		// rename files
 		Map<File, File> renameLog = new LinkedHashMap<File, File>();
 		this.renameLog = renameLog;
+		this.execFailures = 0;
 
 		// matched info of each file for xattr metadata
 		Map<File, Object> metaInfo = new HashMap<File, Object>();
@@ -803,7 +814,8 @@ public class CmdlineOperations implements CmdlineInterface {
 
 						// do not allow abuse of online databases by repeatedly processing the same files
 						if (matches != null && renameAction.canRevert() && source.length() > 0 && equalsLastModified(source, destination, 2000) && equalsFileContent(source, destination)) {
-							throw new CmdlineException(String.format("Failed to process [%s] because [%s] is an exact copy and already exists [Last-Modified: %tc]", source, destination, destination.lastModified()));
+							log.info(format("Skipped [%s] because [%s] is an exact copy and already exists [Last-Modified: %tc]", source, destination, destination.lastModified()));
+							continue;
 						}
 
 						// destination is already a link to the source file (e.g. hardlink action applied twice) so there is nothing to override or index
@@ -867,9 +879,10 @@ public class CmdlineOperations implements CmdlineInterface {
 
 		// execute command
 		if (exec != null) {
-			exec.execute(renameLog.values().stream().map(f -> new MediaBindingBean(xattr.getMetaInfo(f), f))).forEach(r -> {
-				// consume stream and ignore exit codes
-			});
+			execFailures = (int) exec.execute(renameLog.values().stream().map(f -> new MediaBindingBean(xattr.getMetaInfo(f), f))).filter(r -> r != ExitCode.SUCCESS).count();
+			if (execFailures > 0) {
+				log.warning(format("-exec failed for %d files", execFailures));
+			}
 		}
 
 		return new ArrayList<File>(renameLog.values());

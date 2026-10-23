@@ -122,7 +122,12 @@ public class ArgumentProcessor {
 			ExecCommand exec = args.getExecCommand();
 			if (exec != null) {
 				// execute command for each file
-				return cli.execute(args.getFiles(true), args.getFileFilter(), args.getExpressionFormat(), exec).allMatch(r -> r == SUCCESS) ? SUCCESS : ERROR;
+				// run the command for every file (do not stop at the first failure)
+				int[] results = cli.execute(args.getFiles(true), args.getFileFilter(), args.getExpressionFormat(), exec).toArray();
+				if (results.length == 0) {
+					return NOOP;
+				}
+				return java.util.Arrays.stream(results).allMatch(r -> r == SUCCESS) ? SUCCESS : ERROR;
 			} else {
 				// print media info, or the file paths for -find
 				ExpressionFormat format = args.getExpressionFormat() == null && args.find ? new ExpressionFormat("{f}") : args.getExpressionFormat();
@@ -146,11 +151,14 @@ public class ArgumentProcessor {
 			files.addAll(cli.getMissingSubtitles(files, args.getSearchQuery(), args.getLanguage(), args.getSubtitleOutputFormat(), args.getEncoding(), args.getSubtitleNamingFormat(), args.isStrict()));
 		}
 
+		int exitCode = SUCCESS;
+
 		if (args.rename) {
 			// with --apply, run -exec after post-processing, so that commands see the final files (e.g. with embedded tags)
 			boolean postProcess = args.apply.size() > 0 && args.getRenameAction() != StandardRenameAction.TEST;
 			ExecCommand exec = args.getExecCommand();
 
+			boolean onlyRename = !args.extract && !args.getSubtitles && !args.check;
 			List<File> destinationFiles = cli.rename(files, args.getDatasource(), args.getSearchQuery(), args.getSortOrder(), args.getLanguage().getLocale(), args.getExpressionFilter(), args.getExpressionMapper(), args.isStrict(), args.getExpressionFileFormat(), args.getAbsoluteOutputFolder(), args.getRenameAction(), args.getConflictAction(), postProcess ? null : exec);
 
 			// post-process renamed files (e.g. --apply artwork nfo)
@@ -171,8 +179,14 @@ public class ArgumentProcessor {
 					long failed = cli.execute(destinationFiles, FILES, null, exec).filter(r -> r != SUCCESS).count();
 					if (failed > 0) {
 						log.warning(format("-exec failed for %d files", failed));
+						exitCode = ERROR;
 					}
 				}
+			} else if (cli instanceof CmdlineOperations && ((CmdlineOperations) cli).getExecFailures() > 0) {
+				exitCode = ERROR;
+			} else if (destinationFiles.isEmpty() && onlyRename) {
+				// everything was skipped (e.g. the destination files already exist)
+				exitCode = NOOP;
 			}
 		}
 
@@ -187,7 +201,7 @@ public class ArgumentProcessor {
 			}
 		}
 
-		return SUCCESS;
+		return exitCode;
 	}
 
 	private int print(Stream<?> values) {
