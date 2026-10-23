@@ -221,6 +221,9 @@ public class CmdlineOperations implements CmdlineInterface {
 						throw new CmdlineException("Multiple queries: Processing multiple shows at once requires -non-strict matching: " + seriesNames);
 					}
 
+					// a movie file can still be matched to some episode (e.g. -non-strict with the folder name as query), so point out a likely wrong --db
+					filter(batch, VIDEO_FILES).stream().filter(f -> isMovie(f, true)).forEach(f -> log.warning(format("[%s] looks like a movie, not an episode (check --db)", f)));
+
 					episodes = fetchEpisodeSet(db, seriesNames, sortOrder, locale, strict, 5); // consider episodes of up to N search results for each query
 				} else {
 					Set<Episode> episodeSet = new LinkedHashSet<Episode>();
