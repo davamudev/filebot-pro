@@ -107,6 +107,11 @@ public final class HistorySpooler {
 					File backup = backupPersistentHistory();
 					log.log(Level.SEVERE, String.format("Failed to read history file: %s (backup saved to %s)", e.getMessage(), backup), e);
 
+					// without a backup writing the new history file would destroy the old history
+					if (backup == null) {
+						return;
+					}
+
 					// write all sequences of this process to the new history file
 					persistedSequences.clear();
 				}

@@ -6,6 +6,7 @@ All notable changes to FileBot Pro.
 
 ### Fixed
 
+- A history file that cannot be read is no longer overwritten when no backup could be saved.
 - `--conflict override` keeps the old file until its replacement is in place.
 - Remote scripts with the same name from different servers no longer share a cached copy.
 - Oversized server responses are rejected without reserving their size in memory.
