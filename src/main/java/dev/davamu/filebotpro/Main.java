@@ -54,7 +54,23 @@ public class Main {
 	/** this instance receives the files of later launches (and loads its own file arguments through SingleInstance) */
 	private static boolean singleInstance;
 
+	/** redirected output (pipes, files, service logs) is encoded in the legacy code page by default, which loses non-Latin names */
+	private static void useUtf8ForRedirectedOutput() {
+		java.io.Console console = System.console();
+		if (console != null && console.isTerminal()) {
+			return;
+		}
+		if (!System.out.charset().equals(java.nio.charset.StandardCharsets.UTF_8)) {
+			System.setOut(new java.io.PrintStream(new java.io.FileOutputStream(java.io.FileDescriptor.out), true, java.nio.charset.StandardCharsets.UTF_8));
+		}
+		if (!System.err.charset().equals(java.nio.charset.StandardCharsets.UTF_8)) {
+			System.setErr(new java.io.PrintStream(new java.io.FileOutputStream(java.io.FileDescriptor.err), true, java.nio.charset.StandardCharsets.UTF_8));
+		}
+	}
+
 	public static void main(String[] argv) {
+		useUtf8ForRedirectedOutput();
+
 		try {
 			// early so that options like -Dapplication.dir apply before anything reads them
 			applyEnvironmentOptions(true);
