@@ -4,7 +4,7 @@
 # Hub when the repository variable DOCKERHUB_USERNAME and the secret DOCKERHUB_TOKEN are set) and attaches all packages
 # and their SHA-256 checksums to the GitHub release, plus the update.xml that installed versions check for new releases
 # (app.updateUrl points to releases/latest/download/update.xml), then adds the .deb to the APT repository (apt.yml).
-# The builds are not signed.
+# The builds are not code signed, but every package has a build provenance attestation (gh attestation verify).
 #
 #   git checkout master && git tag v1.2.3 && git push origin v1.2.3
 name: Release
@@ -313,6 +313,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      id-token: write
+      attestations: write
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
@@ -358,6 +360,11 @@ jobs:
           ET.ElementTree(update).write("dist/update.xml", encoding="UTF-8", xml_declaration=True)
           EOF
           cat dist/update.xml
+
+      # build provenance of every package, verify with: gh attestation verify <file> --repo <owner>/filebot-pro
+      - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: dist/*
 
       # release notes: the section of this version in CHANGELOG.md
       - name: Publish

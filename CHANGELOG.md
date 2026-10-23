@@ -4,6 +4,10 @@ All notable changes to FileBot Pro.
 
 ## [Unreleased]
 
+### Added
+
+- Package downloads of each release have a build provenance attestation (`gh attestation verify`).
+
 ### Fixed
 
 - Synology: a data folder with spaces in its name works.
