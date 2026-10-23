@@ -44,12 +44,13 @@ COPY packaging/docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh /opt/filebot-pro/bin/filebot-pro \
     && mkdir -p /data /input /output
 
-# settings, caches, history and logs live in /data
+# settings, caches, history and logs live in /data. The image options go in JAVA_OPTS so that the user can set
+# FILEBOT_PRO_OPTS (e.g. -Xmx) without dropping them
 ENV HOME=/data \
     PUID=1000 \
     PGID=1000 \
     UMASK=022 \
-    FILEBOT_PRO_OPTS="-Djava.awt.headless=true -Dapplication.dir=/data -Dapplication.deployment=docker -Duser.home=/data"
+    JAVA_OPTS="-Djava.awt.headless=true -Dapplication.dir=/data -Dapplication.deployment=docker -Duser.home=/data"
 
 VOLUME ["/data"]
 
@@ -68,7 +69,7 @@ COPY packaging/docker/gui-entrypoint.sh /usr/local/bin/gui-entrypoint.sh
 COPY packaging/docker/novnc-index.html /usr/share/novnc/index.html
 RUN chmod +x /usr/local/bin/gui-entrypoint.sh
 
-ENV DISPLAY_WIDTH=1600     DISPLAY_HEIGHT=900     FILEBOT_PRO_OPTS="-Dapplication.dir=/data -Dapplication.deployment=docker -Duser.home=/data -Dsun.java2d.xrender=false"
+ENV DISPLAY_WIDTH=1600     DISPLAY_HEIGHT=900     JAVA_OPTS="-Dapplication.dir=/data -Dapplication.deployment=docker -Duser.home=/data -Dsun.java2d.xrender=false"
 
 EXPOSE 5800
 

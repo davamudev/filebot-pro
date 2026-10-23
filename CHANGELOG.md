@@ -6,6 +6,7 @@ All notable changes to FileBot Pro.
 
 ### Fixed
 
+- Setting `FILEBOT_PRO_OPTS` in Docker no longer moves the data out of `/data`.
 - The Docker image starts after changing `PUID` or `PGID` on an existing data folder.
 - The command line returns `100` when everything was skipped and an error when `-exec` fails.
 - Extended attribute metadata with escaped type names is ignored.
