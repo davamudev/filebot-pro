@@ -6,6 +6,7 @@ All notable changes to FileBot Pro.
 
 ### Fixed
 
+- Invalid `--action`, `--conflict` and `--order` values show a usage message instead of a stack trace.
 - A history file that cannot be read is no longer overwritten when no backup could be saved.
 - `--conflict override` keeps the old file until its replacement is in place.
 - Remote scripts with the same name from different servers no longer share a cached copy.

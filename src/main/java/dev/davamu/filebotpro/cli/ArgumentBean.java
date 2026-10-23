@@ -299,7 +299,11 @@ public class ArgumentBean {
 			return new ExecutableRenameAction(executable.getPath(), getOutputPath());
 		}
 
-		return StandardRenameAction.forName(action);
+		try {
+			return StandardRenameAction.forName(action);
+		} catch (IllegalArgumentException e) {
+			throw new CmdlineException("Invalid --action: " + e.getMessage(), e);
+		}
 	}
 
 	/**
@@ -311,7 +315,14 @@ public class ArgumentBean {
 
 	public ConflictAction getConflictAction() {
 		// custom conflict actions fall back to skip
-		return ApplyOptionHandler.isCustomAction(conflict) ? ConflictAction.SKIP : ConflictAction.forName(conflict);
+		if (ApplyOptionHandler.isCustomAction(conflict)) {
+			return ConflictAction.SKIP;
+		}
+		try {
+			return ConflictAction.forName(conflict);
+		} catch (IllegalArgumentException e) {
+			throw new CmdlineException("Invalid --conflict: " + e.getMessage(), e);
+		}
 	}
 
 	/**
@@ -325,7 +336,11 @@ public class ArgumentBean {
 	}
 
 	public SortOrder getSortOrder() {
-		return SortOrder.forName(order);
+		try {
+			return SortOrder.forName(order);
+		} catch (IllegalArgumentException e) {
+			throw new CmdlineException("Invalid --order: " + e.getMessage(), e);
+		}
 	}
 
 	public ExpressionFormat getExpressionFormat() throws Exception {
