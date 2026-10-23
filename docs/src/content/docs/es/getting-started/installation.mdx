@@ -56,7 +56,8 @@ haz clic en **Más información** y después en **Ejecutar de todos modos**. En 
 **Instalador**: ejecuta `FileBot-Pro-1.0.0.msi` y abre **FileBot Pro** desde el menú de inicio o el acceso directo
 del escritorio. El instalador pregunta si quieres crear cada acceso directo, añadir `filebot-pro` al `PATH` y añadir
 FileBot Pro al menú contextual del Explorador (todo viene marcado). Para una instalación silenciosa sin la entrada del `PATH`
-ni la integración con el Explorador: `msiexec /i FileBot-Pro-1.0.0.msi /qn ADD_TO_PATH=0 EXPLORER_INTEGRATION=0`.
+ni la integración con el Explorador: `msiexec /i FileBot-Pro-1.0.0.msi /qn ADD_TO_PATH=0 EXPLORER_INTEGRATION=0`. Añade
+`JP_INSTALL_DESKTOP_SHORTCUT=""` y `JP_INSTALL_STARTMENU_SHORTCUT=""` para omitir los accesos directos (con `=0` se siguen creando).
 
 Con la integración con el Explorador, las carpetas, unidades y archivos de vídeo y subtítulos muestran **Open in FileBot Pro**
 al hacer clic derecho (en Windows 11, dentro de **Mostrar más opciones**), y **Enviar a → FileBot Pro** abre cualquier
