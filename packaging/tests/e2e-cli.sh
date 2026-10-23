@@ -47,5 +47,12 @@ rename b.mkv --conflict override
 check "override replaces the file" $([ "$(cat "$work/out/target.mkv")" = "second version" ]; echo $?)
 check "override leaves no backup behind" $([ -z "$(ls "$work/out" | grep filebot-old)" ]; echo $?)
 
+# a move is written to the history right away and -revert undoes it
+printf 'moved' > "$work/in/c.mkv"
+"$bin" -rename "$work/in/c.mkv" --db file --action move --output "$work/moved" --format "renamed" > "$work/log" 2>&1
+check "move renames the file" $([ -f "$work/moved/renamed.mkv" ] && [ ! -e "$work/in/c.mkv" ]; echo $?)
+"$bin" -revert > "$work/log" 2>&1
+check "revert restores the moved file" $([ "$(cat "$work/in/c.mkv" 2> /dev/null)" = "moved" ] && [ ! -e "$work/moved/renamed.mkv" ]; echo $?)
+
 [ "$failures" -eq 0 ] || { echo "$failures check(s) failed"; exit 1; }
 echo "all checks passed"

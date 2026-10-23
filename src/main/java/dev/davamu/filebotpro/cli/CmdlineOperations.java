@@ -50,6 +50,7 @@ import dev.davamu.filebotpro.CacheManager;
 import dev.davamu.filebotpro.ExitCode;
 import dev.davamu.filebotpro.History;
 import dev.davamu.filebotpro.HistorySpooler;
+import dev.davamu.filebotpro.RenameService;
 import dev.davamu.filebotpro.Language;
 import dev.davamu.filebotpro.RenameAction;
 import dev.davamu.filebotpro.StandardRenameAction;
@@ -854,12 +855,18 @@ public class CmdlineOperations implements CmdlineInterface {
 					// rename file, throw exception on failure
 					if (!destination.equals(source) && !destination.exists()) {
 						log.info(format("[%s] from [%s] to [%s]", renameAction, source, destination));
+						File renamed;
 						try {
-							destination = renameAction.rename(source, destination);
+							renamed = RenameService.rename(renameAction, source, destination);
 						} catch (IOException e) {
 							restoreOverridden(overridden, original);
 							throw e;
 						}
+						if (renamed == null) {
+							restoreOverridden(overridden, original);
+							continue;
+						}
+						destination = renamed;
 						if (overridden != null) {
 							try {
 								delete(overridden);
@@ -932,12 +939,7 @@ public class CmdlineOperations implements CmdlineInterface {
 		}
 
 		// write rename history
-		if (action.canRevert()) {
-			sequence = HistorySpooler.getInstance().append(sequence, singletonMap(source, destination).entrySet());
-			HistorySpooler.getInstance().commitPeriodically();
-		}
-
-		return sequence;
+		return RenameService.appendHistory(action, sequence, source, destination);
 	}
 
 	protected File nextAvailableIndexedName(File file) {

@@ -16,8 +16,6 @@ import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.LinkOption;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -41,8 +39,10 @@ import com.sun.jna.platform.win32.Ole32;
 import com.sun.jna.platform.win32.WinNT.HRESULT;
 
 import dev.davamu.filebotpro.CacheManager;
+import dev.davamu.filebotpro.History;
 import dev.davamu.filebotpro.HistorySpooler;
 import dev.davamu.filebotpro.NativeRenameAction;
+import dev.davamu.filebotpro.RenameService;
 import dev.davamu.filebotpro.ResourceManager;
 import dev.davamu.filebotpro.StandardRenameAction;
 import dev.davamu.filebotpro.UserFiles;
@@ -107,8 +107,9 @@ class RenameAction extends AbstractAction {
 			Map<File, File> renameLog = new LinkedHashMap<File, File>();
 
 			// Windows: ask the user to wait before logging off or shutting down until all files are renamed
+			boolean nativeShell = useNativeShell() && NativeRenameAction.isSupported(action);
 			try (SessionEndHandler.Block shutdownBlock = SessionEndHandler.block("Renaming files")) {
-				if (useNativeShell() && NativeRenameAction.isSupported(action)) {
+				if (nativeShell) {
 					// the Windows shell shows its own progress dialog: run it on a COM thread and keep the EDT repainting until it is done
 					NativeRenameWorker worker = new NativeRenameWorker(renameMap, renameLog, NativeRenameAction.valueOf(action.name()));
 					callOnComThread(worker);
@@ -140,7 +141,10 @@ class RenameAction extends AbstractAction {
 			Map<File, File> mapping = renameMap;
 			ProgressWorker<Void> postProcess = (message, progress, cancelled) -> {
 				message.accept("Saving rename history");
-				HistorySpooler.getInstance().append(renameLog.entrySet());
+				if (nativeShell) {
+					// the Windows shell renames all files in one call, the standard worker has added each file to the history already
+					HistorySpooler.getInstance().append(renameLog.entrySet());
+				}
 				HistorySpooler.getInstance().commit();
 
 				// in-memory xattr metadata of both paths is outdated now
@@ -259,7 +263,7 @@ class RenameAction extends AbstractAction {
 
 	private static boolean isMissing(File file) {
 		// broken symlinks still exist
-		return !Files.exists(file.toPath(), LinkOption.NOFOLLOW_LINKS);
+		return RenameService.isMissing(file);
 	}
 
 	private Map<File, File> validate(Map<File, File> renameMap, Window parent) {
@@ -317,6 +321,7 @@ class RenameAction extends AbstractAction {
 			long total = renameMap.keySet().stream().mapToLong(work).sum();
 			long done = 0;
 			int count = 0;
+			History.Sequence historySequence = null;
 
 			for (Entry<File, File> mapping : renameMap.entrySet()) {
 				if (cancelled.get()) {
@@ -339,7 +344,14 @@ class RenameAction extends AbstractAction {
 				}
 
 				if (!equalsCaseSensitive(source, destination)) {
-					action.rename(source, destination);
+					File renamed = RenameService.rename(action, source, destination);
+					if (renamed == null) {
+						done += size;
+						continue;
+					}
+
+					// add to the history right away, so that nothing is lost if the application is killed during a long batch
+					historySequence = RenameService.appendHistory(action, historySequence, source, renamed);
 				}
 
 				// remember successfully renamed matches for history entry and possible revert
