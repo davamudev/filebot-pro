@@ -182,6 +182,9 @@ TheMovieDB
 Movies/{n} ({y})/{n} ({y})
 ```
 
+On Windows, arguments with characters outside the system code page (Japanese, Chinese, Cyrillic, ...) reach the program as `?`.
+Put such paths in an argument file saved as UTF-8, or enable "Beta: Use Unicode UTF-8 for worldwide language support" in the Windows region settings.
+
 Option values are never read as argument files, so `--format @format.groovy` still loads a format from a file.
 
 `--` ends the options: every argument after it is a file or folder, even if it starts with `-` or `@`.

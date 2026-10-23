@@ -184,6 +184,10 @@ TheMovieDB
 Movies/{n} ({y})/{n} ({y})
 ```
 
+En Windows, los argumentos con caracteres fuera de la página de códigos del sistema (japonés, chino, cirílico, ...)
+llegan al programa como `?`. Pon esas rutas en un archivo de argumentos guardado como UTF-8, o activa «Beta: usar Unicode
+UTF-8 para la compatibilidad con idiomas de todo el mundo» en la configuración regional de Windows.
+
 Los valores de las opciones nunca se leen como archivos de argumentos, así que `--format @formato.groovy` sigue
 cargando un formato desde un archivo.
 
