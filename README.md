@@ -111,7 +111,7 @@ filebot-pro -script fn:sysinfo
 
 ## Configuration
 
-- **User data** (settings, history, caches, logs): `%APPDATA%\FileBot Pro`, `~/Library/Application Support/FileBot Pro` or `~/.filebot-pro`. Override with `-Dapplication.dir=<folder>`.
+- **User data** (settings, history, caches, logs): `%APPDATA%\FileBot Pro`, `~/Library/Application Support/FileBot Pro` or `~/.filebot-pro`. Override with `-Dapplication.dir=<folder>`. Preferences such as the theme and presets are kept in the system preferences store (the registry on Windows), so `-Dapplication.dir` and the portable zip do not isolate them.
 - **Theme**: `-Ddev.davamu.filebotpro.theme=light|dark|system`; disable animations with `-Dflatlaf.animation=false`.
 
 ## Roadmap
