@@ -54,6 +54,9 @@ ENV HOME=/data \
 
 VOLUME ["/data"]
 
+# healthy while the Java process of the app is running
+HEALTHCHECK --interval=60s --timeout=5s --start-period=60s --retries=3     CMD for p in /proc/[0-9]*; do grep -qs dev.davamu.filebotpro "$p/cmdline" && exit 0; done; exit 1
+
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
 # watch /input and move renamed files into /output (Plex naming scheme)

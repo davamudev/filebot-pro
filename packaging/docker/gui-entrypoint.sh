@@ -39,10 +39,19 @@ websockify --web /usr/share/novnc 5800 localhost:5900 > /dev/null 2>&1 &
 # stop the app with the container (wait returns as soon as a trapped signal arrives)
 trap 'kill "$pid" 2> /dev/null; exit 0' TERM INT
 
-# restart the app when its window is closed, so the browser tab never ends up on an empty desktop
+# restart the app when its window is closed, so the browser tab never ends up on an empty desktop. A crash loop backs off
+# up to 30 seconds, an app that ran for a while restarts right away
+delay=1
 while true; do
+	started=$(date +%s)
 	HOME=/data /usr/local/bin/entrypoint.sh "$@" &
 	pid=$!
 	wait "$pid" || true
-	sleep 1
+	if [ $(($(date +%s) - started)) -ge 30 ]; then
+		delay=1
+	else
+		delay=$((delay * 2))
+		[ "$delay" -le 30 ] || delay=30
+	fi
+	sleep "$delay"
 done
