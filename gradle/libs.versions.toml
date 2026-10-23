@@ -1,6 +1,6 @@
 [versions]
 flatlaf = "3.7.2"
-groovy = "4.0.33"
+groovy = "6.0.0"
 jna = "5.19.1"
 sevenzipjbinding = "23.01-2.2"
 slf4j = "2.0.17"
