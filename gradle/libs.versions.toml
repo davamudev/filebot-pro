@@ -14,7 +14,7 @@ flatlaf-fonts-jetbrains-mono = { module = "com.formdev:flatlaf-fonts-jetbrains-m
 # 11.5.x throws a NullPointerException in Grid.clearGroupLinkBounds (breaks the format editor)
 miglayout-swing = { module = "com.miglayout:miglayout-swing", version = "11.4.2" }
 glazedlists = { module = "com.glazedlists:glazedlists", version = "1.11.0" }
-rsyntaxtextarea = { module = "com.fifesoft:rsyntaxtextarea", version = "3.6.3" }
+rsyntaxtextarea = { module = "com.fifesoft:rsyntaxtextarea", version = "4.0.1" }
 imgscalr = { module = "org.imgscalr:imgscalr-lib", version = "4.2" }
 
 # Scripting (format expressions and CLI scripts)
