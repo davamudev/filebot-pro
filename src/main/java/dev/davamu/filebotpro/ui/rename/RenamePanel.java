@@ -797,6 +797,7 @@ public class RenamePanel extends JComponent {
 
 			// record the rename so it can be reverted from the history dialog
 			HistorySpooler.getInstance().append(singletonMap(file, destination));
+			HistorySpooler.getInstance().commit();
 			xattr.invalidate(file, destination);
 
 			// keep the position and the match of the file

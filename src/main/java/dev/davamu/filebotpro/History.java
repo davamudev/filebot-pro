@@ -69,6 +69,18 @@ public class History {
 			return unmodifiableList(elements);
 		}
 
+		void addAll(Collection<Element> elements) {
+			this.elements.addAll(elements);
+		}
+
+		Sequence copy() {
+			Sequence copy = new Sequence();
+			copy.date = date;
+			copy.session = session;
+			copy.elements = new ArrayList<Element>(elements());
+			return copy;
+		}
+
 		@Override
 		public boolean equals(Object obj) {
 			if (obj instanceof Sequence) {
@@ -142,13 +154,14 @@ public class History {
 		add(elements, null);
 	}
 
-	public void add(Collection<Element> elements, String session) {
+	public Sequence add(Collection<Element> elements, String session) {
 		Sequence sequence = new Sequence();
 		sequence.date = new Date();
 		sequence.session = session;
 		sequence.elements = new ArrayList<Element>(elements);
 
 		add(sequence);
+		return sequence;
 	}
 
 	/**
@@ -191,6 +204,19 @@ public class History {
 
 	public void addAll(Collection<Sequence> sequences) {
 		this.sequences.addAll(sequences);
+	}
+
+	/**
+	 * Replace the most recent sequence equal to the given previous sequence
+	 */
+	public boolean replace(Sequence previous, Sequence sequence) {
+		int i = sequences.lastIndexOf(previous);
+		if (i < 0) {
+			return false;
+		}
+
+		sequences.set(i, sequence);
+		return true;
 	}
 
 	public void merge(History history) {

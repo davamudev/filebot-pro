@@ -132,6 +132,7 @@ class RenameAction extends AbstractAction {
 			ProgressWorker<Void> postProcess = (message, progress, cancelled) -> {
 				message.accept("Saving rename history");
 				HistorySpooler.getInstance().append(renameLog.entrySet());
+				HistorySpooler.getInstance().commit();
 
 				// in-memory xattr metadata of both paths is outdated now
 				renameLog.forEach((from, to) -> xattr.invalidate(from, resolve(from, to)));

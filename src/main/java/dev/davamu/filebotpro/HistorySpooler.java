@@ -18,12 +18,14 @@ import java.nio.file.StandardOpenOption;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 
 import dev.davamu.filebotpro.History.Element;
+import dev.davamu.filebotpro.History.Sequence;
 
 public final class HistorySpooler {
 
@@ -44,7 +46,17 @@ public final class HistorySpooler {
 	private int persistentHistoryTotalSize = -1;
 	private boolean persistentHistoryEnabled = true;
 
+	// all sequences of this process, which are kept in memory even after they have been written to the history file
 	private final History sessionHistory = new History();
+
+	// copy of each sequence of this process as it was last written to the history file, so that it can be updated when more files are added to the sequence
+	private final Map<Sequence, Sequence> persistedSequences = new IdentityHashMap<Sequence, Sequence>();
+
+	// write the history file at most once per second while files are being renamed
+	private static final long COMMIT_INTERVAL = 1000;
+
+	private boolean modified = false;
+	private long lastCommit = 0;
 
 	// identifies all rename operations of this process (e.g. movies and episodes of one -rename call), so that -revert can undo the most recent operation as a whole
 	private String session = Long.toString(System.currentTimeMillis(), 36) + "-" + Long.toString(ProcessHandle.current().pid(), 36);
@@ -65,12 +77,21 @@ public final class HistorySpooler {
 			}
 		}
 
-		history.addAll(sessionHistory.sequences());
+		mergeSessionHistory(history);
 		return history;
 	}
 
+	/**
+	 * Write the session history to the history file, but only if the last commit has been a while ago (e.g. after each renamed file)
+	 */
+	public synchronized void commitPeriodically() {
+		if (System.currentTimeMillis() - lastCommit >= COMMIT_INTERVAL) {
+			commit();
+		}
+	}
+
 	public synchronized void commit() {
-		if (sessionHistory.sequences().isEmpty() || !persistentHistoryEnabled) {
+		if (!modified || !persistentHistoryEnabled) {
 			return;
 		}
 
@@ -85,19 +106,51 @@ public final class HistorySpooler {
 					// never overwrite history we can't read
 					File backup = backupPersistentHistory();
 					log.log(Level.SEVERE, String.format("Failed to read history file: %s (backup saved to %s)", e.getMessage(), backup), e);
+
+					// write all sequences of this process to the new history file
+					persistedSequences.clear();
 				}
 			}
 
 			// write new combined history
-			history.addAll(sessionHistory.sequences());
+			Map<Sequence, Sequence> written = mergeSessionHistory(history);
 			writePersistentHistory(history);
 
-			sessionHistory.clear();
+			persistedSequences.putAll(written);
+			modified = false;
 			sessionHistoryTotalSize = 0;
 			persistentHistoryTotalSize = history.totalSize();
 		} catch (Exception e) {
 			debug.log(Level.SEVERE, "Failed to write history file", e);
+		} finally {
+			lastCommit = System.currentTimeMillis();
 		}
+	}
+
+	/**
+	 * Add new sequences of this process to the given history and update the sequences that have changed since they were written
+	 *
+	 * @return the copy of each sequence that has been added to the given history
+	 */
+	private Map<Sequence, Sequence> mergeSessionHistory(History history) {
+		Map<Sequence, Sequence> copies = new IdentityHashMap<Sequence, Sequence>();
+
+		for (Sequence sequence : sessionHistory.sequences()) {
+			Sequence previous = persistedSequences.get(sequence);
+
+			// sequence is already in the history file
+			if (previous != null && previous.elements().size() == sequence.elements().size()) {
+				continue;
+			}
+
+			Sequence copy = sequence.copy();
+			if (previous == null || !history.replace(previous, copy)) {
+				history.add(copy);
+			}
+			copies.put(sequence, copy);
+		}
+
+		return copies;
 	}
 
 	public synchronized void clear() throws IOException {
@@ -109,6 +162,8 @@ public final class HistorySpooler {
 
 		persistentHistory = null;
 		sessionHistory.clear();
+		persistedSequences.clear();
+		modified = false;
 		sessionHistoryTotalSize = 0;
 		persistentHistoryTotalSize = 0;
 	}
@@ -177,29 +232,51 @@ public final class HistorySpooler {
 	}
 
 	public synchronized void append(Iterable<Entry<File, File>> elements) {
-		List<Element> sequence = new ArrayList<Element>();
+		append(null, elements);
+	}
+
+	/**
+	 * Add renamed files to the given sequence of this session (e.g. one file at a time while a batch is being renamed), or to a new sequence if the given sequence is null
+	 *
+	 * @return the sequence the renamed files have been added to
+	 */
+	public synchronized Sequence append(Sequence sequence, Iterable<Entry<File, File>> elements) {
+		List<Element> list = new ArrayList<Element>();
 
 		for (Entry<File, File> element : elements) {
 			File k = element.getKey();
 			File v = element.getValue();
 
 			if (k != null && v != null) {
-				sequence.add(new Element(k.getName(), v.getPath(), k.getParentFile()));
+				list.add(new Element(k.getName(), v.getPath(), k.getParentFile()));
 			}
 		}
 
-		if (sequence.size() > 0) {
-			sessionHistory.add(sequence, session); // append to session history
-			sessionHistoryTotalSize += sequence.size();
+		if (list.isEmpty()) {
+			return sequence;
 		}
+
+		if (sequence == null) {
+			sequence = sessionHistory.add(list, session); // append to session history
+		} else {
+			sequence.addAll(list);
+		}
+
+		sessionHistoryTotalSize += list.size();
+		modified = true;
+		return sequence;
 	}
 
 	public synchronized void append(History importHistory) {
 		sessionHistory.merge(importHistory);
+		modified = true;
 	}
 
 	public synchronized History getSessionHistory() {
-		return new History(sessionHistory.sequences());
+		// copy sequences, because sequences of this process may still grow
+		History history = new History();
+		sessionHistory.sequences().forEach(s -> history.add(s.copy()));
+		return history;
 	}
 
 	public synchronized int getSessionHistoryTotalSize() {

@@ -750,6 +750,19 @@ public class CmdlineOperations implements CmdlineInterface {
 		Map<File, File> renameLog = new LinkedHashMap<File, File>();
 		this.renameLog = renameLog;
 
+		// matched info of each file for xattr metadata
+		Map<File, Object> metaInfo = new HashMap<File, Object>();
+		if (matches != null) {
+			for (Match<File, ?> match : matches) {
+				if (match.getCandidate() != null) {
+					metaInfo.put(match.getValue(), match.getCandidate());
+				}
+			}
+		}
+
+		// history entry of this batch, written after each renamed file so that nothing is lost if the process is killed (e.g. long running fn:watcher)
+		History.Sequence historySequence = null;
+
 		// Windows: ask the user to wait before logging off or shutting down until all files are renamed
 		SessionEndHandler.Block shutdownBlock = SessionEndHandler.block("Renaming files");
 
@@ -824,6 +837,9 @@ public class CmdlineOperations implements CmdlineInterface {
 
 						// remember successfully renamed matches for history entry and possible revert
 						renameLog.put(source, destination);
+
+						// update history and xattr metadata right away
+						historySequence = writeHistory(renameAction, source, destination, metaInfo.get(source), historySequence);
 					} else {
 						log.info(format("Skipped [%s] because [%s] already exists", source, destination));
 					}
@@ -833,9 +849,9 @@ public class CmdlineOperations implements CmdlineInterface {
 				}
 			}
 		} finally {
-			// update history and xattr metadata
-			if (renameLog.size() > 0) {
-				writeHistory(renameAction, renameLog, matches);
+			// make sure the history of this batch is written to disk
+			if (historySequence != null) {
+				HistorySpooler.getInstance().commit();
 			}
 
 			// print number of processed files
@@ -854,32 +870,26 @@ public class CmdlineOperations implements CmdlineInterface {
 		return new ArrayList<File>(renameLog.values());
 	}
 
-	protected void writeHistory(RenameAction action, Map<File, File> log, List<Match<File, ?>> matches) {
+	protected History.Sequence writeHistory(RenameAction action, File source, File destination, Object metaInfo, History.Sequence sequence) {
+		// write xattr metadata
+		if (metaInfo != null && destination.isFile()) {
+			// remember Last Modified date
+			long timestamp = source.isFile() ? source.lastModified() : destination.lastModified();
+
+			// store xattr
+			xattr.setMetaInfo(destination, metaInfo, source.getName());
+
+			// restore Last Modified date
+			destination.setLastModified(timestamp);
+		}
+
 		// write rename history
 		if (action.canRevert()) {
-			HistorySpooler.getInstance().append(log.entrySet());
+			sequence = HistorySpooler.getInstance().append(sequence, singletonMap(source, destination).entrySet());
+			HistorySpooler.getInstance().commitPeriodically();
 		}
 
-		// write xattr metadata
-		if (matches != null) {
-			for (Match<File, ?> match : matches) {
-				if (match.getCandidate() != null) {
-					File source = match.getValue();
-					File destination = log.get(source);
-
-					if (destination != null && destination.isFile()) {
-						// remember Last Modified date
-						long timestamp = source.isFile() ? source.lastModified() : destination.lastModified();
-
-						// store xattr
-						xattr.setMetaInfo(destination, match.getCandidate(), match.getValue().getName());
-
-						// restore Last Modified date
-						destination.setLastModified(timestamp);
-					}
-				}
-			}
-		}
+		return sequence;
 	}
 
 	protected File nextAvailableIndexedName(File file) {
