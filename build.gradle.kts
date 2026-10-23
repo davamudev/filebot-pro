@@ -52,6 +52,11 @@ dependencies {
     implementation(libs.bundles.media)
     implementation(libs.bundles.native)
 
+    // transitive of commons-vfs2: raise it above the version with CVE-2025-48924
+    constraints {
+        implementation(libs.commons.lang3)
+    }
+
     runtimeOnly(libs.jaxb.runtime)
     runtimeOnly(libs.slf4j.nop)
 

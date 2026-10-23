@@ -50,6 +50,7 @@ metadata-extractor = { module = "com.drewnoakes:metadata-extractor", version = "
 bencode = { module = "com.dampcake:bencode", version = "1.4.2" }
 xz = { module = "org.tukaani:xz", version = "1.12" }
 commons-io = { module = "commons-io:commons-io", version = "2.22.0" }
+commons-lang3 = { module = "org.apache.commons:commons-lang3", version = "3.20.0" }
 commons-vfs2 = { module = "org.apache.commons:commons-vfs2", version = "2.10.0" }
 sevenzipjbinding = { module = "net.sf.sevenzipjbinding:sevenzipjbinding", version.ref = "sevenzipjbinding" }
 sevenzipjbinding-natives = { module = "net.sf.sevenzipjbinding:sevenzipjbinding-all-platforms", version.ref = "sevenzipjbinding" }
