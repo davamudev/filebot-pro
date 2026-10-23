@@ -6,7 +6,7 @@
 #   docker build -t filebot-pro .
 #   docker build --secret id=apikeys,src=api-keys.properties -t filebot-pro .   (embed API keys, see README)
 #
-# Multi-architecture: docker buildx build --platform linux/amd64,linux/arm64 -t filebot-pro .
+# Multi-architecture (needs a registry or a local image store with containerd): docker buildx build --platform linux/amd64,linux/arm64 --push -t <registry>/filebot-pro .
 #
 # Desktop app in the browser (noVNC on port 5800): docker build --target gui -t filebot-pro:gui .
 

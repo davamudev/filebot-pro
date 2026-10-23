@@ -40,10 +40,10 @@ Download the packages from [GitHub releases](https://github.com/davamudev/filebo
 | System | Download | Install |
 |---|---|---|
 | Windows 10/11 | `FileBot-Pro-<version>-windows-portable.zip` or `.msi` (`-windows-arm64-portable.zip` for ARM) | Unzip and start `FileBot Pro.exe`, or run the installer |
-| Ubuntu / Debian | [APT repository](https://filebotpro.davamu.dev/getting-started/installation/) or `filebot-pro_<version>-1_amd64.deb` | `sudo apt install filebot-pro` once the repository is added, or `sudo apt install ./filebot-pro_<version>-1_amd64.deb` |
+| Ubuntu / Debian | [APT repository](https://filebotpro.davamu.dev/getting-started/installation/) or `filebot-pro_<version>_amd64.deb` | `sudo apt install filebot-pro` once the repository is added, or `sudo apt install ./filebot-pro_<version>_amd64.deb` |
 | Fedora / openSUSE | `filebot-pro-<version>-1.x86_64.rpm` | `sudo dnf install ./filebot-pro-<version>-1.x86_64.rpm` |
 | Other Linux | `FileBot-Pro-<version>-linux-portable.zip` | Unzip and run `bin/FileBot Pro` |
-| macOS | `FileBot Pro-<version>-arm64.dmg` (Apple Silicon) or `-x64.dmg` (Intel) | Drag the app into **Applications** |
+| macOS | `FileBot-Pro-<version>-arm64.dmg` (Apple Silicon) or `-x64.dmg` (Intel) | Drag the app into **Applications** |
 | Synology DSM 7 | `FileBot-Pro-<version>-synology-x86_64.spk` or `-armv8.spk` | **Package Center → Manual Install** (command line) |
 
 The `.deb` and `.rpm` packages put the `filebot-pro` command on the `PATH` and pull in MediaInfo, fpcalc, mkvpropedit and AtomicParsley as recommended packages.
@@ -61,7 +61,7 @@ Requires **JDK 25** to build (Gradle downloads one if missing). On Windows use `
 ./gradlew docsBuild      # documentation site -> docs/dist/ (needs Node.js)
 ```
 
-`jpackage` builds `.msi` on Windows (needs [WiX](https://wixtoolset.org/)), `.dmg` on macOS and `.deb` on Linux; change it with `-PinstallerType=exe|pkg|rpm`. Installers can only be built on their own system (`.deb`/`.rpm` on Linux, `.dmg`/`.pkg` on macOS). The Linux package templates live in [`packaging/linux`](packaging/linux); set `app.maintainerEmail` in `gradle.properties` for the `.deb` Maintainer field.
+`jpackage` builds `.msi` on Windows (needs [WiX 3.14](https://github.com/wixtoolset/wix3/releases)), `.dmg` on macOS and `.deb` on Linux; change it with `-PinstallerType=exe|pkg|rpm`. Installers can only be built on their own system (`.deb`/`.rpm` on Linux, `.dmg`/`.pkg` on macOS). The Linux package templates live in [`packaging/linux`](packaging/linux); set `app.maintainerEmail` in `gradle.properties` for the `.deb` Maintainer field.
 
 ## API keys
 

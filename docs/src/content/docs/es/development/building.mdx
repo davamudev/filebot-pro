@@ -10,6 +10,8 @@ página de [instalación](/es/getting-started/installation/).
 
 - JDK 25 (Gradle descarga uno si falta).
 - El código fuente: `git clone https://github.com/davamudev/filebot-pro.git`
+- Para los instaladores: [WiX 3.14](https://github.com/wixtoolset/wix3/releases) en Windows (`.msi`/`.exe`), `fakeroot` y `rpm` en Linux (`.deb`/`.rpm`).
+- [Node.js](https://nodejs.org/) para la documentación (`docsBuild`, `buildAll`) y Docker con Buildx para las imágenes.
 
 En Windows usa `gradlew.bat` en lugar de `./gradlew`.
 
@@ -67,7 +69,7 @@ revisión de git como argumento:
 
 ```bash
 docker build -t filebot-pro --secret id=apikeys,src=api-keys.properties --build-arg REVISION=$(git rev-list --count HEAD) .
-docker buildx build --platform linux/amd64,linux/arm64 -t filebot-pro .   # las dos arquitecturas
+docker buildx build --platform linux/amd64,linux/arm64 --push -t <registry>/filebot-pro .   # las dos arquitecturas
 docker build --target gui -t filebot-pro:gui .                            # aplicación de escritorio en el navegador
 ```
 

@@ -10,6 +10,8 @@ This page is for people who want to compile FileBot Pro themselves. To use the a
 
 - JDK 25 (Gradle downloads one if missing).
 - The source code: `git clone https://github.com/davamudev/filebot-pro.git`
+- For the installers: [WiX 3.14](https://github.com/wixtoolset/wix3/releases) on Windows (`.msi`/`.exe`), `fakeroot` and `rpm` on Linux (`.deb`/`.rpm`).
+- [Node.js](https://nodejs.org/) for the documentation (`docsBuild`, `buildAll`) and Docker with Buildx for the images.
 
 On Windows use `gradlew.bat` instead of `./gradlew`.
 
@@ -64,7 +66,7 @@ build secret to embed the keys (it never ends up in an image layer), and the git
 
 ```bash
 docker build -t filebot-pro --secret id=apikeys,src=api-keys.properties --build-arg REVISION=$(git rev-list --count HEAD) .
-docker buildx build --platform linux/amd64,linux/arm64 -t filebot-pro .   # both architectures
+docker buildx build --platform linux/amd64,linux/arm64 --push -t <registry>/filebot-pro .   # both architectures
 docker build --target gui -t filebot-pro:gui .                            # desktop app in the browser
 ```
 
