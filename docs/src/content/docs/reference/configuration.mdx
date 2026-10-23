@@ -10,7 +10,10 @@ work out of the box. TVmaze and the local sources need no key. A build made with
 missing its key, and you can add one as described below. The key you add always takes precedence over the embedded one.
 
 AniDB is queried over plain HTTP (its API offers no HTTPS), so the registered client name and the answers travel
-unencrypted: do not rely on AniDB data on untrusted networks. Two sources tie their quota, licensing or billing to the person who uses them, so they are never embedded and need
+unencrypted: do not rely on AniDB data on untrusted networks. The OpenSubtitles password is stored base64 encoded
+(not encrypted) outside Windows, so in Docker and on a Synology NAS keep the data folder private.
+
+Two sources tie their quota, licensing or billing to the person who uses them, so they are never embedded and need
 your own key:
 
 | Source | Key | Get one at |
