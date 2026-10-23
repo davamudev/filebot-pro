@@ -79,7 +79,7 @@ def refreshPlexLibrary(server, port, token, files) {
 	}
 
 	requests.each{ url ->
-		log.finest "GET: ${url.replace(apikey.toString(), '***')}"
+		log.finest "GET: ${url.replaceAll(/X-Plex-Token=[^&]+/, 'X-Plex-Token=***')}"
 		new URL(url).get()
 	}
 }

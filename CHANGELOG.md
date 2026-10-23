@@ -2,6 +2,12 @@
 
 All notable changes to FileBot Pro.
 
+## [Unreleased]
+
+### Fixed
+
+- `fn:amc` refreshes the Plex library again.
+
 ## [1.3.0] - 2026-10-22
 
 ### Changed
