@@ -52,7 +52,8 @@ key=$(gpg --batch --list-secret-keys --with-colons | awk -F: '$1 == "fpr" { prin
 [ -n "$key" ] || { echo "No secret key in the gpg keyring" >&2; exit 1; }
 sign() {
     if [ -n "${APT_GPG_PASSPHRASE:-}" ]; then
-        gpg --batch --yes --pinentry-mode loopback --passphrase "$APT_GPG_PASSPHRASE" --local-user "$key" --digest-algo SHA512 "$@"
+        # the passphrase goes through stdin, not the command line (visible to other processes)
+        printf '%s' "$APT_GPG_PASSPHRASE" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 --local-user "$key" --digest-algo SHA512 "$@"
     else
         gpg --batch --yes --local-user "$key" --digest-algo SHA512 "$@"
     fi

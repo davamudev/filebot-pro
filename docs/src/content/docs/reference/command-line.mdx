@@ -153,7 +153,7 @@ filebot-pro -script fn:amc "%F" --output "D:/Media" --action move -non-strict --
 | `-d` | | Folder mode: rename the given folders as a whole (e.g. one folder per movie) instead of the files inside |
 | `-non-strict` | | More aggressive matching |
 | `-exec` | `echo {f}` | Run a command for each processed file |
-| `--def` | `name=value` | Variables for scripts |
+| `--def` | `name=value` | Variables for scripts. Tokens passed this way (e.g. `plex=host:token`) stay in the shell history and in the process list |
 | `--mode` | interactive, binary | Confirm matches in the terminal (numbered prompts in cmd.exe and PowerShell, a full-screen dialog elsewhere). `binary` is passed to scripts as `_args.mode`; `fn:duplicates` needs it to find binary duplicates (`--mode binary --action hardlink`) |
 | `-unixfs` | | Allow any character in file names |
 | `-no-xattr`, `-no-history` | | Do not store data on files or in the history |

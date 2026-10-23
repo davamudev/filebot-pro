@@ -154,7 +154,7 @@ filebot-pro -script fn:amc "%F" --output "D:/Media" --action move -non-strict --
 | `-d` | | Modo carpeta: renombra las carpetas indicadas como un todo (p. ej. una carpeta por película) en lugar de los archivos que contienen |
 | `-non-strict` | | Emparejado más agresivo |
 | `-exec` | `echo {f}` | Ejecuta un comando por cada archivo procesado |
-| `--def` | `nombre=valor` | Variables para scripts |
+| `--def` | `nombre=valor` | Variables para scripts. Los tokens pasados así (p. ej. `plex=host:token`) quedan en el historial del shell y en la lista de procesos |
 | `--mode` | interactive, binary | Confirma las coincidencias en la terminal (preguntas numeradas en cmd.exe y PowerShell, un diálogo a pantalla completa en el resto). `binary` se pasa a los scripts como `_args.mode`; `fn:duplicates` lo necesita para encontrar duplicados binarios (`--mode binary --action hardlink`) |
 | `-unixfs` | | Permite cualquier carácter en los nombres |
 | `-no-xattr`, `-no-history` | | No guarda datos en los archivos ni en el historial |

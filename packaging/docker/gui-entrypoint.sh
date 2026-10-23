@@ -23,8 +23,10 @@ if [ -z "$VNC_PASSWORD" ] && [ "$VNC_ALLOW_NO_PASSWORD" != "true" ]; then
 fi
 
 if [ -n "$VNC_PASSWORD" ]; then
-	(umask 077; x11vnc -storepasswd "$VNC_PASSWORD" /tmp/vncpasswd > /dev/null)
-	x11vnc -display :0 -forever -shared -quiet -localhost -rfbport 5900 -rfbauth /tmp/vncpasswd &
+	# the password is read from a file, not from the command line (visible to other processes). VNC only uses the first 8 characters
+	(umask 077; printf '%s
+' "$VNC_PASSWORD" > /tmp/vncpasswd)
+	x11vnc -display :0 -forever -shared -quiet -localhost -rfbport 5900 -passwdfile /tmp/vncpasswd &
 else
 	x11vnc -display :0 -forever -shared -quiet -localhost -rfbport 5900 -nopw &
 fi
