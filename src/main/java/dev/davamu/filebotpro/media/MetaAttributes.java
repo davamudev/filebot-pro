@@ -126,7 +126,15 @@ public class MetaAttributes {
 		return JsonReader.jsonToJava(migrated, options);
 	}
 
-	private static final Pattern JSON_TYPE = Pattern.compile("\"@type\"\\s*:\\s*\"((?:[^\"\\\\]|\\\\.)*)\"");
+	// json-io also accepts the short key "@t"
+	private static final Pattern JSON_TYPE = Pattern.compile("\"@t(?:ype)?\"\\s*:\\s*\"((?:[^\"\\\\]|\\\\.)*)\"");
+
+	private static final Pattern UNICODE_ESCAPE = Pattern.compile("\\\\u([0-9a-fA-F]{4})");
+
+	// json-io decodes the escapes of keys and values, so the check has to look at the decoded text
+	private static String decodeUnicodeEscapes(String json) {
+		return UNICODE_ESCAPE.matcher(json).replaceAll(m -> Matcher.quoteReplacement(String.valueOf((char) Integer.parseInt(m.group(1), 16))));
+	}
 
 	private static final Pattern TRUSTED_TYPE = Pattern.compile("[a-z]+" // json-io aliases of primitives and basic types (int, long, string, date, ...)
 			+ "|\\[*L?(java\\.lang\\.(Object|String|Integer|Long|Double|Float|Short|Byte|Boolean|Character)|dev\\.davamu\\.filebotpro\\.[\\w.$]+);?"
@@ -136,7 +144,7 @@ public class MetaAttributes {
 			+ "|dev\\.davamu\\.filebotpro\\.[\\w.$]+");
 
 	static boolean hasOnlyTrustedTypes(String json) {
-		Matcher matcher = JSON_TYPE.matcher(json);
+		Matcher matcher = JSON_TYPE.matcher(decodeUnicodeEscapes(json));
 		while (matcher.find()) {
 			String type = matcher.group(1);
 			if (!TRUSTED_TYPE.matcher(type).matches() && !JSON_TYPE_MAP.containsValue(type)) {

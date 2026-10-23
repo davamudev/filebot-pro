@@ -6,6 +6,7 @@ All notable changes to FileBot Pro.
 
 ### Fixed
 
+- Extended attribute metadata with escaped type names is ignored.
 - Renaming refuses destinations that end up outside of the `--output` folder.
 - `fn:amc` refreshes the Plex library again.
 - Extracting archives no longer overwrites existing files unless `--conflict override` is set.
