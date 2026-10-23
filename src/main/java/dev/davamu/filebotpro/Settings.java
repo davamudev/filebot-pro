@@ -151,10 +151,6 @@ public final class Settings {
 		return isApplicationDeployment("msi", "zip");
 	}
 
-	public static boolean isUbuntuApp() {
-		return isApplicationDeployment("snap");
-	}
-
 	public static boolean isMacApp() {
 		return isApplicationDeployment("app", "pkg");
 	}

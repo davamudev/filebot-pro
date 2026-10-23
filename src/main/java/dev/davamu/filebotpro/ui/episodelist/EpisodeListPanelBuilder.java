@@ -35,6 +35,11 @@ public class EpisodeListPanelBuilder implements PanelBuilder {
 	}
 
 	@Override
+	public int hashCode() {
+		return EpisodeListPanelBuilder.class.hashCode();
+	}
+
+	@Override
 	public JComponent create() {
 		return new EpisodeListPanel();
 	}
