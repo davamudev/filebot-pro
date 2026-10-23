@@ -8,6 +8,10 @@ All notable changes to FileBot Pro.
 
 - Package downloads of each release have a build provenance attestation (`gh attestation verify`).
 
+### Changed
+
+- Scripts and format expressions run on Groovy 6.
+
 ### Fixed
 
 - The desktop app saves each renamed file to the history right away, and the command line skips files that disappeared instead of failing.
