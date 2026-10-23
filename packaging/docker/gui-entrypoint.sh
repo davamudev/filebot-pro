@@ -5,6 +5,9 @@ set -e
 
 export DISPLAY=:0
 
+# the X processes run as root: keep their caches out of the /data volume
+HOME=/tmp
+
 Xvfb :0 -screen 0 "${DISPLAY_WIDTH:-1600}x${DISPLAY_HEIGHT:-900}x24" -nolisten tcp &
 
 # wait for the X server
@@ -38,7 +41,7 @@ trap 'kill "$pid" 2> /dev/null; exit 0' TERM INT
 
 # restart the app when its window is closed, so the browser tab never ends up on an empty desktop
 while true; do
-	/usr/local/bin/entrypoint.sh "$@" &
+	HOME=/data /usr/local/bin/entrypoint.sh "$@" &
 	pid=$!
 	wait "$pid" || true
 	sleep 1

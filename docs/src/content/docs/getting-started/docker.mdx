@@ -32,7 +32,7 @@ default.
 
 | Variable | Default | Meaning |
 | --- | --- | --- |
-| `PUID`, `PGID` | `1000` | User and group that own the new files and folders. Use the owner of your media folders (`id <user>` on the NAS) |
+| `PUID`, `PGID` | `1000` | User and group that own the new files and folders. Use the owner of your media folders (`id <user>` on the NAS). The default `1000` changes the owner of `/data` to that user |
 | `UMASK` | `022` | Permissions of new files and folders (`002` makes them writable for the group) |
 | `FILEBOT_PRO_APIKEY_<NAME>` | | Your own [API keys](/reference/configuration/#api-keys), e.g. `FILEBOT_PRO_APIKEY_THEMOVIEDB` |
 

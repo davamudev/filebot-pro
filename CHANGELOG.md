@@ -10,6 +10,7 @@ All notable changes to FileBot Pro.
 
 ### Fixed
 
+- Docker: the desktop image no longer leaves root-owned cache files in `/data`.
 - Synology: a data folder with spaces in its name works.
 - The `.rpm` package declares the graphics and audio libraries it needs.
 - The Filter panel tells you when MediaInfo is missing.

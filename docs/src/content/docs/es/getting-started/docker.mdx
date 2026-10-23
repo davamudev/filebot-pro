@@ -32,7 +32,7 @@ en Docker Hub por defecto.
 
 | Variable | Por defecto | Significado |
 | --- | --- | --- |
-| `PUID`, `PGID` | `1000` | Usuario y grupo dueños de los archivos y carpetas nuevos. Usa los del dueño de tus carpetas multimedia (`id <usuario>` en el NAS) |
+| `PUID`, `PGID` | `1000` | Usuario y grupo dueños de los archivos y carpetas nuevos. Usa los del dueño de tus carpetas multimedia (`id <usuario>` en el NAS). El valor por defecto `1000` cambia el propietario de `/data` a ese usuario |
 | `UMASK` | `022` | Permisos de los archivos y carpetas nuevos (`002` los deja escribibles para el grupo) |
 | `FILEBOT_PRO_APIKEY_<NOMBRE>` | | Tus propias [claves API](/es/reference/configuration/#claves-api), por ejemplo `FILEBOT_PRO_APIKEY_THEMOVIEDB` |
 
