@@ -12,10 +12,10 @@
     "check": "astro check"
   },
   "dependencies": {
-    "@astrojs/starlight": "^0.36.0",
+    "@astrojs/starlight": "^0.42.7",
     "@fontsource-variable/jetbrains-mono": "^5.2.5",
     "@fontsource-variable/roboto": "^5.2.5",
-    "astro": "^5.14.1",
+    "astro": "^7.4.2",
     "mdast-util-from-markdown": "^2.1.0",
     "sharp": "^0.34.2"
   }
