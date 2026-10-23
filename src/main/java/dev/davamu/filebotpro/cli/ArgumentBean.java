@@ -64,7 +64,7 @@ import dev.davamu.filebotpro.web.SortOrder;
 
 public class ArgumentBean {
 
-	@Option(name = "--mode", usage = "Enable CLI interactive mode", metaVar = "[interactive]")
+	@Option(name = "--mode", usage = "Enable CLI interactive mode", metaVar = "[interactive, binary]")
 	public String mode = null;
 
 	@Option(name = "-rename", usage = "Rename media files")
@@ -76,7 +76,7 @@ public class ArgumentBean {
 	@Option(name = "--order", usage = "Episode order", metaVar = "[Airdate, Official, DVD, Absolute, AbsoluteAirdate, Digital, StoryArc, Production]")
 	public String order = "Airdate";
 
-	@Option(name = "--action", usage = "Rename action", metaVar = "[move, copy, keeplink, symlink, hardlink, clone, test]")
+	@Option(name = "--action", usage = "Rename action", metaVar = "[move, copy, keeplink, symlink, hardlink, clone, duplicate, test]")
 	public String action = "move";
 
 	@Option(name = "--conflict", usage = "Conflict resolution", metaVar = "[skip, override, auto, index, fail] or {closure}")
