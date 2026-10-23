@@ -11,6 +11,8 @@ import static dev.davamu.filebotpro.util.ExceptionUtilities.*;
 import static dev.davamu.filebotpro.util.FileUtilities.*;
 import static dev.davamu.filebotpro.util.ui.SwingUI.*;
 
+import java.awt.SecondaryLoop;
+import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.io.File;
@@ -25,6 +27,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -33,6 +36,9 @@ import java.util.logging.Level;
 import java.util.stream.Stream;
 
 import javax.swing.AbstractAction;
+
+import com.sun.jna.platform.win32.Ole32;
+import com.sun.jna.platform.win32.WinNT.HRESULT;
 
 import dev.davamu.filebotpro.CacheManager;
 import dev.davamu.filebotpro.HistorySpooler;
@@ -47,6 +53,9 @@ import dev.davamu.filebotpro.util.ui.ProgressMonitor;
 import dev.davamu.filebotpro.util.ui.ProgressMonitor.ProgressWorker;
 
 class RenameAction extends AbstractAction {
+
+	private static final int COINIT_APARTMENTTHREADED = 0x2;
+	private static final int COINIT_DISABLE_OLE1DDE = 0x4;
 
 	public static final String RENAME_ACTION = "RENAME_ACTION";
 
@@ -100,9 +109,9 @@ class RenameAction extends AbstractAction {
 			// Windows: ask the user to wait before logging off or shutting down until all files are renamed
 			try (SessionEndHandler.Block shutdownBlock = SessionEndHandler.block("Renaming files")) {
 				if (useNativeShell() && NativeRenameAction.isSupported(action)) {
-					// call on EDT
+					// the Windows shell shows its own progress dialog: run it on a COM thread and keep the EDT repainting until it is done
 					NativeRenameWorker worker = new NativeRenameWorker(renameMap, renameLog, NativeRenameAction.valueOf(action.name()));
-					worker.call(null, null, null);
+					callOnComThread(worker);
 				} else {
 					// call and wait
 					StandardRenameWorker worker = new StandardRenameWorker(renameMap, renameLog, action);
@@ -341,6 +350,35 @@ class RenameAction extends AbstractAction {
 			}
 
 			return renameLog;
+		}
+	}
+
+	private static void callOnComThread(NativeRenameWorker worker) throws Exception {
+		AtomicReference<Exception> error = new AtomicReference<Exception>();
+
+		SecondaryLoop loop = Toolkit.getDefaultToolkit().getSystemEventQueue().createSecondaryLoop();
+		Thread thread = new Thread(() -> {
+			HRESULT init = Ole32.INSTANCE.CoInitializeEx(null, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+			try {
+				worker.call(null, null, null);
+			} catch (Exception e) {
+				error.set(e);
+			} finally {
+				if (init.intValue() >= 0) {
+					Ole32.INSTANCE.CoUninitialize();
+				}
+				loop.exit();
+			}
+		}, "NativeRename");
+		thread.setDaemon(true);
+		thread.start();
+
+		if (!loop.enter()) {
+			thread.join();
+		}
+
+		if (error.get() != null) {
+			throw error.get();
 		}
 	}
 
