@@ -669,6 +669,11 @@ public class CmdlineOperations implements CmdlineInterface {
 			newFile = new File(outputDir, newFile.getPath());
 		}
 
+			// values from online databases must not be able to move files out of the output folder (e.g. with ../ in a title)
+			if (!newFile.toPath().toAbsolutePath().normalize().startsWith(outputDir.toPath().toAbsolutePath().normalize())) {
+				throw new CmdlineException(String.format("Failed to process [%s] because the destination [%s] is outside of the output folder [%s]", original, newFile, outputDir));
+			}
+
 		if (isInvalidFilePath(newFile) && !isUnixFS()) {
 			log.config("Stripping invalid characters from new path: " + newName);
 			newFile = validateFilePath(newFile);
