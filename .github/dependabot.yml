@@ -33,3 +33,12 @@ updates:
     commit-message:
       prefix: docs
       include: scope
+  # Remotion project of the promo video on the docs home page
+  - package-ecosystem: npm
+    directory: /docs/video
+    target-branch: develop
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: docs
+      include: scope
