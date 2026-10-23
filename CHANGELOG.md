@@ -6,6 +6,7 @@ All notable changes to FileBot Pro.
 
 ### Fixed
 
+- Updating with the MSI installer keeps the install folder and the options chosen in the setup.
 - Redirected command line output keeps non-Latin characters on Windows.
 - Setting `FILEBOT_PRO_OPTS` in Docker no longer moves the data out of `/data`.
 - The Docker image starts after changing `PUID` or `PGID` on an existing data folder.

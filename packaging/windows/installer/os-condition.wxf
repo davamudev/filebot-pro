@@ -71,11 +71,63 @@
             </Component>
         </DirectoryRef>
 
+        <!--
+            Upgrades keep the install folder and the choices of the setup dialogs: they are stored in a version independent key
+            and read back before the dialogs show up (the template only finds the folder of the same version). The command
+            line values of silent installs are kept: INSTALLDIR is only restored when it is not set. The key is removed by
+            uninstalling.
+        -->
+        <Property Id="PREV_INSTALLDIR">
+            <RegistrySearch Id="PrevInstallDirSearch" Root="HKLM" Key="Software\@{appName}\Installer" Name="InstallDir" Type="raw"/>
+        </Property>
+        <Property Id="PREV_DESKTOP_SHORTCUT">
+            <RegistrySearch Id="PrevDesktopShortcutSearch" Root="HKLM" Key="Software\@{appName}\Installer" Name="DesktopShortcut" Type="raw"/>
+        </Property>
+        <Property Id="PREV_STARTMENU_SHORTCUT">
+            <RegistrySearch Id="PrevStartMenuShortcutSearch" Root="HKLM" Key="Software\@{appName}\Installer" Name="StartMenuShortcut" Type="raw"/>
+        </Property>
+        <Property Id="PREV_ADD_TO_PATH">
+            <RegistrySearch Id="PrevAddToPathSearch" Root="HKLM" Key="Software\@{appName}\Installer" Name="AddToPath" Type="raw"/>
+        </Property>
+        <Property Id="PREV_EXPLORER_INTEGRATION">
+            <RegistrySearch Id="PrevExplorerIntegrationSearch" Root="HKLM" Key="Software\@{appName}\Installer" Name="ExplorerIntegration" Type="raw"/>
+        </Property>
+
+        <CustomAction Id="RestoreInstallDir" Property="INSTALLDIR" Value="[PREV_INSTALLDIR]"/>
+        <CustomAction Id="RestoreDesktopShortcut" Property="JP_INSTALL_DESKTOP_SHORTCUT" Value="[PREV_DESKTOP_SHORTCUT]"/>
+        <CustomAction Id="RestoreStartMenuShortcut" Property="JP_INSTALL_STARTMENU_SHORTCUT" Value="[PREV_STARTMENU_SHORTCUT]"/>
+        <CustomAction Id="RestoreAddToPath" Property="ADD_TO_PATH" Value="[PREV_ADD_TO_PATH]"/>
+        <CustomAction Id="RestoreExplorerIntegration" Property="EXPLORER_INTEGRATION" Value="[PREV_EXPLORER_INTEGRATION]"/>
+        <InstallUISequence>
+            <Custom Action="RestoreInstallDir" After="AppSearch"><![CDATA[PREV_INSTALLDIR <> "" AND NOT INSTALLDIR]]></Custom>
+            <Custom Action="RestoreDesktopShortcut" After="AppSearch"><![CDATA[PREV_DESKTOP_SHORTCUT <> ""]]></Custom>
+            <Custom Action="RestoreStartMenuShortcut" After="AppSearch"><![CDATA[PREV_STARTMENU_SHORTCUT <> ""]]></Custom>
+            <Custom Action="RestoreAddToPath" After="AppSearch"><![CDATA[PREV_ADD_TO_PATH <> ""]]></Custom>
+            <Custom Action="RestoreExplorerIntegration" After="AppSearch"><![CDATA[PREV_EXPLORER_INTEGRATION <> ""]]></Custom>
+        </InstallUISequence>
+        <InstallExecuteSequence>
+            <Custom Action="RestoreInstallDir" After="AppSearch"><![CDATA[PREV_INSTALLDIR <> "" AND NOT INSTALLDIR]]></Custom>
+            <Custom Action="RestoreDesktopShortcut" After="AppSearch"><![CDATA[PREV_DESKTOP_SHORTCUT <> ""]]></Custom>
+            <Custom Action="RestoreStartMenuShortcut" After="AppSearch"><![CDATA[PREV_STARTMENU_SHORTCUT <> ""]]></Custom>
+            <Custom Action="RestoreAddToPath" After="AppSearch"><![CDATA[PREV_ADD_TO_PATH <> ""]]></Custom>
+            <Custom Action="RestoreExplorerIntegration" After="AppSearch"><![CDATA[PREV_EXPLORER_INTEGRATION <> ""]]></Custom>
+        </InstallExecuteSequence>
+        <DirectoryRef Id="INSTALLDIR">
+            <Component Id="cInstallerState" Guid="D1C7A3E2-4B58-4F6A-8E19-5A0B6C2D7F43">
+                <RegistryValue Root="HKLM" Key="Software\@{appName}\Installer" Name="InstallDir" Type="string" Value="[INSTALLDIR]" KeyPath="yes"/>
+                <RegistryValue Root="HKLM" Key="Software\@{appName}\Installer" Name="DesktopShortcut" Type="string" Value="[JP_INSTALL_DESKTOP_SHORTCUT]"/>
+                <RegistryValue Root="HKLM" Key="Software\@{appName}\Installer" Name="StartMenuShortcut" Type="string" Value="[JP_INSTALL_STARTMENU_SHORTCUT]"/>
+                <RegistryValue Root="HKLM" Key="Software\@{appName}\Installer" Name="AddToPath" Type="string" Value="[ADD_TO_PATH]"/>
+                <RegistryValue Root="HKLM" Key="Software\@{appName}\Installer" Name="ExplorerIntegration" Type="string" Value="[EXPLORER_INTEGRATION]"/>
+            </Component>
+        </DirectoryRef>
+
         <!-- fragment contents must be referenced, main.wxs references this component group -->
         <ComponentGroup Id="FragmentOsCondition">
             <ComponentRef Id="cAddToPath"/>
             <ComponentRef Id="cExplorerMenu"/>
             <ComponentRef Id="cSendTo"/>
+            <ComponentRef Id="cInstallerState"/>
         </ComponentGroup>
     </Fragment>
 </Wix>
