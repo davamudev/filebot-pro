@@ -142,7 +142,37 @@ public class TMDbTVClient extends AbstractEpisodeListProvider implements Artwork
 		// add specials at the end
 		episodes.addAll(specials);
 
+		if (!isEnglish(locale)) {
+			Object english = tmdb.request("tv/episode_group/" + groupId, emptyMap(), Locale.US);
+			setEnglishTitles(episodes, streamJsonObjects(english, "groups").flatMap(group -> streamJsonObjects(group, "episodes")));
+		}
+
 		return episodes;
+	}
+
+	protected static boolean isEnglish(Locale locale) {
+		return Locale.ENGLISH.getLanguage().equals(locale.getLanguage());
+	}
+
+	/**
+	 * Add the English titles of localized episodes, so files named after them (e.g. Show - 1x07 - The Breaking Point) still match by title
+	 */
+	protected void setEnglishTitles(List<Episode> episodes, Stream<Map<?, ?>> englishEpisodes) {
+		Map<Integer, String> titles = new LinkedHashMap<Integer, String>();
+		englishEpisodes.forEach(it -> {
+			Integer id = getInteger(it, "id");
+			String title = getString(it, "name");
+			if (id != null && title != null && !title.isBlank()) {
+				titles.putIfAbsent(id, title);
+			}
+		});
+
+		for (Episode e : episodes) {
+			String title = titles.get(e.getId());
+			if (title != null && !title.equals(e.getTitle())) {
+				e.setEnglishTitle(title);
+			}
+		}
 	}
 
 	@Override
@@ -269,6 +299,14 @@ public class TMDbTVClient extends AbstractEpisodeListProvider implements Artwork
 
 		// add specials at the end
 		episodes.addAll(specials);
+
+		if (!isEnglish(locale)) {
+			List<Map<?, ?>> english = new ArrayList<Map<?, ?>>();
+			for (int s : seasons) {
+				streamJsonObjects(tmdb.request("tv/" + series.getId() + "/season/" + s, emptyMap(), Locale.US), "episodes").forEach(english::add);
+			}
+			setEnglishTitles(episodes, english.stream());
+		}
 
 		return new SeriesData(info, episodes);
 	}

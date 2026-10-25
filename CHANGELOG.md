@@ -14,6 +14,7 @@ All notable changes to FileBot Pro.
 
 ### Fixed
 
+- TheMovieDB episodes in other languages match files named after the English episode title.
 - The `{ffprobe}` binding reads the frame rate, creation date and exact duration of current ffprobe versions.
 - Renaming music with AcoustID no longer logs bad duration warnings and prefers the recording closest in length.
 - Renaming into an `--output` folder on Windows no longer aborts when a title contains a colon or other invalid characters.

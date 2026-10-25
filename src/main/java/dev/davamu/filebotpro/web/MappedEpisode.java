@@ -52,6 +52,11 @@ public class MappedEpisode extends Episode {
 	}
 
 	@Override
+	public String getEnglishTitle() {
+		return mapping.getTitle() != null ? mapping.getEnglishTitle() : super.getEnglishTitle(); // English title of whichever episode provides the title
+	}
+
+	@Override
 	public Integer getAbsolute() {
 		return getFirst(Episode::getAbsolute);
 	}

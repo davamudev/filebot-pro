@@ -37,12 +37,16 @@ public class Episode implements Serializable {
 	// episode runtime in minutes
 	protected Integer runtime;
 
+	// English title of localized episode data, only used for matching files named after it
+	protected String englishTitle;
+
 	public Episode() {
 		// used by deserializer
 	}
 
 	public Episode(Episode obj) {
 		this(obj.seriesName, obj.season, obj.episode, obj.title, obj.absolute, obj.special, obj.airdate, obj.id, obj.seriesInfo, obj.runtime);
+		this.englishTitle = obj.englishTitle;
 	}
 
 	public Episode(String seriesName, Integer season, Integer episode, String title) {
@@ -104,6 +108,14 @@ public class Episode implements Serializable {
 
 	public Integer getRuntime() {
 		return runtime;
+	}
+
+	public String getEnglishTitle() {
+		return englishTitle;
+	}
+
+	public void setEnglishTitle(String englishTitle) {
+		this.englishTitle = englishTitle;
 	}
 
 	public Set<String> getSeriesNames() {

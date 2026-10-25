@@ -99,8 +99,11 @@ public class MetaAttributes {
 	// keep xattr values small (e.g. 4 KB limit on ext4), the data source still has these fields
 	private static final List<String> SERIES_INFO_EXCLUDED_FIELDS = asList("certifications", "seasonNames");
 
+	// the English title of localized episodes is only used for matching
+	private static final List<String> EPISODE_EXCLUDED_FIELDS = asList("englishTitle");
+
 	// full class names (no json-io aliases like "ArrayList") except for our own short type names, as older versions wrote them
-	private static final WriteOptions WRITE_OPTIONS = new WriteOptionsBuilder().removeAliasTypeNamesMatching("*").aliasTypeNames(JSON_TYPE_MAP).skipNullFields(true).addExcludedFields(Map.of(SeriesInfo.class, SERIES_INFO_EXCLUDED_FIELDS, TheTVDBSeriesInfo.class, SERIES_INFO_EXCLUDED_FIELDS)).build();
+	private static final WriteOptions WRITE_OPTIONS = new WriteOptionsBuilder().removeAliasTypeNamesMatching("*").aliasTypeNames(JSON_TYPE_MAP).skipNullFields(true).addExcludedFields(Map.of(SeriesInfo.class, SERIES_INFO_EXCLUDED_FIELDS, TheTVDBSeriesInfo.class, SERIES_INFO_EXCLUDED_FIELDS, Episode.class, EPISODE_EXCLUDED_FIELDS, MultiEpisode.class, EPISODE_EXCLUDED_FIELDS, MappedEpisode.class, EPISODE_EXCLUDED_FIELDS)).build();
 
 	// we only ever write plain JSON: reject JSON5 syntax (unquoted keys, comments, ...) that could hide a type from hasOnlyTrustedTypes()
 	private static final ReadOptions READ_OPTIONS = new ReadOptionsBuilder().strictJson().aliasTypeNames(JSON_TYPE_MAP).build();

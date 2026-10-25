@@ -123,6 +123,30 @@ public class EpisodeMetrics {
 	public final SimilarityMetric Title = new SubstringMetric() {
 
 		@Override
+		public float getSimilarity(Object o1, Object o2) {
+			float similarity = super.getSimilarity(o1, o2);
+
+			// localized episode data may still match files named after the English title
+			if (similarity < 1 && (getEnglishTitle(o1) != null || getEnglishTitle(o2) != null)) {
+				similarity = Math.max(similarity, super.getSimilarity(withEnglishTitle(o1), withEnglishTitle(o2)));
+			}
+			return similarity;
+		}
+
+		private String getEnglishTitle(Object object) {
+			return object instanceof Episode ? ((Episode) object).getEnglishTitle() : null;
+		}
+
+		private Object withEnglishTitle(Object object) {
+			String englishTitle = getEnglishTitle(object);
+			if (englishTitle != null) {
+				Episode e = (Episode) object;
+				return new Episode(e.getSeriesName(), e.getSeason(), e.getEpisode(), englishTitle);
+			}
+			return object;
+		}
+
+		@Override
 		protected String normalize(Object object) {
 			if (object instanceof Episode) {
 				Episode e = (Episode) object;
@@ -176,7 +200,13 @@ public class EpisodeMetrics {
 			}
 
 			// 1:SxE && Title, 2:SxE
-			return (float) ((Math.max(sxe, 0) * title) + (Math.floor(sxe) / 10));
+			float similarity = (float) ((Math.max(sxe, 0) * title) + (Math.floor(sxe) / 10));
+
+			// prefer the episode whose title is in the file name as well if several series have the same SxE (e.g. Band of Brothers and The Pacific)
+			if (sxe == 1 && title == 1 && Title.getSimilarity(o1, o2) == 1) {
+				similarity += 0.05f;
+			}
+			return similarity;
 		}
 
 		public Object getTitle(Object o) {
