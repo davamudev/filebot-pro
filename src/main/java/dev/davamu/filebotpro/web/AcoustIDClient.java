@@ -63,7 +63,7 @@ public class AcoustIDClient implements MusicIdentificationService {
 			if (!fp.containsKey(ChromaprintField.DURATION) || !fp.containsKey(ChromaprintField.FINGERPRINT))
 				continue;
 
-			int duration = Integer.parseInt(fp.get(ChromaprintField.DURATION));
+			int duration = (int) Math.round(Double.parseDouble(fp.get(ChromaprintField.DURATION)));
 			String fingerprint = fp.get(ChromaprintField.FINGERPRINT);
 
 			// sanity check
@@ -110,9 +110,10 @@ public class AcoustIDClient implements MusicIdentificationService {
 		for (Object result : getArray(data, "results")) {
 			// pick most likely matching recording
 			return streamJsonObjects(result, "recordings").sorted((r1, r2) -> {
-				Integer i1 = getInteger(r1, "duration");
-				Integer i2 = getInteger(r2, "duration");
-				return Double.compare(i1 == null ? Double.NaN : Math.abs(i1 - targetDuration), i2 == null ? Double.NaN : Math.abs(i2 - targetDuration));
+				// durations are decimal seconds (e.g. 310.0)
+				Double d1 = getDouble(r1, "duration");
+				Double d2 = getDouble(r2, "duration");
+				return Double.compare(d1 == null ? Double.NaN : Math.abs(d1 - targetDuration), d2 == null ? Double.NaN : Math.abs(d2 - targetDuration));
 			}).map((Map<?, ?> recording) -> {
 				try {
 					Map<?, ?> releaseGroup = getFirstMap(recording, "releasegroups");
