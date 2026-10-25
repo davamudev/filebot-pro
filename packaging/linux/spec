@@ -80,8 +80,10 @@ ln -s APPLICATION_DIRECTORY/lib/app/@{appId}_completion %{buildroot}/usr/share/b
   install -m 644 "APPLICATION_LICENSE_FILE" "%{buildroot}%{license_install_file}"
 %endif
 (cd %{buildroot} && find . -path ./lib/systemd -prune -o -type d -print) | sed -e 's/^\.//' -e '/^$/d' | sort > %{app_filelist}
-{ rpm -ql filesystem 2>/dev/null; echo %{default_filesystem} | tr ' ' '\n'; } | sort -u > %{filesystem_filelist}
-comm -23 %{app_filelist} %{filesystem_filelist} > %{package_filelist}
+# no backslash escapes in these lines: rpm expands them in this script (a tr to newlines lost its newline and the package owned /usr/bin)
+for d in %{default_filesystem}; do echo "$d"; done > %{filesystem_filelist}
+rpm -ql filesystem >> %{filesystem_filelist} 2>/dev/null || :
+grep -vxF -f %{filesystem_filelist} %{app_filelist} > %{package_filelist} || :
 sed -i -e 's/.*/%dir "&"/' %{package_filelist}
 (cd %{buildroot} && find . -not -type d) | sed -e 's/^\.//' -e 's/.*/"&"/' >> %{package_filelist}
 %if "xAPPLICATION_LICENSE_FILE" != "x"
