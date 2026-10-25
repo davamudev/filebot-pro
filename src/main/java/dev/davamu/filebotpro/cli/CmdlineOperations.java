@@ -669,6 +669,12 @@ public class CmdlineOperations implements CmdlineInterface {
 		String extension = getExtension(original);
 		File newFile = new File(extension != null ? newName + '.' + extension.toLowerCase() : newName);
 
+		// strip invalid characters before resolving against the output dir (e.g. a : in a title would fail the path check below on Windows)
+		if (isInvalidFilePath(newFile) && !isUnixFS()) {
+			log.config("Stripping invalid characters from new path: " + newName);
+			newFile = validateFilePath(newFile);
+		}
+
 		// resolve against output dir
 		if (outputDir != null && !newFile.isAbsolute()) {
 			newFile = new File(outputDir, newFile.getPath());
@@ -677,11 +683,6 @@ public class CmdlineOperations implements CmdlineInterface {
 			if (!newFile.toPath().toAbsolutePath().normalize().startsWith(outputDir.toPath().toAbsolutePath().normalize())) {
 				throw new CmdlineException(String.format("Failed to process [%s] because the destination [%s] is outside of the output folder [%s]", original, newFile, outputDir));
 			}
-		}
-
-		if (isInvalidFilePath(newFile) && !isUnixFS()) {
-			log.config("Stripping invalid characters from new path: " + newName);
-			newFile = validateFilePath(newFile);
 		}
 
 		return newFile;
