@@ -18,12 +18,10 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import com.cedarsoftware.util.io.JsonReader;
-import com.cedarsoftware.util.io.JsonWriter;
-
 import dev.davamu.filebotpro.Cache;
 import dev.davamu.filebotpro.CacheType;
 import dev.davamu.filebotpro.mediainfo.CachedMediaInfo;
+import dev.davamu.filebotpro.util.JsonUtilities;
 
 public class FFProbe implements MediaCharacteristics {
 
@@ -51,7 +49,7 @@ public class FFProbe implements MediaCharacteristics {
 		}
 
 		// parse process standard output
-		return (Map) JsonReader.jsonToJava(output.toString(), singletonMap(JsonReader.USE_MAPS, true));
+		return (Map) JsonUtilities.readJson(output.toString());
 	}
 
 	private Map<String, Object> json;
@@ -180,7 +178,7 @@ public class FFProbe implements MediaCharacteristics {
 
 	@Override
 	public String toString() {
-		return JsonWriter.objectToJson(json);
+		return JsonUtilities.json(json, false);
 	}
 
 }

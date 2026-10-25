@@ -10,23 +10,27 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import com.cedarsoftware.util.io.JsonObject;
-import com.cedarsoftware.util.io.JsonReader;
-import com.cedarsoftware.util.io.JsonWriter;
+import com.cedarsoftware.io.JsonIo;
+import com.cedarsoftware.io.JsonObject;
+import com.cedarsoftware.io.WriteOptions;
+import com.cedarsoftware.io.WriteOptionsBuilder;
 
 public class JsonUtilities {
 
 	public static final Object[] EMPTY_ARRAY = new Object[0];
 
+	private static final WriteOptions COMPACT = new WriteOptionsBuilder().build();
+	private static final WriteOptions PRETTY = new WriteOptionsBuilder().prettyPrint(true).build();
+
 	public static Object readJson(CharSequence json) {
 		if (json.length() == 0) {
 			return EMPTY_MAP;
 		}
-		return JsonReader.jsonToJava(json.toString(), singletonMap(JsonReader.USE_MAPS, true));
+		return JsonIo.toMaps(json.toString()).asClass(null);
 	}
 
 	public static String json(Object object, boolean pretty) {
-		return JsonWriter.objectToJson(object, singletonMap(JsonWriter.PRETTY_PRINT, pretty));
+		return JsonIo.toJson(object, pretty ? PRETTY : COMPACT);
 	}
 
 	public static Map<?, ?> asMap(Object node) {
@@ -38,9 +42,9 @@ public class JsonUtilities {
 
 	public static Object[] asArray(Object node) {
 		if (node instanceof JsonObject) {
-			JsonObject<?, ?> jsonObject = (JsonObject<?, ?>) node;
+			JsonObject jsonObject = (JsonObject) node;
 			if (jsonObject.isArray()) {
-				return jsonObject.getArray();
+				return jsonObject.getItems();
 			}
 		}
 		if (node instanceof Object[]) {
