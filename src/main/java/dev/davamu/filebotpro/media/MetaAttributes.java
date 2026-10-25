@@ -10,15 +10,17 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.FileTime;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import com.cedarsoftware.util.io.JsonReader;
-import com.cedarsoftware.util.io.JsonWriter;
+import com.cedarsoftware.io.JsonIo;
+import com.cedarsoftware.io.ReadOptions;
+import com.cedarsoftware.io.ReadOptionsBuilder;
+import com.cedarsoftware.io.WriteOptions;
+import com.cedarsoftware.io.WriteOptionsBuilder;
 
 import dev.davamu.filebotpro.MetaAttributeView;
 import dev.davamu.filebotpro.vfs.SimpleFileInfo;
@@ -94,16 +96,17 @@ public class MetaAttributes {
 		metaAttributeView.put(LEGACY_METADATA_KEY, null);
 	}
 
+	// keep xattr values small (e.g. 4 KB limit on ext4), the data source still has these fields
+	private static final List<String> SERIES_INFO_EXCLUDED_FIELDS = asList("certifications", "seasonNames");
+
+	// full class names (no json-io aliases like "ArrayList") except for our own short type names, as older versions wrote them
+	private static final WriteOptions WRITE_OPTIONS = new WriteOptionsBuilder().removeAliasTypeNamesMatching("*").aliasTypeNames(JSON_TYPE_MAP).skipNullFields(true).addExcludedFields(Map.of(SeriesInfo.class, SERIES_INFO_EXCLUDED_FIELDS, TheTVDBSeriesInfo.class, SERIES_INFO_EXCLUDED_FIELDS)).build();
+
+	// we only ever write plain JSON: reject JSON5 syntax (unquoted keys, comments, ...) that could hide a type from hasOnlyTrustedTypes()
+	private static final ReadOptions READ_OPTIONS = new ReadOptionsBuilder().strictJson().aliasTypeNames(JSON_TYPE_MAP).build();
+
 	public static String toJson(Object object) {
-		Map<String, Object> options = new HashMap<String, Object>();
-		options.put(JsonWriter.TYPE_NAME_MAP, JSON_TYPE_MAP);
-		options.put(JsonWriter.SKIP_NULL_FIELDS, true);
-
-		// keep xattr values small (e.g. 4 KB limit on ext4), the data source still has these fields
-		List<String> seriesInfoBlackList = asList("certifications", "seasonNames");
-		options.put(JsonWriter.FIELD_NAME_BLACK_LIST, Map.of(SeriesInfo.class, seriesInfoBlackList, TheTVDBSeriesInfo.class, seriesInfoBlackList));
-
-		return JsonWriter.objectToJson(object, options);
+		return JsonIo.toJson(object, WRITE_OPTIONS);
 	}
 
 	public static Object toObject(String json) {
@@ -111,10 +114,7 @@ public class MetaAttributes {
 			return null;
 		}
 
-		Map<String, Object> options = new HashMap<String, Object>();
-		options.put(JsonReader.TYPE_NAME_MAP, JSON_TYPE_MAP);
-
-		// options must be a modifiable map (type names of older versions are migrated to the current package)
+		// type names of older versions are migrated to the current package
 		String migrated = LegacyNamespace.migrate(json);
 
 		// the JSON comes from extended attributes / alternate data streams of media files, which anyone can write:
@@ -123,11 +123,11 @@ public class MetaAttributes {
 			return null;
 		}
 
-		return JsonReader.jsonToJava(migrated, options);
+		return JsonIo.toJava(migrated, READ_OPTIONS).asClass(null);
 	}
 
-	// json-io also accepts the short key "@t"
-	private static final Pattern JSON_TYPE = Pattern.compile("\"@t(?:ype)?\"\\s*:\\s*\"((?:[^\"\\\\]|\\\\.)*)\"");
+	// json-io also accepts the short key "@t", the JSON5 keys "$type" / "$t" and the enum class key "@enum"
+	private static final Pattern JSON_TYPE = Pattern.compile("\"(?:[@$]t(?:ype)?|@enum)\"\\s*:\\s*\"((?:[^\"\\\\]|\\\\.)*)\"");
 
 	private static final Pattern UNICODE_ESCAPE = Pattern.compile("\\\\u([0-9a-fA-F]{4})");
 

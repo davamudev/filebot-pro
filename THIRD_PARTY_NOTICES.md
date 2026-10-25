@@ -41,7 +41,8 @@ Bundled with every build (licenses as declared by each project):
 | [args4j:args4j](http://args4j.kohsuke.org/) | 2.37 | MIT License |
 | [ca.weblite:java-objc-bridge](https://github.com/shannah/Java-Objective-C-Bridge) | 1.2 | Apache License, Version 2.0 |
 | [com.adobe.xmp:xmpcore](https://www.adobe.com/devnet/xmp/library/eula-xmp-library-java.html) | 6.1.11 | The BSD 3-Clause License (BSD3) |
-| [com.cedarsoftware:json-io](https://github.com/jdereg/json-io) | 4.14.1 | The Apache Software License, Version 2.0 |
+| [com.cedarsoftware:java-util](https://github.com/jdereg/java-util) | 4.117.0 | The Apache Software License, Version 2.0 |
+| [com.cedarsoftware:json-io](https://github.com/jdereg/json-io) | 4.117.0 | The Apache Software License, Version 2.0 |
 | [com.dampcake:bencode](http://github.com/dampcake/bencode) | 1.4.2 | The Apache Software License, Version 2.0 |
 | [com.drewnoakes:metadata-extractor](https://drewnoakes.com/code/exif/) | 2.21.0 | The Apache Software License, Version 2.0 |
 | [com.fifesoft:rsyntaxtextarea](https://github.com/bobbylight/rsyntaxtextarea) | 3.6.3 | BSD-3-Clause |

@@ -14,8 +14,7 @@ import java.util.logging.Level;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
-import com.cedarsoftware.util.io.JsonReader;
-import com.cedarsoftware.util.io.JsonWriter;
+import com.cedarsoftware.io.JsonIo;
 
 public class PreferencesMap<T> implements Map<String, T> {
 
@@ -231,7 +230,7 @@ public class PreferencesMap<T> implements Map<String, T> {
 
 			if (json != null) {
 				try {
-					return type.cast(JsonReader.jsonToJava(json));
+					return JsonIo.toJava(json, null).asClass(type);
 				} catch (Exception e) {
 					debug.log(Level.WARNING, e, e::getMessage);
 				}
@@ -242,7 +241,7 @@ public class PreferencesMap<T> implements Map<String, T> {
 
 		@Override
 		public void put(Preferences prefs, String key, T value) {
-			prefs.put(key, JsonWriter.objectToJson(value));
+			prefs.put(key, JsonIo.toJson(value, null));
 		}
 	}
 

@@ -45,6 +45,7 @@ import dev.davamu.filebotpro.ui.WelcomeDialog;
 import dev.davamu.filebotpro.ui.list.ListPanel;
 import dev.davamu.filebotpro.ui.theme.ThemeManager;
 import dev.davamu.filebotpro.ui.transfer.FileTransferable;
+import dev.davamu.filebotpro.util.JsonUtilities;
 import dev.davamu.filebotpro.util.PreferencesMap.PreferencesEntry;
 import dev.davamu.filebotpro.util.ui.ClickAwayFocusHandler;
 import dev.davamu.filebotpro.util.ui.SwingEventBus;
@@ -207,11 +208,12 @@ public class Main {
 	}
 
 	/**
-	 * Initialize the Groovy engine and the format editor in the background, so the first panel that needs them opens instantly
+	 * Initialize the Groovy engine, the format editor and json-io in the background, so the first panel that needs them opens instantly
 	 */
 	private static void warmup() {
 		try {
 			ListPanel.warmup();
+			JsonUtilities.readJson("{}");
 		} catch (Throwable e) {
 			debug.log(Level.WARNING, "Failed to warm up format engine", e);
 		}
