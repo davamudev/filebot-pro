@@ -93,7 +93,7 @@ public class FFProbe implements MediaCharacteristics {
 
 	@Override
 	public Duration getDuration() {
-		long d = (long) Double.parseDouble(getFormat().get("duration").toString()) * 1000;
+		long d = (long) (Double.parseDouble(getFormat().get("duration").toString()) * 1000);
 		return Duration.ofMillis(d);
 	}
 
@@ -119,7 +119,10 @@ public class FFProbe implements MediaCharacteristics {
 			case "500/21":
 				return 23.976f; // normalize FPS value (using MediaInfo standards)
 			default:
-				return Float.parseFloat(fps);
+				// ffprobe reports frame rates as fractions (e.g. 24000/1001), rounded like MediaInfo (23.976)
+				String[] f = fps.split("/");
+				float value = f.length == 2 ? Float.parseFloat(f[0]) / Float.parseFloat(f[1]) : Float.parseFloat(fps);
+				return Math.round(value * 1000) / 1000f;
 			}
 		}).get();
 	}
@@ -135,7 +138,8 @@ public class FFProbe implements MediaCharacteristics {
 	}
 
 	private Instant parseDateTime(String s) {
-		return LocalDateTime.parse(s, DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss")).toInstant(ZoneOffset.UTC);
+		// ISO 8601 (e.g. 2024-05-06T07:08:09.000000Z) or the older 2024-05-06 07:08:09
+		return LocalDateTime.parse(s.replace(' ', 'T').replaceFirst("Z$", ""), DateTimeFormatter.ISO_LOCAL_DATE_TIME).toInstant(ZoneOffset.UTC);
 	}
 
 	public Map<String, Object> getFormat() {
