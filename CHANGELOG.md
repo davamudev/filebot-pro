@@ -2,7 +2,7 @@
 
 All notable changes to FileBot Pro.
 
-## [Unreleased]
+## [1.4.0] - 2026-10-25
 
 ### Added
 
