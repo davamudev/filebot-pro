@@ -12,7 +12,7 @@ flatlaf-extras = { module = "com.formdev:flatlaf-extras", version.ref = "flatlaf
 flatlaf-fonts-inter = { module = "com.formdev:flatlaf-fonts-inter", version = "4.1" }
 flatlaf-fonts-jetbrains-mono = { module = "com.formdev:flatlaf-fonts-jetbrains-mono", version = "2.304" }
 # 11.5.x throws a NullPointerException in Grid.clearGroupLinkBounds (breaks the format editor)
-miglayout-swing = { module = "com.miglayout:miglayout-swing", version = "11.4.2" }
+miglayout-swing = { module = "com.miglayout:miglayout-swing", version = "11.5.2" }
 glazedlists = { module = "com.glazedlists:glazedlists", version = "1.11.0" }
 rsyntaxtextarea = { module = "com.fifesoft:rsyntaxtextarea", version = "4.0.1" }
 imgscalr = { module = "org.imgscalr:imgscalr-lib", version = "4.2" }
