@@ -7,8 +7,9 @@ import static dev.davamu.filebotpro.util.ui.SwingUI.*;
 
 import java.awt.Window;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.net.URI;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -22,8 +23,11 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.ToolTipManager;
 
 import dev.davamu.filebotpro.ResourceManager;
+import dev.davamu.filebotpro.ui.filter.MediaInfoTool.MediaInfoData;
+import dev.davamu.filebotpro.util.ui.LinkButton;
 import dev.davamu.filebotpro.util.ui.LazyDocumentListener;
 import net.miginfocom.swing.MigLayout;
 
@@ -32,6 +36,9 @@ import net.miginfocom.swing.MigLayout;
  */
 class MediaInfoViewEditor extends JDialog {
 
+	private static final String FIELDS_URL = "https://mediaarea.net/en/MediaInfo/Support/Fields";
+
+	private final MediaInfoData data;
 	private final List<String> available;
 	private final Set<String> reservedNames;
 
@@ -43,23 +50,24 @@ class MediaInfoViewEditor extends JDialog {
 	private final DefaultListModel<String> availableModel = new DefaultListModel<String>();
 	private final DefaultListModel<String> selectedModel = new DefaultListModel<String>();
 
-	private final JList<String> availableList = new JList<String>(availableModel);
-	private final JList<String> selectedList = new JList<String>(selectedModel);
+	private final JList<String> availableList = createColumnList(availableModel);
+	private final JList<String> selectedList = createColumnList(selectedModel);
 
 	private final JButton saveButton;
 
 	private MediaInfoView result;
 
 	/**
-	 * @param available
-	 *            columns of the files that are currently loaded
+	 * @param data
+	 *            properties of the files that are currently loaded
 	 * @param reservedNames
 	 *            names of other views that can't be used for this view
 	 */
-	public MediaInfoViewEditor(Window owner, String title, MediaInfoView view, Collection<String> available, Set<String> reservedNames) {
+	public MediaInfoViewEditor(Window owner, String title, MediaInfoView view, MediaInfoData data, Set<String> reservedNames) {
 		super(owner, title, ModalityType.APPLICATION_MODAL);
 
-		this.available = new ArrayList<String>(available);
+		this.data = data;
+		this.available = data.getColumns();
 		this.reservedNames = reservedNames;
 
 		nameField.setText(view.getName());
@@ -105,7 +113,8 @@ class MediaInfoViewEditor extends JDialog {
 		c.add(new JLabel("Name:"), "span, split 2");
 		c.add(nameField, "growx, wrap");
 
-		c.add(new JLabel(available.isEmpty() ? "Available columns (load files to list them)" : "Available columns"), "cell 0 1");
+		c.add(new JLabel(available.isEmpty() ? "Available columns (load files to list them)" : "Available columns"), "cell 0 1, split 2");
+		c.add(new LinkButton("Field reference", "What each MediaInfo property means", null, URI.create(FIELDS_URL)), "cell 0 1, gapleft push, growx 0");
 		c.add(new JLabel("Columns in view"), "cell 2 1");
 
 		c.add(filterField, "cell 0 2");
@@ -129,6 +138,22 @@ class MediaInfoViewEditor extends JDialog {
 
 		pack();
 		setMinimumSize(getSize());
+	}
+
+	/**
+	 * Column list with the description and an example value of each column as tooltip.
+	 */
+	private JList<String> createColumnList(DefaultListModel<String> model) {
+		JList<String> list = new JList<String>(model) {
+
+			@Override
+			public String getToolTipText(MouseEvent evt) {
+				int i = locationToIndex(evt.getPoint());
+				return i >= 0 && getCellBounds(i, i).contains(evt.getPoint()) ? data.getToolTipText(getModel().getElementAt(i)) : null;
+			}
+		};
+		ToolTipManager.sharedInstance().registerComponent(list);
+		return list;
 	}
 
 	private static JPanel createButtonStack(JButton... buttons) {

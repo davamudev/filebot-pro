@@ -6,6 +6,7 @@ import static java.util.stream.Collectors.*;
 import static javax.swing.BorderFactory.*;
 import static dev.davamu.filebotpro.Logging.*;
 import static dev.davamu.filebotpro.MediaTypes.*;
+import static dev.davamu.filebotpro.media.MediaDetection.releaseInfo;
 import static dev.davamu.filebotpro.ui.ThemeSupport.*;
 import static dev.davamu.filebotpro.util.FileUtilities.*;
 import static dev.davamu.filebotpro.util.ui.SwingUI.*;
@@ -15,6 +16,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +27,7 @@ import java.util.concurrent.CancellationException;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import javax.swing.Action;
 import javax.swing.DefaultComboBoxModel;
@@ -42,6 +45,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.TableColumnModelEvent;
 import javax.swing.event.TableColumnModelListener;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
@@ -87,6 +91,16 @@ class MediaInfoTool extends Tool<MediaInfoTool.MediaInfoData> {
 		table.setBackground(getPanelBackground());
 		table.setGridColor(getColor(0xEEEEEE));
 		table.setRowHeight(25);
+
+		// what each property means, e.g. Video.Width
+		table.setTableHeader(new JTableHeader(table.getColumnModel()) {
+
+			@Override
+			public String getToolTipText(MouseEvent evt) {
+				int column = columnAtPoint(evt.getPoint());
+				return column >= 0 && table.convertColumnIndexToModel(column) > 0 ? data.getToolTipText(table.getColumnName(column)) : null;
+			}
+		});
 
 		JScrollPane scrollPane = new JScrollPane(table);
 		scrollPane.setBorder(createEmptyBorder());
@@ -220,7 +234,7 @@ class MediaInfoTool extends Tool<MediaInfoTool.MediaInfoData> {
 	}
 
 	private MediaInfoView showViewEditor(String title, MediaInfoView view, MediaInfoView replace, ActionEvent evt) {
-		MediaInfoViewEditor editor = new MediaInfoViewEditor(getWindow(evt.getSource()), title, view, data.getColumns(), getViewNames(replace));
+		MediaInfoViewEditor editor = new MediaInfoViewEditor(getWindow(evt.getSource()), title, view, data, getViewNames(replace));
 		setOffsetLocation(editor);
 		editor.setVisible(true);
 		return editor.getView();
@@ -506,6 +520,64 @@ class MediaInfoTool extends Tool<MediaInfoTool.MediaInfoData> {
 
 		public List<String> getColumns() {
 			return new ArrayList<String>(values.keySet());
+		}
+
+		/**
+		 * @return name and value of the first file that has this column, or {@code null}
+		 */
+		public Map.Entry<String, String> getExample(String column) {
+			String[] v = values.get(column);
+			if (v != null) {
+				for (int i = 0; i < v.length; i++) {
+					if (v[i] != null && !v[i].isEmpty()) {
+						return Map.entry(files.get(i).getName(), v[i]);
+					}
+				}
+			}
+			return null;
+		}
+
+		private static final Pattern STREAM_NUMBER = Pattern.compile("\\[\\d+\\]");
+
+		private static Map<String, String> descriptions;
+
+		/**
+		 * @return what MediaInfo says about this column, or {@code null}
+		 */
+		public static synchronized String getDescription(String column) {
+			if (descriptions == null) {
+				descriptions = new HashMap<String, String>();
+				try {
+					// e.g. Video.DisplayAspectRatio_Original => Video.DisplayAspectRatioOriginal
+					releaseInfo.getMediaInfoDescriptions().forEach((property, description) -> {
+						String[] k = property.split("\\.", 2);
+						StreamKind kind = k[0].equals("Other") ? StreamKind.Chapters : Stream.of(StreamKind.values()).filter(s -> s.name().equals(k[0])).findFirst().orElse(null);
+						if (kind != null) {
+							descriptions.putIfAbsent(new MediaInfoKey(kind, 0, k[1]).toString(), description);
+						}
+					});
+				} catch (Exception e) {
+					debug.log(Level.WARNING, e, () -> "Failed to load MediaInfo descriptions: " + e.getMessage());
+				}
+			}
+			return descriptions.get(STREAM_NUMBER.matcher(column).replaceFirst(""));
+		}
+
+		/**
+		 * @return column name, description and an example value of the loaded files
+		 */
+		public String getToolTipText(String column) {
+			String description = getDescription(column);
+			Map.Entry<String, String> example = getExample(column);
+
+			StringBuilder html = new StringBuilder("<html><b>").append(escapeHTML(column)).append("</b>");
+			if (description != null) {
+				html.append("<div style='width: 320px; margin-top: 4px'>").append(escapeHTML(description)).append("</div>");
+			}
+			if (example != null) {
+				html.append("<div style='width: 320px; margin-top: 4px'>Example: <b>").append(escapeHTML(example.getValue())).append("</b> (").append(escapeHTML(example.getKey())).append(")</div>");
+			}
+			return html.append("</html>").toString();
 		}
 
 	}

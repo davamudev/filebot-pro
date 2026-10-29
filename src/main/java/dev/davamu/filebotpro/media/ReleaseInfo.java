@@ -407,6 +407,10 @@ public class ReleaseInfo {
 		return discTitles.get();
 	}
 
+	public Map<String, String> getMediaInfoDescriptions() throws Exception {
+		return mediaInfoDescriptions.get();
+	}
+
 	public AnimeLists.Model getAnimeListModel() throws Exception {
 		return animeListModel.get();
 	}
@@ -506,6 +510,13 @@ public class ReleaseInfo {
 	// titles of series and movie discs by kind and TheMovieDB id, e.g. tv/1396 or movie/603 (TheDiscDB)
 	private final Resource<Map<String, List<DiscTitles.Title>>> discTitles = tsv("discdb.txt", DiscTitles.Title::parse, DiscTitles.Title[]::new).transform(rows -> {
 		return unmodifiableMap(stream(rows).collect(groupingBy(DiscTitles.Title::getKey)));
+	}).memoize();
+
+	// descriptions of the MediaInfo properties by stream kind and property name, e.g. Video.Width (MediaInfoLib)
+	private final Resource<Map<String, String>> mediaInfoDescriptions = tsv("mediainfo.txt", Function.identity(), String[][]::new).transform(rows -> {
+		Map<String, String> map = new LinkedHashMap<String, String>();
+		stream(rows).filter(v -> v.length >= 3).forEach(v -> map.putIfAbsent(v[0] + '.' + v[1], v[2]));
+		return unmodifiableMap(map);
 	}).memoize();
 
 	private SearchResult parseSeries(String[] v) {

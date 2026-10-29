@@ -47,6 +47,7 @@ import groovy.json.JsonSlurper;
  * <li>moviedb.txt, series.txt and osdb.txt from Wikidata (CC0), queried via QLever</li>
  * <li>anidb.txt from the anime-offline-database by manami-project (ODbL 1.0)</li>
  * <li>discdb.txt from TheDiscDB (MIT)</li>
+ * <li>mediainfo.txt from MediaInfoLib (BSD-2-Clause)</li>
  * </ul>
  *
  * usage: DataGenerator &lt;output folder&gt;
@@ -119,6 +120,12 @@ public class DataGenerator {
 			return;
 		}
 
+		// only update the MediaInfo field descriptions (gradlew updateData -Ponly=mediainfo)
+		if (args.length > 1 && args[1].equals("mediainfo")) {
+			mediainfo(folder);
+			return;
+		}
+
 		// NOTE: popularity is filtered here because QLever returns no results for FILTER on wikibase:sitelinks
 		List<Title> movies = query(MOVIES).stream().filter(m -> m.links >= MOVIE_MIN_SITELINKS || (m.spanish && m.links >= MOVIE_MIN_SITELINKS_SPANISH)).toList();
 
@@ -159,6 +166,34 @@ public class DataGenerator {
 
 		// episode titles of Blu-ray and DVD discs (MIT)
 		discdb(folder);
+
+		// descriptions of the MediaInfo properties (BSD-2-Clause)
+		mediainfo(folder);
+	}
+
+	private static final String MEDIAINFO_RAW = "https://raw.githubusercontent.com/MediaArea/MediaInfoLib/master/";
+
+	/**
+	 * mediainfo.txt from MediaInfoLib: stream kind, property name and description of each property (the MediaInfo
+	 * binaries leave the descriptions out)
+	 */
+	private static void mediainfo(Path folder) throws Exception {
+		List<String> rows = new ArrayList<String>();
+		for (String kind : List.of("General", "Video", "Audio", "Text", "Other", "Image", "Menu")) {
+			String url = MEDIAINFO_RAW + "Source/Resource/Text/Stream/" + kind + ".csv";
+			System.out.println("Fetch " + url);
+
+			// Name;Text;Measure;Options;Name_Text;Measure_Text;Info;HowTo;Domain
+			for (String line : new String(fetch(HttpRequest.newBuilder(URI.create(url)).header("User-Agent", USER_AGENT).build()), UTF_8).split("\\R")) {
+				String[] fields = line.split(";", -1);
+				if (fields.length > 6 && !fields[0].isBlank() && !fields[6].isBlank()) {
+					rows.add(row(kind, fields[0].trim(), clean(fields[6])));
+				}
+			}
+		}
+
+		write(folder.resolve("mediainfo.txt.xz"), rows);
+		Files.write(folder.resolve("mediainfo.LICENSE.txt"), fetch(HttpRequest.newBuilder(URI.create(MEDIAINFO_RAW + "LICENSE")).header("User-Agent", USER_AGENT).build()));
 	}
 
 	private static final String DISCDB_TREE = "https://api.github.com/repos/TheDiscDb/data/git/trees/main?recursive=1";

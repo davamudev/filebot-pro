@@ -468,7 +468,7 @@ tasks.register<JavaExec>("generateIcons") {
 
 tasks.register<JavaExec>("updateData") {
     group = "distribution"
-    description = "Regenerates the bundled movie, series, subtitle, anime and disc indexes from Wikidata, the anime-offline-database and TheDiscDB (-Ponly=discdb for the disc index only)."
+    description = "Regenerates the bundled movie, series, subtitle, anime and disc indexes and the MediaInfo property descriptions from Wikidata, the anime-offline-database, TheDiscDB and MediaInfoLib (-Ponly=discdb|mediainfo for one of the last two only)."
     classpath = tools.runtimeClasspath
     mainClass = "dev.davamu.filebotpro.tools.DataGenerator"
     args(listOfNotNull(layout.projectDirectory.dir("src/main/resources/dev/davamu/filebotpro/data").asFile.path, findProperty("only")?.toString()))

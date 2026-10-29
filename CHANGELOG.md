@@ -2,6 +2,12 @@
 
 All notable changes to FileBot Pro.
 
+## [Unreleased]
+
+### Added
+
+- MediaInfo tab: hovering a column shows what the property means and an example value.
+
 ## [1.4.0] - 2026-10-25
 
 ### Added

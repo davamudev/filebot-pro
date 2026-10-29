@@ -31,6 +31,9 @@ built from:
 - [TheDiscDB](https://thediscdb.com) ([data](https://github.com/TheDiscDb/data)), the episodes, movies and extras of the titles of
   Blu-ray and DVD discs in `discdb.txt.xz`, under the [MIT License](https://opensource.org/license/mit), see
   `discdb.LICENSE.txt`.
+- [MediaInfoLib](https://github.com/MediaArea/MediaInfoLib), the descriptions of the MediaInfo properties in
+  `mediainfo.txt.xz`, under the [BSD 2-Clause License](https://opensource.org/license/bsd-2-clause), see
+  `mediainfo.LICENSE.txt`.
 
 ## Libraries
 
