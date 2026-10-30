@@ -41,7 +41,7 @@ json-io = { module = "com.cedarsoftware:json-io", version = "4.117.0" }
 jaxb-api = { module = "jakarta.xml.bind:jakarta.xml.bind-api", version = "4.0.5" }
 jaxb-runtime = { module = "org.glassfish.jaxb:jaxb-runtime", version = "4.0.9" }
 jsoup = { module = "org.jsoup:jsoup", version = "1.23.2" }
-icu4j = { module = "com.ibm.icu:icu4j", version = "78.3" }
+icu4j = { module = "com.ibm.icu:icu4j", version = "79.1" }
 simmetrics = { module = "com.github.mpkorstanje:simmetrics-core", version = "4.1.1" }
 language-detector = { module = "com.optimaize.languagedetector:language-detector", version = "0.6" }
 
