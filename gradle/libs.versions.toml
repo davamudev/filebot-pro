@@ -46,7 +46,7 @@ simmetrics = { module = "com.github.mpkorstanje:simmetrics-core", version = "4.1
 language-detector = { module = "com.optimaize.languagedetector:language-detector", version = "0.6" }
 
 # Media, archives and files
-metadata-extractor = { module = "com.drewnoakes:metadata-extractor", version = "2.21.0" }
+metadata-extractor = { module = "com.drewnoakes:metadata-extractor", version = "2.22.0" }
 bencode = { module = "com.dampcake:bencode", version = "1.4.2" }
 xz = { module = "org.tukaani:xz", version = "1.12" }
 commons-io = { module = "commons-io:commons-io", version = "2.22.0" }
