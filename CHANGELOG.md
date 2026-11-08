@@ -7,6 +7,7 @@ All notable changes to FileBot Pro.
 ### Added
 
 - MediaInfo tab: hovering a column shows what the property means and an example value.
+- Movie, series, anime and disc detection data updates itself about once a week between releases.
 
 ## [1.4.0] - 2026-10-25
 

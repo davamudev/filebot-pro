@@ -7,6 +7,7 @@ import static java.util.Collections.*;
 import static java.util.ResourceBundle.*;
 import static java.util.regex.Pattern.*;
 import static java.util.stream.Collectors.*;
+import static dev.davamu.filebotpro.Logging.*;
 import static dev.davamu.filebotpro.Settings.*;
 import static dev.davamu.filebotpro.similarity.Normalization.*;
 import static dev.davamu.filebotpro.util.FileUtilities.*;
@@ -35,6 +36,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.function.IntFunction;
+import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.IntStream;
@@ -43,6 +45,7 @@ import org.tukaani.xz.XZInputStream;
 
 import dev.davamu.filebotpro.ApplicationFolder;
 import dev.davamu.filebotpro.Cache;
+import dev.davamu.filebotpro.DataUpdate;
 import dev.davamu.filebotpro.CacheType;
 import dev.davamu.filebotpro.Resource;
 import dev.davamu.filebotpro.util.FileUtilities.RegexFindFilter;
@@ -482,14 +485,13 @@ public class ReleaseInfo {
 	// AniDB / TheTVDB episode mappings by the Anime-Lists project, which has no license that allows publishing a copy:
 	// local builds may include it (gradlew updateData, git-ignored), otherwise it is downloaded and cached
 	private final Resource<AnimeLists.Model> animeListModel = Resource.lazy(() -> {
-		byte[] bytes;
 		try {
-			bytes = getData("anime-list.xml");
+			return load("anime-list.xml", bytes -> AnimeLists.unmarshal(bytes, AnimeLists.Model.class));
 		} catch (FileNotFoundException e) {
 			Cache cache = Cache.getCache("data", CacheType.Persistent);
-			bytes = cache.bytes("anime-list.xml", n -> new URL("https://raw.githubusercontent.com/Anime-Lists/anime-lists/master/" + n)).expire(Cache.ONE_WEEK).get();
+			byte[] bytes = cache.bytes("anime-list.xml", n -> new URL("https://raw.githubusercontent.com/Anime-Lists/anime-lists/master/" + n)).expire(Cache.ONE_WEEK).get();
+			return AnimeLists.unmarshal(bytes, AnimeLists.Model.class);
 		}
-		return AnimeLists.unmarshal(bytes, AnimeLists.Model.class);
 	});
 
 	private final Resource<String[]> releaseGroup = lines("release-groups.txt");
@@ -555,7 +557,60 @@ public class ReleaseInfo {
 
 	protected <A> Resource<A[]> resource(String name, Function<String, A> parse, IntFunction<A[]> generator) {
 		// UTF-8 text files with one entry per line, lines starting with # are comments
-		return () -> NEWLINE.splitAsStream(UTF_8.decode(ByteBuffer.wrap(getData(name)))).filter(s -> s.length() > 0 && !s.startsWith("#")).map(parse).filter(Objects::nonNull).toArray(generator);
+		return () -> load(name, bytes -> NEWLINE.splitAsStream(UTF_8.decode(ByteBuffer.wrap(bytes))).filter(s -> s.length() > 0 && !s.startsWith("#")).map(parse).filter(Objects::nonNull).toArray(generator));
+	}
+
+	@FunctionalInterface
+	protected interface Parser<T> {
+		T parse(byte[] bytes) throws Exception;
+	}
+
+	/**
+	 * Parse the downloaded copy of an index (see DataUpdate) if there is one, and the bundled copy otherwise or if that fails
+	 */
+	protected <T> T load(String name, Parser<T> parser) throws Exception {
+		byte[] updated = DataUpdate.getData(name);
+		if (updated != null) {
+			try {
+				return parser.parse(updated);
+			} catch (Exception e) {
+				debug.log(Level.INFO, e, () -> "Failed to parse downloaded detection data, using the bundled copy: " + name);
+			}
+		}
+		return parser.parse(getData(name));
+	}
+
+	/**
+	 * Parse the given contents of an index (e.g. moviedb.txt) like the application does and fail if it is not valid or empty
+	 */
+	public static void validate(String name, byte[] bytes) throws Exception {
+		ReleaseInfo info = new ReleaseInfo() {
+
+			@Override
+			protected <T> T load(String n, Parser<T> parser) throws Exception {
+				if (!n.equals(name)) {
+					throw new FileNotFoundException(n);
+				}
+				return parser.parse(bytes);
+			}
+		};
+
+		Object value = switch (name) {
+			case "series.txt" -> info.getSeriesIndex();
+			case "anidb.txt" -> info.getAnidbIndex();
+			case "anidb-pictures.txt" -> info.getAnidbPictures();
+			case "moviedb.txt" -> info.getMovieList();
+			case "osdb.txt" -> info.getOpenSubtitlesIndex();
+			case "discdb.txt" -> info.getDiscTitles();
+			case "mediainfo.txt" -> info.getMediaInfoDescriptions();
+			case "anime-list.xml" -> info.getAnimeListModel();
+			default -> throw new IllegalArgumentException("Unknown index: " + name);
+		};
+
+		boolean empty = value == null || (value instanceof Object[] a && a.length == 0) || (value instanceof Map<?, ?> m && m.isEmpty()) || (value instanceof AnimeLists.Model model && (model.anime == null || model.anime.length == 0));
+		if (empty) {
+			throw new IllegalArgumentException("Empty index: " + name);
+		}
 	}
 
 	/**

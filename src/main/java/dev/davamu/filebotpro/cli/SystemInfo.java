@@ -25,6 +25,7 @@ import com.sun.jna.Native;
 import com.sun.jna.Platform;
 
 import dev.davamu.filebotpro.ApplicationFolder;
+import dev.davamu.filebotpro.DataUpdate;
 import dev.davamu.filebotpro.UpdateCheck;
 import dev.davamu.filebotpro.WebServices;
 import dev.davamu.filebotpro.archive.Archive;
@@ -79,6 +80,7 @@ public final class SystemInfo {
 		line(out, "Storage", SystemInfo::getStorage);
 		out.accept("Data: " + ApplicationFolder.AppData.get());
 		out.accept("Package: " + getApplicationDeployment().toUpperCase());
+		line(out, "Detection data", DataUpdate::getStatus);
 
 		// this application's own release feed (disabled when update.url is empty)
 		if (UpdateCheck.isAvailable()) {

@@ -22,6 +22,7 @@ import javax.swing.JRadioButtonMenuItem;
 import javax.swing.UIManager;
 
 import dev.davamu.filebotpro.ResourceManager;
+import dev.davamu.filebotpro.DataUpdate;
 import dev.davamu.filebotpro.UpdateCheck;
 import dev.davamu.filebotpro.UserData;
 import dev.davamu.filebotpro.UserFiles;
@@ -96,6 +97,13 @@ public final class AppMenus {
 				JCheckBoxMenuItem updates = new JCheckBoxMenuItem("Check for updates at startup", UpdateCheck.isEnabled());
 				updates.addActionListener(e -> UpdateCheck.setEnabled(updates.isSelected()));
 				menu.add(updates);
+			}
+
+			if (DataUpdate.isAvailable()) {
+				JCheckBoxMenuItem data = new JCheckBoxMenuItem("Update detection data weekly", DataUpdate.isEnabled());
+				data.setToolTipText("Download new movie, series, anime and disc indexes about once a week (applied on the next start)");
+				data.addActionListener(e -> DataUpdate.setEnabled(data.isSelected()));
+				menu.add(data);
 			}
 
 			JMenuItem about = new JMenuItem("About " + getApplicationName());

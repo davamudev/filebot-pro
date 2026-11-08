@@ -167,6 +167,13 @@ public class Main {
 			// initialize this stuff before anything else
 			CacheManager.getInstance();
 
+			// apply the detection data downloaded by the last run and check for new data in the background
+			try {
+				DataUpdate.start();
+			} catch (Throwable e) {
+				debug.log(Level.FINE, "Failed to start detection data update", e);
+			}
+
 			// initialize history spooler
 			HistorySpooler.getInstance().setPersistentHistoryEnabled(useRenameHistory());
 			HistorySpooler.getInstance().setProcessSessionEnabled(args.runCLI());

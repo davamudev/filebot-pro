@@ -1,0 +1,14 @@
+{
+  "format": 1,
+  "date": "2026-11-08T19:17:08Z",
+  "files": {
+    "anidb-pictures.txt.xz": { "sha256": "e977fec5ba1e434ba78af8843c964a5778be36c38b63eda064c325bacfc687ed", "size": 86712, "date": "2026-11-08T19:17:08Z" },
+    "anidb.txt.xz": { "sha256": "a715bda61380fa3abbbaf857c8c4eaf747a61d03894fa851d3588a509acfbd40", "size": 1260216, "date": "2026-11-08T19:17:08Z" },
+    "anime-list.xml.xz": { "sha256": "2990e0a400ccd7f7cda9399bdbebbc5906dce1ff4d5bee1cb526b4bef6aa36ab", "size": 218796, "date": "2026-11-08T19:17:08Z" },
+    "discdb.txt.xz": { "sha256": "a93f560fdce8f4901280a21502128d585345e5dc2cb85d9cb255f85216eae59c", "size": 804796, "date": "2026-11-08T19:17:08Z" },
+    "mediainfo.txt.xz": { "sha256": "28a10d468548bc01b34e1cf4fac13850c3199788d86c9a44c2425fd0440f8868", "size": 16876, "date": "2026-11-08T19:17:08Z" },
+    "moviedb.txt.xz": { "sha256": "937ffb68d538bdaba195dc621ef1820cee374d08725cfe33e97a852afde335da", "size": 2125196, "date": "2026-11-08T19:17:08Z" },
+    "osdb.txt.xz": { "sha256": "fbbd17794300243387d5b0864f9a80dec583737b79c5d1017dab1c72f2e4a921", "size": 2755348, "date": "2026-11-08T19:17:08Z" },
+    "series.txt.xz": { "sha256": "9feb8325ed387ccd104bc2029d5452e8c935e9caf97576aa874fcb4baf2e3834", "size": 1020404, "date": "2026-11-08T19:17:08Z" }
+  }
+}

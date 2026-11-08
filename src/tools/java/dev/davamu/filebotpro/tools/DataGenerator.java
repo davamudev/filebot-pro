@@ -20,6 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -39,6 +40,7 @@ import java.util.stream.Stream;
 import org.tukaani.xz.LZMA2Options;
 import org.tukaani.xz.XZOutputStream;
 
+import dev.davamu.filebotpro.DataUpdate;
 import groovy.json.JsonSlurper;
 
 /**
@@ -49,8 +51,9 @@ import groovy.json.JsonSlurper;
  * <li>discdb.txt from TheDiscDB (MIT)</li>
  * <li>mediainfo.txt from MediaInfoLib (BSD-2-Clause)</li>
  * </ul>
+ * plus a manifest.json for the detection data updates (see DataUpdate).
  *
- * usage: DataGenerator &lt;output folder&gt;
+ * usage: DataGenerator &lt;output folder&gt; [discdb|mediainfo|manifest]
  */
 public class DataGenerator {
 
@@ -114,17 +117,48 @@ public class DataGenerator {
 		Path folder = Paths.get(args[0]);
 		Files.createDirectories(folder);
 
-		// only update TheDiscDB data (gradlew updateData -Ponly=discdb)
-		if (args.length > 1 && args[1].equals("discdb")) {
-			discdb(folder);
-			return;
+		String only = args.length > 1 ? args[1] : "";
+		switch (only) {
+			// only update TheDiscDB data (gradlew updateData -Ponly=discdb)
+			case "discdb" -> discdb(folder);
+			// only update the MediaInfo field descriptions (gradlew updateData -Ponly=mediainfo)
+			case "mediainfo" -> mediainfo(folder);
+			// only rewrite manifest.json for the current files (gradlew updateData -Ponly=manifest)
+			case "manifest" -> {
+			}
+			case "" -> all(folder);
+			default -> throw new IllegalArgumentException("Unknown data: " + only);
 		}
 
-		// only update the MediaInfo field descriptions (gradlew updateData -Ponly=mediainfo)
-		if (args.length > 1 && args[1].equals("mediainfo")) {
-			mediainfo(folder);
-			return;
+		manifest(folder);
+	}
+
+	/**
+	 * manifest.json with the SHA-256, size and last change of every index: bundled with the application and published with
+	 * the indexes by the Update data workflow (see DataUpdate). Dates of unchanged files are kept, so that the manifest only
+	 * changes when the data does.
+	 */
+	private static void manifest(Path folder) throws Exception {
+		Path file = folder.resolve(DataUpdate.MANIFEST);
+		DataUpdate.Manifest previous = Files.exists(file) ? DataUpdate.Manifest.parse(Files.readAllBytes(file)) : DataUpdate.Manifest.EMPTY;
+		Instant now = Instant.now();
+
+		Map<String, DataUpdate.Entry> files = new TreeMap<String, DataUpdate.Entry>();
+		try (Stream<Path> paths = Files.list(folder)) {
+			for (Path path : paths.filter(p -> p.getFileName().toString().endsWith(".xz")).sorted().toList()) {
+				String name = path.getFileName().toString();
+				DataUpdate.Entry entry = DataUpdate.entry(Files.readAllBytes(path), now);
+				DataUpdate.Entry last = previous.format() == DataUpdate.FORMAT ? previous.files().get(name) : null;
+				files.put(name, last != null && last.sha256().equals(entry.sha256()) ? last : entry);
+			}
 		}
+
+		DataUpdate.Manifest manifest = DataUpdate.Manifest.of(files);
+		Files.writeString(file, manifest.toJson(), UTF_8);
+		System.out.format("%s: format %d, %d files, %s%n", file.getFileName(), manifest.format(), files.size(), manifest.date());
+	}
+
+	private static void all(Path folder) throws Exception {
 
 		// NOTE: popularity is filtered here because QLever returns no results for FILTER on wikibase:sitelinks
 		List<Title> movies = query(MOVIES).stream().filter(m -> m.links >= MOVIE_MIN_SITELINKS || (m.spanish && m.links >= MOVIE_MIN_SITELINKS_SPANISH)).toList();

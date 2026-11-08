@@ -136,6 +136,7 @@ val resourceTokens: Map<String, String> = mapOf(
     "application.vendor" to appVendor,
     "application.website" to providers.gradleProperty("app.website").get().trimEnd('/'),
     "update.url" to providers.gradleProperty("app.updateUrl").getOrElse(""),
+    "data.url" to providers.gradleProperty("app.dataUrl").getOrElse(""),
 ) + apiKeys.mapKeys { "apikey." + it.key }
 
 tasks.processResources {
@@ -468,7 +469,7 @@ tasks.register<JavaExec>("generateIcons") {
 
 tasks.register<JavaExec>("updateData") {
     group = "distribution"
-    description = "Regenerates the bundled movie, series, subtitle, anime and disc indexes and the MediaInfo property descriptions from Wikidata, the anime-offline-database, TheDiscDB and MediaInfoLib (-Ponly=discdb|mediainfo for one of the last two only)."
+    description = "Regenerates the bundled movie, series, subtitle, anime and disc indexes and the MediaInfo property descriptions (Wikidata, anime-offline-database, TheDiscDB, MediaInfoLib) and their manifest.json (-Ponly=discdb|mediainfo|manifest for one of them only)."
     classpath = tools.runtimeClasspath
     mainClass = "dev.davamu.filebotpro.tools.DataGenerator"
     args(listOfNotNull(layout.projectDirectory.dir("src/main/resources/dev/davamu/filebotpro/data").asFile.path, findProperty("only")?.toString()))
