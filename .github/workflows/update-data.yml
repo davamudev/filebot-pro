@@ -1,7 +1,8 @@
 # Regenerates the detection data indexes (movies, series, subtitles, anime, discs), publishes them with their manifest.json
 # as assets of the "data" pre-release, which installed versions download about once a week (DataUpdate, app.dataUrl), and
-# opens a pull request when they changed so that the next release bundles them.
-# Runs every Monday and on demand (Actions > Update data > Run workflow).
+# once a month opens or updates a pull request when they changed, so that the next release bundles them (every weekly
+# commit would add several MB of binary data to the history).
+# Runs every Monday and on demand (Actions > Update data > Run workflow, which always updates the pull request).
 name: Update data
 
 on:
@@ -49,10 +50,16 @@ jobs:
           gh release upload data "$data/manifest.json" --clobber
           grep -E '"(format|date)"' "$data/manifest.json"
 
+      # scheduled runs only on the first Monday of the month, manual runs always
       - name: Open a pull request
         env:
           GH_TOKEN: ${{ github.token }}
+          EVENT: ${{ github.event_name }}
         run: |
+          if [ "$EVENT" = "schedule" ] && [ "$(date -u +%-d)" -gt 7 ]; then
+            echo "The pull request is only updated on the first Monday of the month."
+            exit 0
+          fi
           if [ -z "$(git status --porcelain src/main/resources)" ]; then
             echo "The indexes are up to date."
             exit 0
