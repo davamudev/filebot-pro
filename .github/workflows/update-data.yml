@@ -1,10 +1,12 @@
-# Regenerates the bundled indexes (movies, series, subtitles, anime, discs) and opens a pull request when they changed.
-# Runs on the first day of every month and on demand (Actions > Update data > Run workflow).
+# Regenerates the detection data indexes (movies, series, subtitles, anime, discs), publishes them with their manifest.json
+# as assets of the "data" pre-release, which installed versions download about once a week (DataUpdate, app.dataUrl), and
+# opens a pull request when they changed so that the next release bundles them.
+# Runs every Monday and on demand (Actions > Update data > Run workflow).
 name: Update data
 
 on:
   schedule:
-    - cron: "0 5 1 * *"
+    - cron: "0 5 * * 1"
   workflow_dispatch:
 
 permissions:
@@ -31,6 +33,21 @@ jobs:
 
       - name: Regenerate the indexes
         run: ./gradlew --no-daemon updateData
+
+      # assets are replaced in place and the manifest goes last: clients that fetch an index while it is being replaced fail
+      # the checksum check and retry the next day
+      - name: Publish the indexes to the data pre-release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          data=src/main/resources/dev/davamu/filebotpro/data
+          if ! gh release view data > /dev/null 2>&1; then
+            gh release create data --prerelease --latest=false --target develop --title "Detection data" \
+              --notes "Detection data indexes regenerated every week by the Update data workflow. FileBot Pro downloads the ones that changed about once a week, see the manifest.json. Not a release of the application."
+          fi
+          gh release upload data "$data"/*.xz --clobber
+          gh release upload data "$data/manifest.json" --clobber
+          grep -E '"(format|date)"' "$data/manifest.json"
 
       - name: Open a pull request
         env:
