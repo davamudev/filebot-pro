@@ -11,7 +11,7 @@
 # Desktop app in the browser (noVNC on port 5800): docker build --target gui -t filebot-pro:gui .
 
 # Java bytecode does not depend on the architecture, so the build always runs natively on the build machine
-FROM --platform=$BUILDPLATFORM eclipse-temurin:25-jdk@sha256:2d5d5e9b533342a565907c84f47a2ec298c40cde7b13a3ca85d4950fa456a641 AS build
+FROM --platform=$BUILDPLATFORM eclipse-temurin:25-jdk@sha256:83f4a7fc27df94dcc7b8de04d14cbbba8da14406f921e966969c3b09000aa507 AS build
 
 WORKDIR /src
 
@@ -32,7 +32,7 @@ RUN --mount=type=secret,id=apikeys,target=/src/api-keys.properties,required=fals
     ./gradlew --no-daemon -Papp.revision=$REVISION installDist
 
 
-FROM eclipse-temurin:25-jre@sha256:dbb43d81099eec91e0800226ed2296d03146ee7857165b95112372ad0d67e87f AS headless
+FROM eclipse-temurin:25-jre@sha256:ecdc0adb37bde1a281c4d245a3cd535004b1fc8322d560f5b09463b248c81df0 AS headless
 
 # native tools: MediaInfo (media properties), fpcalc (AcoustID), mkvpropedit and AtomicParsley (--apply metadata), 7-Zip.
 # The Pebble service manager of the base image is never run, but image scanners report the Go runtime it is built with
