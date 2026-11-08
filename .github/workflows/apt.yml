@@ -70,4 +70,5 @@ jobs:
             sleep 10
           done
           curl -fsS "$APT_URL/dists/stable/InRelease" | head -n 12
+          curl -fsS "$APT_URL/install.sh" | cmp - "$WORKER_DIR/public/install.sh"
           curl -fsSI "$APT_URL/$(grep -m1 '^Filename:' "$WORKER_DIR/public/dists/stable/main/binary-amd64/Packages" | cut -d' ' -f2)" | grep -i '^location:'

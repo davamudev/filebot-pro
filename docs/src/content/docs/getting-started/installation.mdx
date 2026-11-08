@@ -70,22 +70,28 @@ MediaInfo, fpcalc, mkvpropedit and AtomicParsley are included in both.
 
 <Steps>
 
-1. Add the FileBot Pro repository (signed with its own key) and install the package:
+1. Add the FileBot Pro repository (signed with its own key) and install the package with one command:
 
    ```bash
-   sudo install -d -m 0755 /etc/apt/keyrings
-   sudo wget -qO /etc/apt/keyrings/filebot-pro.asc https://apt.davamu.dev/filebot-pro.asc
+   wget -qO- https://apt.davamu.dev/install.sh | sudo sh
+   ```
+
+   The [script](https://apt.davamu.dev/install.sh) adds the repository to `/etc/apt/sources.list.d` and runs
+   `apt install filebot-pro`. To set it up by hand instead:
+
+   ```bash
    sudo wget -qO /etc/apt/sources.list.d/filebot-pro.sources https://apt.davamu.dev/filebot-pro.sources
-   sudo apt update
-   sudo apt install filebot-pro
+   sudo apt update && sudo apt install filebot-pro
    ```
 
    `apt` also installs the recommended packages: MediaInfo, fpcalc (`chromaprint-tools`), mkvtoolnix and
    AtomicParsley. Media properties, music matching and metadata writing work out of the box. New versions arrive with
    your other updates (`sudo apt update && sudo apt upgrade` or the Software Updater).
 
-   Without the repository, install the downloaded package from its folder with
-   `sudo apt install ./filebot-pro_1.0.0_amd64.deb`; every update is then a new download.
+   You can also install the downloaded package from its folder with `sudo apt install ./filebot-pro_1.0.0_amd64.deb`.
+   It adds the repository as well, so updates arrive the same way. To turn them off, add the line `Enabled: no` to
+   `/etc/apt/sources.list.d/filebot-pro.sources` (the package adds the file again if it is missing).
+   `sudo apt purge filebot-pro` removes the repository together with the app.
 
 2. Start **FileBot Pro** from the application menu, or type `filebot-pro` in a terminal.
 

@@ -8,6 +8,8 @@ All notable changes to FileBot Pro.
 
 - MediaInfo tab: hovering a column shows what the property means and an example value.
 - Movie, series, anime and disc detection data updates itself about once a week between releases.
+- One-command setup of the APT repository on Ubuntu and Debian (see the installation guide).
+- The `.deb` package adds the APT repository, so new versions arrive with the system updates.
 
 ## [1.4.0] - 2026-10-25
 

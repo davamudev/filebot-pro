@@ -273,6 +273,8 @@ val prepareJpackageInput = tasks.register<Sync>("prepareJpackageInput") {
     from(nativeToolsDir) { into("native") }
     // bash completion, linked to /usr/share/bash-completion/completions by the deb/rpm packages
     if (isX11) from(tasks.named("bashCompletion"))
+    // APT repository source with its key, copied to /etc/apt/sources.list.d by the deb package (postinst)
+    if (isX11) from(packagingDir.file("linux/apt/$appId.sources"))
     into(jpackageInput)
 }
 

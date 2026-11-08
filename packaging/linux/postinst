@@ -31,6 +31,15 @@ LAUNCHER_AS_SERVICE_COMMANDS_INSTALL
         # bash completion for the command-line launcher
         mkdir -p /usr/share/bash-completion/completions
         ln -sf "@{installDir}/lib/app/@{appId}_completion" "/usr/share/bash-completion/completions/@{appId}"
+        # APT repository, so that new versions arrive with the system updates. Never touches an existing
+        # @{appId}.sources ("Enabled: no" in it turns the repository off) and skips the setup when another entry
+        # mentions the repository (two entries with different Signed-By make apt update fail, a commented one was
+        # turned off on purpose) or when apt could not reach it over HTTPS (no ca-certificates, e.g. in containers)
+        if [ ! -e "/etc/apt/sources.list.d/@{appId}.sources" ] && [ -d /etc/apt/sources.list.d ] \
+            && [ -s /etc/ssl/certs/ca-certificates.crt ] \
+            && ! grep -qsF apt.davamu.dev /etc/apt/sources.list /etc/apt/sources.list.d/*; then
+            install -m 0644 "@{installDir}/lib/app/@{appId}.sources" "/etc/apt/sources.list.d/@{appId}.sources"
+        fi
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)

@@ -8,10 +8,15 @@
 # GitHub release assets, so the packages themselves are not part of it:
 #   dists/stable/Release, InRelease, Release.gpg     signed with the first secret key of the gpg keyring
 #   dists/stable/main/binary-<arch>/Packages(.gz)    Filename: pool/main/<package>_<version>_<arch>.deb
-#   filebot-pro.asc, filebot-pro.sources             public key and deb822 source for /etc/apt
+#   filebot-pro.sources                              deb822 source for /etc/apt/sources.list.d, with the public key
+#   filebot-pro.asc                                  public key on its own
+#   install.sh                                       setup script (wget -qO- .../install.sh | sudo sh)
 #
-# Needs apt-ftparchive (apt-utils), dpkg-deb and gpg. APT_URL is the public address of the repository,
-# APT_GPG_PASSPHRASE the passphrase of the signing key if it has one.
+# filebot-pro.sources is the committed file next to this script, also installed by the .deb package (postinst). The
+# key inside it must be the signing key, so a new signing key means updating that file first.
+#
+# Needs apt-ftparchive (apt-utils), dpkg-deb and gpg. APT_GPG_PASSPHRASE is the passphrase of the signing key if it has
+# one.
 
 set -eu
 
@@ -20,7 +25,7 @@ shift
 suite=stable
 component=main
 name=filebot-pro
-url=${APT_URL:?APT_URL is not set}
+templates=$(cd "$(dirname "$0")" && pwd)
 
 rm -rf "$repo"
 mkdir -p "$repo/pool/$component"
@@ -50,6 +55,13 @@ mv Release "dists/$suite/Release"
 
 key=$(gpg --batch --list-secret-keys --with-colons | awk -F: '$1 == "fpr" { print $10; exit }')
 [ -n "$key" ] || { echo "No secret key in the gpg keyring" >&2; exit 1; }
+# the key block of Signed-By: continuation lines start with a space, empty lines are a single dot
+embedded=$(sed -n '/^Signed-By:/,$ { /^ / { s/^ //; s/^\.$//; p; } }' "$templates/$name.sources" \
+    | gpg --batch --show-keys --with-colons | awk -F: '$1 == "fpr" { print $10; exit }')
+[ "$embedded" = "$key" ] || {
+    echo "The key in $templates/$name.sources ($embedded) is not the signing key ($key)" >&2
+    exit 1
+}
 sign() {
     if [ -n "${APT_GPG_PASSPHRASE:-}" ]; then
         # the passphrase goes through stdin, not the command line (visible to other processes)
@@ -62,13 +74,11 @@ sign --clearsign --output "dists/$suite/InRelease" "dists/$suite/Release"
 sign --armor --detach-sign --output "dists/$suite/Release.gpg" "dists/$suite/Release"
 
 gpg --batch --armor --export "$key" > "$name.asc"
-cat > "$name.sources" <<EOF
-Types: deb
-URIs: $url
-Suites: $suite
-Components: $component
-Signed-By: /etc/apt/keyrings/$name.asc
-EOF
+cp "$templates/$name.sources" "$name.sources"
+awk -v architectures="$(echo $architectures)" -v sources="$name.sources" '
+    $0 == "@{sources}" { while ((getline line < sources) > 0) print line; next }
+    { gsub(/@[{]architectures[}]/, architectures); print }
+' "$templates/install.sh" > install.sh
 
 echo "Indexes signed with key $key:"
 find . -type f | sort

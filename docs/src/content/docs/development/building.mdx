@@ -113,7 +113,10 @@ The workflow is skipped until these are set in the repository settings:
 | `APT_GPG_PRIVATE_KEY` | Secret | Armored private signing key (`gpg --armor --export-secret-keys <fingerprint>`) |
 | `APT_GPG_PASSPHRASE` | Secret | Passphrase of the key, if it has one |
 
-The public key is published as `filebot-pro.asc` next to the indexes.
+Next to the indexes it publishes `filebot-pro.sources` (the source for `/etc/apt/sources.list.d` with the public key
+inside), the key on its own as `filebot-pro.asc` and the setup script `install.sh` (from `packaging/linux/apt/install.sh`).
+`packaging/linux/apt/filebot-pro.sources` is also installed by the `.deb` package, so after changing the signing key
+update that file first: the workflow stops if its key is not the signing key.
 
 ## Other tasks
 

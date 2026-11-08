@@ -117,7 +117,10 @@ El workflow se omite hasta que estén configurados en los ajustes del repositori
 | `APT_GPG_PRIVATE_KEY` | Secreto | Clave privada de firma en formato armored (`gpg --armor --export-secret-keys <huella>`) |
 | `APT_GPG_PASSPHRASE` | Secreto | Contraseña de la clave, si tiene |
 
-La clave pública se publica como `filebot-pro.asc` junto a los índices.
+Junto a los índices publica `filebot-pro.sources` (la fuente para `/etc/apt/sources.list.d` con la clave pública
+dentro), la clave sola como `filebot-pro.asc` y el script de instalación `install.sh` (de `packaging/linux/apt/install.sh`).
+El paquete `.deb` instala también `packaging/linux/apt/filebot-pro.sources`, así que si cambias la clave de firma
+actualiza antes ese archivo: el workflow se detiene si su clave no es la de firma.
 
 ## Otras tareas
 

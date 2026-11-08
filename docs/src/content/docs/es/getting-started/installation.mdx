@@ -70,14 +70,18 @@ MediaInfo, fpcalc, mkvpropedit y AtomicParsley vienen incluidos en los dos.
 
 <Steps>
 
-1. Añade el repositorio de FileBot Pro (firmado con su propia clave) e instala el paquete:
+1. Añade el repositorio de FileBot Pro (firmado con su propia clave) e instala el paquete con un solo comando:
 
    ```bash
-   sudo install -d -m 0755 /etc/apt/keyrings
-   sudo wget -qO /etc/apt/keyrings/filebot-pro.asc https://apt.davamu.dev/filebot-pro.asc
+   wget -qO- https://apt.davamu.dev/install.sh | sudo sh
+   ```
+
+   El [script](https://apt.davamu.dev/install.sh) añade el repositorio a `/etc/apt/sources.list.d` y ejecuta
+   `apt install filebot-pro`. Para configurarlo a mano:
+
+   ```bash
    sudo wget -qO /etc/apt/sources.list.d/filebot-pro.sources https://apt.davamu.dev/filebot-pro.sources
-   sudo apt update
-   sudo apt install filebot-pro
+   sudo apt update && sudo apt install filebot-pro
    ```
 
    `apt` instala también los paquetes recomendados: MediaInfo, fpcalc (`chromaprint-tools`), mkvtoolnix y
@@ -85,8 +89,10 @@ MediaInfo, fpcalc, mkvpropedit y AtomicParsley vienen incluidos en los dos.
    principio. Las versiones nuevas llegan con el resto de actualizaciones (`sudo apt update && sudo apt upgrade` o el
    Actualizador de software).
 
-   Sin el repositorio, instala el paquete descargado desde su carpeta con
-   `sudo apt install ./filebot-pro_1.0.0_amd64.deb`; cada actualización es entonces una descarga nueva.
+   También puedes instalar el paquete descargado desde su carpeta con `sudo apt install ./filebot-pro_1.0.0_amd64.deb`.
+   Añade igualmente el repositorio, así que las actualizaciones llegan del mismo modo. Para desactivarlas, añade la línea
+   `Enabled: no` a `/etc/apt/sources.list.d/filebot-pro.sources` (si falta el archivo, el paquete lo vuelve a crear).
+   `sudo apt purge filebot-pro` quita el repositorio junto con la aplicación.
 
 2. Abre **FileBot Pro** desde el menú de aplicaciones o escribe `filebot-pro` en una terminal.
 
