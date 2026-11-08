@@ -13,17 +13,17 @@
         "render": "npm run music && npm run render:en && npm run render:es && npm run render:posters"
     },
     "dependencies": {
-        "@remotion/cli": "4.0.537",
+        "@remotion/cli": "4.0.539",
         "@remotion/google-fonts": "4.0.537",
-        "@remotion/transitions": "4.0.537",
-        "lucide-react": "0.468.0",
+        "@remotion/transitions": "4.0.539",
+        "lucide-react": "1.61.0",
         "react": "19.3.1",
         "react-dom": "19.3.1",
-        "remotion": "4.0.534"
+        "remotion": "4.0.539"
     },
     "devDependencies": {
         "@types/react": "19.3.0",
-        "typescript": "5.7.2"
+        "typescript": "7.0.2"
     },
     "overrides": {
         "zod": "4.6.7"
