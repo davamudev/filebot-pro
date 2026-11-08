@@ -194,6 +194,9 @@ Los ajustes, el historial y las cachés se quedan en `/data`.
 Cuando sale una versión nueva, el log del contenedor lo indica (como mucho una vez al día). Para desactivar el aviso,
 añade `application.update=skip` a `/data/system.properties`.
 
+Entre versiones, los [datos de detección](/es/reference/detection-data/) se descargan más o menos una vez a la semana
+en `/data/cache/data`. Para desactivarlo, añade `application.data.update=skip` a `/data/system.properties`.
+
 ## Construir la imagen
 
 Para construir la imagen tú mismo, consulta [compilar desde el código](/es/development/building/#imagen-docker).

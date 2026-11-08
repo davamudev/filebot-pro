@@ -191,6 +191,9 @@ Settings, history and caches stay in `/data`.
 When a new version is out, the container log says so (at most once a day). To turn the notice off, add
 `application.update=skip` to `/data/system.properties`.
 
+Between releases the [detection data](/reference/detection-data/) is downloaded about once a week into
+`/data/cache/data`. To turn it off, add `application.data.update=skip` to `/data/system.properties`.
+
 ## Building the image
 
 To build the image yourself, see [building from source](/development/building/#docker-image).

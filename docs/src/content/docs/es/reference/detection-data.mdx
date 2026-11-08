@@ -1,0 +1,41 @@
+---
+title: Datos de detección
+description: Los índices de películas, series, anime y discos que usa la detección, y cómo se mantienen al día entre versiones.
+---
+
+FileBot Pro reconoce los nombres de archivo con índices que funcionan sin conexión: películas, series y subtítulos de
+Wikidata, anime de la anime-offline-database y Anime-Lists, títulos de episodios de Blu-ray y DVD de TheDiscDB, y las
+descripciones de las propiedades de MediaInfo. Cada versión incluye una copia, y los índices se regeneran cada semana,
+así que los títulos nuevos se reconocen sin esperar a la siguiente versión.
+
+## Actualización semanal
+
+- **Una petición a la semana**: como mucho una vez cada 7 días, al arrancar la aplicación de escritorio, la línea de
+  comandos o el contenedor Docker, FileBot Pro descarga el `manifest.json` de la
+  [pre-release `data`](https://github.com/davamudev/filebot-pro/releases/tag/data) de GitHub, y después solo los
+  índices que cambiaron (unos pocos MB como mucho). Se hace en segundo plano y nunca retrasa el arranque. La petición es
+  una descarga normal de GitHub: no lleva nada sobre ti ni sobre tus archivos.
+- **Comprobados antes de usarlos**: cada fichero debe coincidir con el SHA-256 del manifiesto y poder leerse antes de
+  guardarse en la carpeta `cache/data` de los [datos de usuario](/es/reference/configuration/#datos-de-usuario)
+  (`/data/cache/data` en Docker).
+- **Se aplican en el siguiente arranque**: una aplicación o un comando en marcha nunca cambia sus datos a mitad.
+- **Copia incluida como respaldo**: sin una descarga válida (primer arranque, sin conexión, fichero dañado, o una
+  versión nueva que trae datos más recientes) FileBot Pro usa los índices que incluye.
+- **Sin avisos**: una descarga fallida nunca detiene la aplicación ni muestra un error, solo se anota en el log de
+  depuración (`-Ddev.davamu.filebotpro.logging.debug=FINE` lo muestra) y se reintenta al día siguiente.
+- **Compatible**: los índices con una estructura que esta versión no entiende se ignoran; llegan con la siguiente
+  actualización de la aplicación.
+
+`filebot-pro -script fn:sysinfo` muestra la fecha de los datos en uso, p. ej. `Detection data: 2026-11-09 (2 updated)`.
+`filebot-pro -clear-cache` también borra los índices descargados.
+
+## Desactivarla
+
+| Dónde | Cómo |
+| --- | --- |
+| Aplicación de escritorio | Ayuda → **Update detection data weekly** (también vale para la línea de comandos en el mismo equipo) |
+| Línea de comandos | Pasa `-Dapplication.data.update=skip`, o añade `application.data.update=skip` a las propiedades del sistema (Ayuda → **System properties…**) |
+| Docker | Añade `application.data.update=skip` a `/data/system.properties`, o pasa `-e FILEBOT_PRO_OPTS=-Dapplication.data.update=skip` |
+
+Desactivada, FileBot Pro solo usa los índices incluidos. Las compilaciones con `app.dataUrl` vacío en
+`gradle.properties` nunca comprueban.

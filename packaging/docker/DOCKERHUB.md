@@ -82,5 +82,7 @@ services:
 docker compose pull && docker compose up -d
 ```
 
-When a new version is out, the container log says so. More options, NAS guides (Synology, QNAP, Unraid, TrueNAS) and
+When a new version is out, the container log says so. Between releases the detection data (movie, series, anime and
+disc indexes) is downloaded about once a week into `/data/cache/data`; add `application.data.update=skip` to
+`/data/system.properties` to turn it off. More options, NAS guides (Synology, QNAP, Unraid, TrueNAS) and
 troubleshooting are in the [documentation](https://filebotpro.davamu.dev/getting-started/docker/).

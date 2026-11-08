@@ -1,0 +1,40 @@
+---
+title: Detection data
+description: The movie, series, anime and disc indexes behind detection, and how they stay current between releases.
+---
+
+FileBot Pro recognizes file names with indexes that work offline: movies, series and subtitles from Wikidata, anime
+from the anime-offline-database and Anime-Lists, Blu-ray and DVD episode titles from TheDiscDB, and the descriptions of
+the MediaInfo properties. Every release bundles a copy, and the indexes are regenerated every week, so new titles are
+recognized without waiting for the next release.
+
+## Weekly update
+
+- **One request a week**: at most once every 7 days, when the desktop app, the command line or the Docker container
+  starts, FileBot Pro downloads the `manifest.json` of the
+  [`data` pre-release](https://github.com/davamudev/filebot-pro/releases/tag/data) on GitHub, and then only the indexes
+  that changed (a few MB at most). It runs in the background and never slows down the start. The request is a plain
+  download from GitHub: it carries nothing about you or your files.
+- **Checked before use**: each file must match the SHA-256 of the manifest and be readable before it is saved to the
+  `cache/data` folder of the [user data](/reference/configuration/#user-data) (`/data/cache/data` in Docker).
+- **Applied on the next start**: a running app or command never changes its data halfway.
+- **Bundled copy as a fallback**: without a valid download (first start, offline, damaged file, or a newer release that
+  bundles more recent data) FileBot Pro uses the indexes it ships with.
+- **Silent**: a failed download never stops the app or shows an error, it is only written to the debug log
+  (`-Ddev.davamu.filebotpro.logging.debug=FINE` shows it) and retried the next day.
+- **Compatible**: indexes with a structure that this version does not understand are ignored; they arrive with the
+  next update of the app.
+
+`filebot-pro -script fn:sysinfo` shows the date of the data in use, e.g. `Detection data: 2026-11-09 (2 updated)`.
+`filebot-pro -clear-cache` deletes the downloaded indexes as well.
+
+## Turning it off
+
+| Where | How |
+| --- | --- |
+| Desktop app | Help → **Update detection data weekly** (also applies to the command line on the same computer) |
+| Command line | Pass `-Dapplication.data.update=skip`, or add `application.data.update=skip` to the system properties (Help → **System properties…**) |
+| Docker | Add `application.data.update=skip` to `/data/system.properties`, or pass `-e FILEBOT_PRO_OPTS=-Dapplication.data.update=skip` |
+
+When it is off, FileBot Pro only uses the bundled indexes. Builds made with an empty `app.dataUrl` in
+`gradle.properties` never check.
