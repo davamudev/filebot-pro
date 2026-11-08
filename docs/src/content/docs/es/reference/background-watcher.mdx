@@ -1,0 +1,230 @@
+---
+title: Vigilante en segundo plano
+description: Mantén fn:watcher en marcha en segundo plano sin terminal, arrancado por Windows, Linux (systemd), macOS (launchd) o el Programador de tareas de Synology.
+---
+
+import { Steps, Tabs, TabItem } from '@astrojs/starlight/components'
+
+`fn:watcher` vigila una carpeta y renombra cada archivo nuevo, pero solo mientras su terminal está abierta. Para que
+siga funcionando en segundo plano, deja que lo arranque el sistema: una tarea programada en Windows, un servicio de
+systemd en Linux, un agente de launchd en macOS o una tarea de arranque en Synology. Cada uno solo necesita unas pocas
+líneas, que tienes a continuación.
+
+:::tip[Otras dos opciones]
+- La [imagen Docker](/es/getting-started/docker/) ya ejecuta el vigilante en segundo plano y lo vuelve a arrancar tras
+  un reinicio o un fallo. En un servidor o un NAS es la opción más sencilla.
+- Si tu cliente de descargas puede ejecutar un programa al terminar una descarga (qBittorrent, Transmission,
+  Deluge...), [`fn:amc`](/es/reference/command-line/#automatizar-las-descargas-con-amc) procesa cada descarga al
+  momento y no hace falta que nada siga en marcha.
+:::
+
+## 1. Guarda las opciones del vigilante
+
+Pon el comando completo en un [archivo de argumentos](/es/reference/command-line/#archivos-de-argumentos), un argumento
+por línea. Para cambiar las opciones más adelante, edita el archivo y reinicia el vigilante; la configuración del
+sistema no cambia.
+
+```text title="watcher.txt"
+# vigila las descargas completadas y mueve los archivos renombrados a la biblioteca
+-script
+fn:watcher
+D:\Descargas\Completadas
+--output
+D:\Media
+--format
+{plex}
+--action
+move
+-rename
+-non-strict
+--log-file
+watcher.log
+```
+
+Usa tus propias carpetas y tu [formato](/es/formats/syntax/). `--apply artwork nfo prune` (un valor por línea) además
+descarga carátulas, escribe archivos NFO y borra las carpetas de descarga que quedan vacías. El log se guarda en la
+carpeta `logs` dentro de la [carpeta de datos](/es/reference/configuration/#datos-de-usuario).
+
+Guarda el archivo en la carpeta de datos:
+
+| Sistema | Archivo de argumentos |
+| --- | --- |
+| Windows | `%APPDATA%\FileBot Pro\watcher.txt` |
+| Linux | `~/.filebot-pro/watcher.txt` |
+| macOS | `~/Library/Application Support/FileBot Pro/watcher.txt` |
+| Synology | `/volume1/docker/filebot-pro/watcher.txt` (sirve cualquier carpeta compartida) |
+
+Pruébalo en una terminal antes de configurar el sistema: `filebot-pro @watcher.txt` con la ruta completa del archivo.
+Copia un archivo en la carpeta vigilada, comprueba que se renombra y pulsa ENTER para parar.
+
+:::caution[Carpetas de red]
+Las carpetas montadas desde otro equipo (SMB o NFS, unidades de red asignadas) no envían eventos del sistema de
+archivos. Añade dos líneas, `--def` y `poll=60`, para revisar la carpeta cada 60 segundos.
+:::
+
+## 2. Arráncalo con el sistema
+
+<Tabs syncKey="os">
+<TabItem label="Windows">
+
+Una tarea programada arranca el vigilante al iniciar sesión. Ejecuta esto en PowerShell:
+
+```powershell
+$action   = New-ScheduledTaskAction -Execute "$env:ProgramFiles\FileBot Pro\FileBot Pro.exe" -Argument "`"@$env:APPDATA\FileBot Pro\watcher.txt`""
+$trigger  = New-ScheduledTaskTrigger -AtLogOn -User "$env:USERDOMAIN\$env:USERNAME"
+$settings = New-ScheduledTaskSettingsSet -ExecutionTimeLimit 0 -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -RestartCount 3 -RestartInterval (New-TimeSpan -Minutes 1)
+Register-ScheduledTask -TaskName "FileBot Pro watcher" -Action $action -Trigger $trigger -Settings $settings
+Start-ScheduledTask -TaskName "FileBot Pro watcher"
+```
+
+- `FileBot Pro.exe` ejecuta el comando sin ventana de consola. Con la versión portable, usa la ruta de
+  `FileBot Pro.exe` en su carpeta.
+- `-ExecutionTimeLimit 0` es necesario: por defecto Windows detiene las tareas programadas a los tres días.
+- La tarea se ejecuta mientras tienes la sesión iniciada, con tu usuario, así que puede leer tus carpetas y
+  `%APPDATA%`. Usa rutas UNC (`\\nas\media`) en lugar de letras de unidades de red, que quizá aún no estén conectadas
+  cuando arranca la tarea.
+
+| Para | Ejecuta |
+| --- | --- |
+| Reiniciarlo tras cambiar `watcher.txt` | `Stop-ScheduledTask "FileBot Pro watcher"; Start-ScheduledTask "FileBot Pro watcher"` |
+| Ver si está en marcha | `Get-ScheduledTask "FileBot Pro watcher"` (`State` es `Running`) |
+| Quitarlo | `Unregister-ScheduledTask "FileBot Pro watcher" -Confirm:$false` |
+
+La tarea también aparece en la aplicación **Programador de tareas**, en **Biblioteca del Programador de tareas**.
+
+</TabItem>
+<TabItem label="Linux">
+
+Un servicio de usuario de systemd arranca el vigilante con tu usuario. Guarda esto como
+`~/.config/systemd/user/filebot-pro-watcher.service`:
+
+```ini title="filebot-pro-watcher.service"
+[Unit]
+Description=FileBot Pro folder watcher
+
+[Service]
+ExecStart=/usr/bin/filebot-pro @%h/.filebot-pro/watcher.txt
+Restart=on-failure
+RestartSec=30
+
+[Install]
+WantedBy=default.target
+```
+
+`%h` es tu carpeta personal. Con la versión portable, escribe la ruta de `bin/filebot-pro` en su carpeta en lugar de
+`/usr/bin/filebot-pro`. Después actívalo:
+
+```bash
+systemctl --user daemon-reload
+```
+
+```bash
+systemctl --user enable --now filebot-pro-watcher
+```
+
+Los servicios de usuario se detienen al cerrar la sesión. En un servidor, o para arrancar el vigilante al encender sin
+iniciar sesión, permite que tu usuario mantenga servicios en marcha:
+
+```bash
+sudo loginctl enable-linger $USER
+```
+
+| Para | Ejecuta |
+| --- | --- |
+| Reiniciarlo tras cambiar `watcher.txt` | `systemctl --user restart filebot-pro-watcher` |
+| Ver si está en marcha | `systemctl --user status filebot-pro-watcher` |
+| Seguir el log | `journalctl --user -u filebot-pro-watcher -f` |
+| Quitarlo | `systemctl --user disable --now filebot-pro-watcher` y después borra el archivo `.service` |
+
+</TabItem>
+<TabItem label="macOS">
+
+Un agente de launchd arranca el vigilante al iniciar sesión. Ejecuta esto en Terminal; escribe el agente con la ruta de
+tu carpeta personal y lo carga:
+
+```bash
+cat > ~/Library/LaunchAgents/dev.davamu.filebotpro.watcher.plist <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>dev.davamu.filebotpro.watcher</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Applications/FileBot Pro.app/Contents/MacOS/FileBot Pro</string>
+        <string>@$HOME/Library/Application Support/FileBot Pro/watcher.txt</string>
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <dict>
+        <key>SuccessfulExit</key>
+        <false/>
+    </dict>
+    <key>ProcessType</key>
+    <string>Background</string>
+    <key>StandardErrorPath</key>
+    <string>$HOME/Library/Logs/FileBot Pro watcher.log</string>
+</dict>
+</plist>
+EOF
+launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/dev.davamu.filebotpro.watcher.plist
+```
+
+`KeepAlive` lo vuelve a arrancar si se detiene con un error. macOS muestra una notificación de que se ha añadido un
+elemento en segundo plano.
+
+:::caution[Acceso a carpetas]
+macOS no deja que los programas en segundo plano lean **Descargas**, **Documentos**, **Escritorio**, discos externos
+o volúmenes de red, y no puede pedir permiso mientras el vigilante funciona en segundo plano. Abre **Ajustes del
+Sistema › Privacidad y seguridad › Acceso total al disco** y añade **FileBot Pro** desde Aplicaciones.
+:::
+
+| Para | Ejecuta |
+| --- | --- |
+| Reiniciarlo tras cambiar `watcher.txt` | `launchctl kickstart -k gui/$(id -u)/dev.davamu.filebotpro.watcher` |
+| Ver si está en marcha | `launchctl print gui/$(id -u)/dev.davamu.filebotpro.watcher` (`state = running`) |
+| Quitarlo | `launchctl bootout gui/$(id -u)/dev.davamu.filebotpro.watcher` y después borra el archivo `.plist` |
+
+</TabItem>
+<TabItem label="Synology">
+
+Con el [paquete de Synology](/es/getting-started/docker/#nas) (sin Docker), una tarea de arranque del Programador de
+tareas de DSM inicia el vigilante.
+
+<Steps>
+
+1. Abre **Panel de control › Programador de tareas › Crear › Tarea activada › Script definido por el usuario**.
+
+2. En **General**, elige el usuario propietario de las carpetas multimedia (no `root`) y el evento **Arranque**.
+
+3. En **Configuración de tareas**, escribe este script:
+
+   ```bash
+   export FILEBOT_PRO_DATA=/volume1/docker/filebot-pro
+   nohup /usr/local/bin/filebot-pro @/volume1/docker/filebot-pro/watcher.txt >/dev/null 2>&1 &
+   ```
+
+4. Selecciona la tarea y pulsa **Ejecutar** para arrancarla ya, sin reiniciar el NAS.
+
+</Steps>
+
+`FILEBOT_PRO_DATA` guarda los ajustes, las cachés y los logs junto a `watcher.txt`, así que el log es
+`/volume1/docker/filebot-pro/logs/watcher.log`. A diferencia de Docker, nada vuelve a arrancar el vigilante si se
+detiene: para reiniciarlo tras cambiar `watcher.txt`, ejecuta `pkill -f watcher.txt` por SSH y vuelve a **Ejecutar**
+la tarea.
+
+</TabItem>
+</Tabs>
+
+## Si no arranca
+
+- Revisa `logs/watcher.log` en la carpeta de datos, o el log del sistema del servicio (`journalctl` en Linux,
+  `~/Library/Logs/FileBot Pro watcher.log` en macOS).
+- Detén la tarea o el servicio y ejecuta el mismo comando en una terminal (`filebot-pro @<ruta de watcher.txt>`): una
+  opción no válida, una carpeta que no existe o una carpeta de salida sin permiso de escritura detienen el vigilante al
+  momento con un mensaje.
+- Un segundo vigilante con el mismo `--log-file` espera a que el primero se detenga, sin ningún mensaje. Detén el
+  vigilante en segundo plano antes de probar `watcher.txt` en una terminal, y para vigilar varias carpetas crea un
+  archivo de argumentos y una tarea o servicio por carpeta, cada uno con su propio `--log-file`.

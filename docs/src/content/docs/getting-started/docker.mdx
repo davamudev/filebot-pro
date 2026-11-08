@@ -162,7 +162,8 @@ models) package installs the command line with its own Java runtime, on DSM 7.0 
 **Package Center → Manual Install**, then run `filebot-pro` over SSH or from the **Task Scheduler**, e.g.
 `filebot-pro -script fn:amc /volume1/downloads --output /volume1/media --action move -non-strict`. Settings and
 caches go to `~/.filebot-pro` of the user that runs it, or to the folder in the `FILEBOT_PRO_DATA` environment
-variable. MediaInfo is not part of DSM, so `{vf}` and other media properties stay empty.
+variable. MediaInfo is not part of DSM, so `{vf}` and other media properties stay empty. To run the watcher at boot,
+see [background watcher](/reference/background-watcher/).
 
 </TabItem>
 <TabItem label="Unraid">

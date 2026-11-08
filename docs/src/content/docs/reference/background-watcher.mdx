@@ -1,0 +1,224 @@
+---
+title: Background watcher
+description: Keep fn:watcher running in the background without a terminal, started by Windows, Linux (systemd), macOS (launchd) or the Synology Task Scheduler.
+---
+
+import { Steps, Tabs, TabItem } from '@astrojs/starlight/components'
+
+`fn:watcher` watches a folder and renames every new file, but only while its terminal is open. To keep it running in
+the background, let the system start it: a scheduled task on Windows, a systemd service on Linux, a launchd agent on
+macOS or a boot task on Synology. Each one only needs a few lines, shown below.
+
+:::tip[Two other options]
+- The [Docker image](/getting-started/docker/) already runs the watcher in the background and starts it again after a
+  restart or a crash. On a server or a NAS it is the simplest option.
+- If your download client can run a program when a download finishes (qBittorrent, Transmission, Deluge, ...),
+  [`fn:amc`](/reference/command-line/#automate-downloads-with-amc) processes each download right away and nothing
+  has to keep running.
+:::
+
+## 1. Save the watcher options
+
+Put the whole command in an [argument file](/reference/command-line/#argument-files), one argument per line. To change
+the options later, edit the file and restart the watcher; the system setup stays the same.
+
+```text title="watcher.txt"
+# watch the completed downloads and move the renamed files into the library
+-script
+fn:watcher
+D:\Downloads\Complete
+--output
+D:\Media
+--format
+{plex}
+--action
+move
+-rename
+-non-strict
+--log-file
+watcher.log
+```
+
+Use your own folders and [format](/formats/syntax/). `--apply artwork nfo prune` (one value per line) also downloads
+artwork, writes NFO files and deletes the download folders that are left empty. The log is saved to the `logs` folder
+inside the [data folder](/reference/configuration/#user-data).
+
+Save the file in the data folder:
+
+| System | Argument file |
+| --- | --- |
+| Windows | `%APPDATA%\FileBot Pro\watcher.txt` |
+| Linux | `~/.filebot-pro/watcher.txt` |
+| macOS | `~/Library/Application Support/FileBot Pro/watcher.txt` |
+| Synology | `/volume1/docker/filebot-pro/watcher.txt` (any shared folder works) |
+
+Try it in a terminal before setting up the system: `filebot-pro @watcher.txt` with the full path of the file. Copy a
+file into the watched folder, check that it is renamed, and press ENTER to stop.
+
+:::caution[Network shares]
+Folders mounted from another machine (SMB or NFS, mapped network drives) do not send file system events. Add two lines,
+`--def` and `poll=60`, to scan the folder every 60 seconds instead.
+:::
+
+## 2. Start it with the system
+
+<Tabs syncKey="os">
+<TabItem label="Windows">
+
+A scheduled task starts the watcher when you sign in. Run this in PowerShell:
+
+```powershell
+$action   = New-ScheduledTaskAction -Execute "$env:ProgramFiles\FileBot Pro\FileBot Pro.exe" -Argument "`"@$env:APPDATA\FileBot Pro\watcher.txt`""
+$trigger  = New-ScheduledTaskTrigger -AtLogOn -User "$env:USERDOMAIN\$env:USERNAME"
+$settings = New-ScheduledTaskSettingsSet -ExecutionTimeLimit 0 -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -RestartCount 3 -RestartInterval (New-TimeSpan -Minutes 1)
+Register-ScheduledTask -TaskName "FileBot Pro watcher" -Action $action -Trigger $trigger -Settings $settings
+Start-ScheduledTask -TaskName "FileBot Pro watcher"
+```
+
+- `FileBot Pro.exe` runs the command without a console window. With the portable version, use the path of
+  `FileBot Pro.exe` in its folder.
+- `-ExecutionTimeLimit 0` is required: by default Windows stops scheduled tasks after three days.
+- The task runs while you are signed in, with your user, so it can read your folders and `%APPDATA%`. Use UNC paths
+  (`\\nas\media`) instead of mapped drive letters, which may not be connected yet when the task starts.
+
+| To | Run |
+| --- | --- |
+| Restart it after changing `watcher.txt` | `Stop-ScheduledTask "FileBot Pro watcher"; Start-ScheduledTask "FileBot Pro watcher"` |
+| Check whether it is running | `Get-ScheduledTask "FileBot Pro watcher"` (`State` is `Running`) |
+| Remove it | `Unregister-ScheduledTask "FileBot Pro watcher" -Confirm:$false` |
+
+The task also shows up in the **Task Scheduler** app, under **Task Scheduler Library**.
+
+</TabItem>
+<TabItem label="Linux">
+
+A systemd user service starts the watcher with your user. Save this as
+`~/.config/systemd/user/filebot-pro-watcher.service`:
+
+```ini title="filebot-pro-watcher.service"
+[Unit]
+Description=FileBot Pro folder watcher
+
+[Service]
+ExecStart=/usr/bin/filebot-pro @%h/.filebot-pro/watcher.txt
+Restart=on-failure
+RestartSec=30
+
+[Install]
+WantedBy=default.target
+```
+
+`%h` is your home folder. With the portable version, write the path of `bin/filebot-pro` in its folder instead of
+`/usr/bin/filebot-pro`. Then turn it on:
+
+```bash
+systemctl --user daemon-reload
+```
+
+```bash
+systemctl --user enable --now filebot-pro-watcher
+```
+
+User services stop when you sign out. On a server, or to start the watcher at boot without signing in, allow your user
+to keep running services:
+
+```bash
+sudo loginctl enable-linger $USER
+```
+
+| To | Run |
+| --- | --- |
+| Restart it after changing `watcher.txt` | `systemctl --user restart filebot-pro-watcher` |
+| Check whether it is running | `systemctl --user status filebot-pro-watcher` |
+| Follow the log | `journalctl --user -u filebot-pro-watcher -f` |
+| Remove it | `systemctl --user disable --now filebot-pro-watcher`, then delete the `.service` file |
+
+</TabItem>
+<TabItem label="macOS">
+
+A launchd agent starts the watcher when you sign in. Run this in Terminal; it writes the agent with the path of your
+home folder and loads it:
+
+```bash
+cat > ~/Library/LaunchAgents/dev.davamu.filebotpro.watcher.plist <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>dev.davamu.filebotpro.watcher</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Applications/FileBot Pro.app/Contents/MacOS/FileBot Pro</string>
+        <string>@$HOME/Library/Application Support/FileBot Pro/watcher.txt</string>
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <dict>
+        <key>SuccessfulExit</key>
+        <false/>
+    </dict>
+    <key>ProcessType</key>
+    <string>Background</string>
+    <key>StandardErrorPath</key>
+    <string>$HOME/Library/Logs/FileBot Pro watcher.log</string>
+</dict>
+</plist>
+EOF
+launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/dev.davamu.filebotpro.watcher.plist
+```
+
+`KeepAlive` starts it again if it stops with an error. macOS shows a notification that a background item was added.
+
+:::caution[Folder access]
+macOS does not let background programs read **Downloads**, **Documents**, **Desktop**, external drives or network
+volumes, and it cannot ask for permission while the watcher runs in the background. Open **System Settings ›
+Privacy & Security › Full Disk Access** and add **FileBot Pro** from Applications.
+:::
+
+| To | Run |
+| --- | --- |
+| Restart it after changing `watcher.txt` | `launchctl kickstart -k gui/$(id -u)/dev.davamu.filebotpro.watcher` |
+| Check whether it is running | `launchctl print gui/$(id -u)/dev.davamu.filebotpro.watcher` (`state = running`) |
+| Remove it | `launchctl bootout gui/$(id -u)/dev.davamu.filebotpro.watcher`, then delete the `.plist` file |
+
+</TabItem>
+<TabItem label="Synology">
+
+With the [Synology package](/getting-started/docker/#nas) (without Docker), a boot task of the DSM Task Scheduler
+starts the watcher.
+
+<Steps>
+
+1. Open **Control Panel › Task Scheduler › Create › Triggered Task › User-defined script**.
+
+2. On **General**, choose the user that owns the media folders (not `root`) and the event **Boot-up**.
+
+3. On **Task Settings**, enter this script:
+
+   ```bash
+   export FILEBOT_PRO_DATA=/volume1/docker/filebot-pro
+   nohup /usr/local/bin/filebot-pro @/volume1/docker/filebot-pro/watcher.txt >/dev/null 2>&1 &
+   ```
+
+4. Select the task and click **Run** to start it now, without restarting the NAS.
+
+</Steps>
+
+`FILEBOT_PRO_DATA` keeps settings, caches and logs next to `watcher.txt`, so the log is
+`/volume1/docker/filebot-pro/logs/watcher.log`. Unlike Docker, nothing starts the watcher again if it stops: to
+restart it after changing `watcher.txt`, run `pkill -f watcher.txt` over SSH and then **Run** the task again.
+
+</TabItem>
+</Tabs>
+
+## When it does not start
+
+- Check `logs/watcher.log` in the data folder, or the system log of the service (`journalctl` on Linux,
+  `~/Library/Logs/FileBot Pro watcher.log` on macOS).
+- Stop the task or service and run the same command in a terminal (`filebot-pro @<path of watcher.txt>`): an invalid
+  option, a missing folder or an output folder that cannot be written stop the watcher right away with a message.
+- A second watcher with the same `--log-file` waits until the first one stops, without a message. Stop the background
+  watcher before trying `watcher.txt` in a terminal, and to watch several folders make one argument file and one task
+  or service per folder, each with its own `--log-file`.

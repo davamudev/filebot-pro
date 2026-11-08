@@ -70,6 +70,7 @@ export const sections = [
 		},
 		items: [
 			{ label: { es: 'Línea de comandos', en: 'Command line' }, link: '/reference/command-line/' },
+			{ label: { es: 'Vigilante en segundo plano', en: 'Background watcher' }, link: '/reference/background-watcher/' },
 			{ label: { es: 'Configuración', en: 'Configuration' }, link: '/reference/configuration/' },
 			{ label: { es: 'Datos de detección', en: 'Detection data' }, link: '/reference/detection-data/' },
 			{ label: { es: 'Atajos de teclado', en: 'Keyboard shortcuts' }, link: '/reference/shortcuts/' },

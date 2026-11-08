@@ -17,12 +17,12 @@
 |:---:|---|---|
 | ✅ | **Auto-updated detection data** | The Update data workflow runs `updateData` every week and publishes the `.xz` indexes with a `manifest.json` (format version, dates, SHA-256) as assets of the fixed `data` pre-release. The app checks about once a week in the background, downloads only the indexes that changed into the `data` cache, validates them and uses them from the next start on, falling back to the bundled copy. Help menu option and `-Dapplication.data.update=skip` to turn it off; documented in the docs (EN + ES) |
 | ✅ | **Simpler APT setup** | One-line install script (`wget -qO- https://apt.davamu.dev/install.sh \| sudo sh`) that adds the repository and installs the package. `filebot-pro.sources` carries the public key in `Signed-By:`, so the manual setup is two commands without a separate `.asc`. The `.deb` package adds the repository too (unless it is already set up or turned off) and `apt purge` removes it. Installation guide updated (EN + ES) |
+| ✅ | **Background watcher** | Documented instead of built in: a docs page (EN + ES) with ready-to-copy setups that keep `fn:watcher` running as a Windows scheduled task, systemd user service, launchd agent or Synology boot task. Docker already runs it as a service |
 
 ## 🔭 Later
 
 | Status | Item | Details |
 |:---:|---|---|
-| 📋 | **Background service** | Folder watcher as a Windows service / scheduled task, systemd unit or launchd agent |
 | 📋 | **More package managers** | winget, Scoop, Homebrew, Flatpak (Flathub), Snap, AUR |
 
 ## 💡 Ideas
