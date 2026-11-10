@@ -22,6 +22,7 @@ All notable changes to FileBot Pro.
 - Artwork, covers and fanart are only downloaded from web links, never copied from local files.
 - Poster thumbnails are only downloaded from public web servers, never from the local network.
 - `fn:amc` with `deleteAfterExtract` only deletes the volumes of the extracted archive, and nothing in `--action test`.
+- `fn:duplicates --mode binary` compares the content of the files before deleting or hard-linking them.
 
 ## [1.4.0] - 2026-10-25
 

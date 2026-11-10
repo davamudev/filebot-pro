@@ -446,6 +446,10 @@ public class ScriptShellMethods {
 		return FileUtilities.isSameFile(self, other);
 	}
 
+	public static boolean isSameContent(File self, File other) {
+		return FileUtilities.equalsFileContent(self, other);
+	}
+
 	/**
 	 * Replace this file with a hard link to the given file (e.g. to deduplicate binary identical files)
 	 */

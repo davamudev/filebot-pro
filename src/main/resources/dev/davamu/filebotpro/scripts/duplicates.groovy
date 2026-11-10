@@ -94,6 +94,9 @@ group(files).each{ g, fs ->
 		ofs.eachWithIndex{ f, i ->
 			if (i == 0) {
 				log.finest "[+] 1. $f"
+			} else if (binary && (delete || hardlink) && !f.isSameContent(ofs[0])) {
+				// the CRC32 may come from a cached xattr or .xattr file that anyone can write: compare the content before deleting or replacing files
+				log.warning "[!] ${i+1}. $f is not identical to ${ofs[0]}"
 			} else {
 				log.warning "[-] ${i+1}. $f"
 				duplicates += f
