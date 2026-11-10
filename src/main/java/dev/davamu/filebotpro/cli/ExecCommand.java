@@ -77,7 +77,9 @@ public class ExecCommand {
 
 	private String getArgumentValue(ExpressionFormat template, MediaBindingBean variables) {
 		try {
-			return template.format(variables);
+			String value = template.format(variables);
+			// a computed file name that starts with a dash must not be read as an option of the command
+			return value != null && value.startsWith("-") && template.getExpression().startsWith("{") ? "." + File.separator + value : value;
 		} catch (Exception e) {
 			debug.warning(cause(template.getExpression(), e));
 		}

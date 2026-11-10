@@ -59,7 +59,7 @@ public class ShellExecutables implements ArchiveExtractor {
 
 			@Override
 			public List<FileInfo> listFiles(File archive) throws IOException {
-				CharSequence output = execute(getCommand(), "l", "-y", archive.getPath());
+				CharSequence output = execute(getCommand(), "l", "-y", "--", archive.getPath());
 
 				return NEWLINE.splitAsStream(output).map(String::trim).map(l -> SPACE.split(l, 6)).filter(r -> {
 					return r.length == 6 && !r[5].isEmpty() && NON_DIGIT.matcher(r[2]).matches() && DIGIT.matcher(r[3]).matches();
@@ -70,14 +70,14 @@ public class ShellExecutables implements ArchiveExtractor {
 
 			@Override
 			public void extract(File archive, File outputFolder) throws IOException {
-				String[] command = { getCommand(), "x", "-y", "-o" + outputFolder.getPath(), archive.getPath() };
+				String[] command = { getCommand(), "x", "-y", "-o" + outputFolder.getPath(), "--", archive.getPath() };
 
 				execute(command);
 			}
 
 			@Override
 			public void extract(File archive, File outputFolder, FileFilter filter) throws IOException {
-				String[] command = { getCommand(), "x", "-y", "-o" + outputFolder.getPath(), archive.getPath() };
+				String[] command = { getCommand(), "x", "-y", "-o" + outputFolder.getPath(), "--", archive.getPath() };
 				String[] selection = listFiles(archive).stream().filter(f -> filter.accept(f.toFile())).map(FileInfo::getPath).toArray(String[]::new);
 
 				execute(command, selection);
@@ -100,7 +100,7 @@ public class ShellExecutables implements ArchiveExtractor {
 
 			@Override
 			public List<FileInfo> listFiles(File archive) throws IOException {
-				CharSequence output = execute(getCommand(), "l", "-y", archive.getPath());
+				CharSequence output = execute(getCommand(), "l", "-y", "--", archive.getPath());
 
 				return NEWLINE.splitAsStream(output).map(String::trim).map(l -> SPACE.split(l, 5)).filter(r -> {
 					return r.length == 5 && r[4].length() > 0 && NON_DIGIT.matcher(r[0]).matches() && DIGIT.matcher(r[1]).matches();
@@ -111,14 +111,14 @@ public class ShellExecutables implements ArchiveExtractor {
 
 			@Override
 			public void extract(File archive, File outputFolder) throws IOException {
-				String[] command = { getCommand(), "x", "-y", archive.getPath(), outputFolder.getPath() };
+				String[] command = { getCommand(), "x", "-y", "--", archive.getPath(), outputFolder.getPath() };
 
 				execute(command);
 			}
 
 			@Override
 			public void extract(File archive, File outputFolder, FileFilter filter) throws IOException {
-				String[] command = { getCommand(), "x", "-y", archive.getPath() };
+				String[] command = { getCommand(), "x", "-y", "--", archive.getPath() };
 				String[] selection = listFiles(archive).stream().filter(f -> filter.accept(f.toFile())).map(FileInfo::getPath).toArray(String[]::new);
 				String[] output = { outputFolder.getPath() };
 

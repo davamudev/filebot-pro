@@ -80,7 +80,7 @@ public class EmbeddedTags {
 
 			List<String> command = new ArrayList<String>();
 			command.add(getMkvPropEdit());
-			command.add(file.getPath());
+			command.add(argument(file));
 			command.add("--edit");
 			command.add("info");
 			command.add("--set");
@@ -108,7 +108,7 @@ public class EmbeddedTags {
 
 		List<String> command = new ArrayList<String>();
 		command.add(getMkvPropEdit());
-		command.add(file.getPath());
+		command.add(argument(file));
 		for (String it : new String[] { "cover.jpg", "cover.png" }) {
 			command.add("--delete-attachment");
 			command.add("name:" + it);
@@ -118,7 +118,7 @@ public class EmbeddedTags {
 		command.add("--attachment-mime-type");
 		command.add(extension.equals("png") ? "image/png" : "image/jpeg");
 		command.add("--add-attachment");
-		command.add(cover.getPath());
+		command.add(argument(cover));
 
 		log.fine(String.format("[metadata] Attach [%s] to [%s]", cover, file));
 		try {
@@ -134,7 +134,7 @@ public class EmbeddedTags {
 	private static void writeMP4Tags(File file, Object metadata, SimpleDate date, File cover) throws Exception {
 		List<String> command = new ArrayList<String>();
 		command.add(getAtomicParsley());
-		command.add(file.getPath());
+		command.add(argument(file));
 
 		if (metadata instanceof Episode) {
 			Episode e = (Episode) metadata;
@@ -156,13 +156,22 @@ public class EmbeddedTags {
 
 		if (cover != null) {
 			add(command, "--artwork", "REMOVE_ALL");
-			add(command, "--artwork", cover.getPath());
+			add(command, "--artwork", argument(cover));
 		}
 
 		command.add("--overWrite");
 
 		log.fine(String.format("[metadata] Write MP4 tags to [%s]", file));
 		execute(command, null);
+	}
+
+	/**
+	 * Path as an argument of mkvpropedit and AtomicParsley, which have no option to end the options: a relative path that
+	 * starts with a dash would be read as an option
+	 */
+	private static String argument(File file) {
+		String path = file.getPath();
+		return path.startsWith("-") ? "." + File.separator + path : path;
 	}
 
 	private static void tag(StringBuilder xml, int target, String... nameValuePairs) {
