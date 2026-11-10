@@ -15,6 +15,7 @@ All notable changes to FileBot Pro.
 
 - Metadata stored in a file's extended attributes can no longer run code when the file is read.
 - Downloaded subtitles named after the provider's file name are always saved next to the video.
+- Titles from online databases can no longer move files outside of the `--output` folder through an absolute path.
 
 ## [1.4.0] - 2026-10-25
 

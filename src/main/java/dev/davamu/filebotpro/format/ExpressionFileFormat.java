@@ -5,14 +5,57 @@ import static dev.davamu.filebotpro.util.FileUtilities.*;
 import static dev.davamu.filebotpro.util.RegularExpressions.*;
 
 import java.util.Arrays;
+import java.util.regex.Pattern;
 
 import javax.script.Bindings;
 import javax.script.ScriptException;
 
 public class ExpressionFileFormat extends ExpressionFormat {
 
+	// a leading /, \\ or drive (C:\) that makes the destination absolute
+	private static final Pattern ROOT = Pattern.compile("^\\s*(?:[/\\\\]+|[A-Za-z]:[/\\\\]+)+");
+
+	// the leading code of a format that builds an absolute path: a quoted path, the environment or a binding that is a file or folder
+	private static final Pattern ROOT_SOURCE = Pattern.compile("['\"]\\s*(?:[/\\\\]|[A-Za-z]:[/\\\\])|getenv|getProperty|\\b(?:file|f|folder|drive|home|output|relativeFile|mediaPath|history|files|plex|kodi|emby|jellyfin)\\b");
+
+	private final boolean absoluteExpression;
+
 	public ExpressionFileFormat(String expression) throws ScriptException {
 		super(expression);
+		this.absoluteExpression = isAbsoluteExpression(expression);
+	}
+
+	/**
+	 * Only the start of the format can make the destination absolute: a literal path (/media/{n}) or a leading {...} that builds one
+	 */
+	protected static boolean isAbsoluteExpression(String expression) {
+		String s = expression.stripLeading();
+		if (ROOT.matcher(s).find()) {
+			return true;
+		}
+		if (!s.startsWith("{")) {
+			return false;
+		}
+		int level = 0;
+		for (int i = 0; i < s.length(); i++) {
+			char c = s.charAt(i);
+			if (c == '{') {
+				level++;
+			} else if (c == '}' && --level == 0) {
+				return ROOT_SOURCE.matcher(s.substring(1, i)).find();
+			}
+		}
+		return ROOT_SOURCE.matcher(s).find();
+	}
+
+	@Override
+	protected CharSequence normalizeExpressionValue(Object value) {
+		// text that reaches the result through objects (e.g. {info.title}) is not sanitized by the bindings, so it must not be able to
+		// turn the destination into an absolute path outside of the output folder, unless the format itself builds an absolute path
+		if (value instanceof CharSequence && !absoluteExpression) {
+			return ROOT.matcher(value.toString()).replaceFirst("");
+		}
+		return super.normalizeExpressionValue(value);
 	}
 
 	@Override
