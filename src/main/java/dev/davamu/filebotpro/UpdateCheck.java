@@ -121,7 +121,7 @@ public final class UpdateCheck {
 	private static String inline(String text) {
 		text = CODE.matcher(escape(text)).replaceAll("<code>&nbsp;$1&nbsp;</code>");
 		text = BOLD.matcher(text).replaceAll("<b>$1</b>");
-		return LINK.matcher(text).replaceAll("<a href=\"$2\">$1</a>");
+		return LINK.matcher(text).replaceAll(m -> java.util.regex.Matcher.quoteReplacement("<a href=\"" + m.group(2).replace("\"", "&quot;") + "\">" + m.group(1) + "</a>"));
 	}
 
 	private static String escape(String text) {
