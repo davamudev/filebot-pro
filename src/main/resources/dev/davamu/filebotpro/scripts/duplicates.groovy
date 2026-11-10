@@ -59,9 +59,42 @@ def group(files) {
 	// Logical Duplicates: Group by Xattr Metadata Object
 	return files.findAll{ it.isVideo() }.groupBy{ f ->
 		def m = f.metadata
+		// the metadata comes from the file's xattr or .xattr folder, which can be copied from another file: before deleting anything,
+		// only trust it if it agrees with the name of the file or its folders (equal ids alone do not make two files the same movie)
+		if (m && delete && !matchesFileName(f, m)) {
+			log.warning "[!] Ignore $f because its metadata [$m] does not match its name"
+			return null
+		}
 		def v = m && _args.format ? getMediaInfo(f, _args.format) : null
 		return m && v ? [m, v] : m
 	}
+}
+
+
+def normalizeName(s) {
+	return ' ' + s.toString().toLowerCase().replaceAll(/['’`]/, '').replaceAll(/[^\p{L}\p{N}]+/, ' ').trim() + ' '
+}
+
+
+def matchesFileName(f, m) {
+	def path = normalizeName([f.nameWithoutExtension, f.dir?.name, f.dir?.dir?.name].findAll().join(' '))
+	def name = { n -> n && path.contains(normalizeName(n)) }
+
+	if (m instanceof Movie) {
+		return ([m.name] + (m.aliasNames as List ?: [])).any(name) && (m.year <= 0 || path.contains(" ${m.year} "))
+	}
+
+	if (m instanceof Episode) {
+		def series = ([m.seriesName] + (m.seriesInfo?.aliasNames as List ?: [])).any(name)
+		def number = [
+			m.season != null && m.episode != null ? /(?i)\bs0*${m.season}\s*e0*${m.episode}\b|\b0*${m.season}x0*${m.episode}\b/ : null,
+			m.absolute != null ? /\b0*${m.absolute}\b/ : null,
+			m.special != null ? /(?i)\bs0+\s*e0*${m.special}\b|\b0+x0*${m.special}\b/ : null
+		].findAll().any{ f.name =~ it }
+		return series && (number || name(m.title))
+	}
+
+	return true
 }
 
 
