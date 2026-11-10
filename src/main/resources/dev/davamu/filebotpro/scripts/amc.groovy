@@ -636,11 +636,12 @@ if (getRenameLog().size() > 0) {
 
 
 // clean up temporary files that may be left behind after extraction
-if (deleteAfterExtract) {
+if (deleteAfterExtract && !testRun) {
 	extractedArchives.each{ a ->
 		log.finest "Delete archive $a"
 		a.delete()
-		a.dir.listFiles().toList().findAll{ v -> v.name.startsWith(a.nameWithoutExtension) && v.extension ==~ /r\d+/ }.each{ v ->
+		// only the volumes of this archive (name.r00, name.r01, ...), not other archives that start with the same name (e.g. name2.r00)
+		a.dir.listFiles().toList().findAll{ v -> v.nameWithoutExtension == a.nameWithoutExtension && v.extension ==~ /r\d+/ }.each{ v ->
 			log.finest "Delete archive volume $v"
 			v.delete()
 		}
