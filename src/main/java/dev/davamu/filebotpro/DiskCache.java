@@ -34,10 +34,10 @@ final class DiskCache {
 	private static final int MAX_ENTRIES_IN_MEMORY = 200;
 
 	/**
-	 * Cache files live in the user folder, but treat them as untrusted anyway: only plain data types and our own classes
-	 * may be deserialized.
+	 * Cache files live in the user folder, but treat them as untrusted anyway: only plain data types and the classes that are
+	 * stored in caches may be deserialized (java.net.URL is the type of the image and link fields of those classes).
 	 */
-	private static final ObjectInputFilter FILTER = ObjectInputFilter.Config.createFilter("java.lang.*;java.util.*;java.time.*;java.math.*;java.net.URI;java.net.URL;dev.davamu.filebotpro.**;!*");
+	private static final ObjectInputFilter FILTER = ObjectInputFilter.Config.createFilter("maxdepth=100;java.lang.*;java.util.*;java.time.*;java.math.*;java.net.URI;java.net.URL;dev.davamu.filebotpro.Cache$Entry;dev.davamu.filebotpro.Language;dev.davamu.filebotpro.media.IndexEntry;dev.davamu.filebotpro.web.*;!*");
 
 	private final Path folder;
 	private final Duration defaultTimeToLive;

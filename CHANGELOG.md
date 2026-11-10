@@ -29,6 +29,7 @@ All notable changes to FileBot Pro.
 - Detection data updates are signed and an older copy is never accepted.
 - File names that start with a dash are no longer read as options by `-exec`, 7-Zip, unrar, mkvpropedit and AtomicParsley.
 - Renaming and extracting never write through a symbolic link that leads out of the output folder.
+- The cache only reads back the data types it stores.
 - Linux and macOS: the preferences backup with the OpenSubtitles login and a new user data folder are only readable by their owner.
 
 ## [1.4.0] - 2026-10-25
