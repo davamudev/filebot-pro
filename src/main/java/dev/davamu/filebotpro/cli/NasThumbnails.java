@@ -6,8 +6,8 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.attribute.FileTime;
 
@@ -21,7 +21,7 @@ import org.imgscalr.Scalr;
 import org.imgscalr.Scalr.Method;
 import org.imgscalr.Scalr.Mode;
 
-import dev.davamu.filebotpro.web.WebRequest;
+import dev.davamu.filebotpro.web.RemoteImages;
 
 /**
  * Video thumbnails for the file managers and media servers of Synology NAS (File Station, DS File, Media Server) and QNAP NAS (File
@@ -83,10 +83,28 @@ public class NasThumbnails {
 		return source;
 	}
 
+	/**
+	 * @return true if a Synology NAS or QNAP NAS layout is detected for the folder of the video (nothing to write otherwise)
+	 */
+	public static boolean isSupported(File video) {
+		File folder = video.getParentFile();
+		return Layout.Synology.isDetected(folder) || Layout.QNAP.isDetected(folder);
+	}
+
 	public static BufferedImage read(URL image) throws IOException {
-		ByteBuffer data = WebRequest.fetch(image);
-		byte[] bytes = new byte[data.remaining()];
-		data.get(bytes);
+		// poster URLs come from the database responses: only public web servers, only images (see RemoteImages)
+		byte[] bytes;
+		try {
+			bytes = RemoteImages.fetch(image.toURI());
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+			throw new IOException("Interrupted: " + image, e);
+		} catch (URISyntaxException e) {
+			throw new IOException("Invalid URL: " + image, e);
+		}
+		if (bytes == null) {
+			throw new IOException("Image not found: " + image);
+		}
 
 		BufferedImage source = ImageIO.read(new ByteArrayInputStream(bytes));
 		if (source == null) {

@@ -9,16 +9,13 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URI;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.net.http.HttpResponse.BodyHandlers;
-import java.time.Duration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.function.Function;
 import java.util.logging.Level;
 
@@ -29,7 +26,7 @@ import javax.imageio.stream.ImageInputStream;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 
-import dev.davamu.filebotpro.web.HttpClients;
+import dev.davamu.filebotpro.web.RemoteImages;
 import dev.davamu.filebotpro.web.SearchResult;
 import dev.davamu.filebotpro.web.ThumbnailProvider.ResolutionVariant;
 
@@ -50,7 +47,7 @@ public final class ThumbnailServices {
 
 		Map<SearchResult, byte[]> images = new LinkedHashMap<SearchResult, byte[]>();
 		Map<URI, SearchResult> requested = new LinkedHashMap<URI, SearchResult>();
-		Map<URI, CompletableFuture<HttpResponse<byte[]>>> requests = new LinkedHashMap<URI, CompletableFuture<HttpResponse<byte[]>>>();
+		Map<URI, CompletableFuture<byte[]>> requests = new LinkedHashMap<URI, CompletableFuture<byte[]>>();
 
 		// posters that were not part of a search need a lookup each, so resolve them in parallel and only for the first options
 		Map<SearchResult, CompletableFuture<URI>> posters = new LinkedHashMap<SearchResult, CompletableFuture<URI>>();
@@ -64,7 +61,14 @@ public final class ThumbnailServices {
 					images.put(key, bytes);
 				} else if (!requests.containsKey(image)) {
 					requested.put(image, key);
-					requests.put(image, HttpClients.get().sendAsync(HttpRequest.newBuilder(image).timeout(Duration.ofSeconds(20)).build(), BodyHandlers.ofByteArray()));
+					// poster URLs come from the database responses: only public web servers, only images (see RemoteImages)
+					requests.put(image, CompletableFuture.supplyAsync(() -> {
+						try {
+							return RemoteImages.fetch(image);
+						} catch (Exception e) {
+							throw new CompletionException(e);
+						}
+					}, WebServices.requestThreadPool));
 					debug.fine(format("Request %s", image));
 				}
 			}
@@ -72,13 +76,12 @@ public final class ThumbnailServices {
 
 		requests.forEach((image, request) -> {
 			try {
-				HttpResponse<byte[]> response = request.get();
-				if (response.statusCode() != 200) {
+				byte[] bytes = request.get();
+				if (bytes == null) {
 					// do not cache failures (the thumbnail would stay empty for months)
 					images.put(requested.get(image), new byte[0]);
 					return;
 				}
-				byte[] bytes = response.body();
 				cache.put(image.toString(), bytes);
 				images.put(requested.get(image), bytes);
 			} catch (Exception e) {

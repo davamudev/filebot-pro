@@ -552,6 +552,12 @@ public class PostProcess {
 			return;
 		}
 
+		// nothing to write without a NAS layout, so do not download any image either
+		if (!NasThumbnails.isSupported(file)) {
+			logThumbnail(file, null, 0);
+			return;
+		}
+
 		try {
 			Object metadata = xattr.getMetaInfo(file);
 

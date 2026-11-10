@@ -20,6 +20,7 @@ All notable changes to FileBot Pro.
 - SFV, MD5 and SHA files can no longer make FileBot Pro hash files outside of their folder.
 - Chinese subtitles from Shooter are only downloaded from web links, never from local files.
 - Artwork, covers and fanart are only downloaded from web links, never copied from local files.
+- Poster thumbnails are only downloaded from public web servers, never from the local network.
 
 ## [1.4.0] - 2026-10-25
 
