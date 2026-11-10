@@ -49,7 +49,7 @@ public class TextColorizer {
 				html.append(String.format("<span style='color:#607080'>.%s</span>", escapeHTML(extension))); // highlight extension
 			}
 		} else {
-			html.append(file.getName());
+			html.append(escapeHTML(file.getName()));
 		}
 
 		return html.append(after);

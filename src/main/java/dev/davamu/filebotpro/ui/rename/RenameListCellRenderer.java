@@ -20,6 +20,7 @@ import javax.swing.JList;
 import javax.swing.UIManager;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
+import javax.swing.plaf.basic.BasicHTML;
 
 import dev.davamu.filebotpro.ResourceManager;
 import dev.davamu.filebotpro.media.DiscTitles;
@@ -129,7 +130,7 @@ class RenameListCellRenderer extends DefaultFancyListCellRenderer {
 		}
 
 		if (renameModel.preserveExtension() && index < renameModel.size() && renameModel.getMatch(index).getCandidate() != null) {
-			typeRenderer.setText(getType(renameModel.getMatch(index).getCandidate()));
+			typeRenderer.setText(plain(getType(renameModel.getMatch(index).getCandidate())));
 			typeRenderer.setVisible(true);
 		}
 
@@ -138,9 +139,9 @@ class RenameListCellRenderer extends DefaultFancyListCellRenderer {
 			File file = (File) value;
 
 			if (renameModel.preserveExtension()) {
-				setText(FileUtilities.getName(file));
+				setText(plain(FileUtilities.getName(file)));
 			} else {
-				setText(isSelected || !renameModel.hasComplement(index) ? formatPath(file) : colorizePath(file, true));
+				setText(isSelected || !renameModel.hasComplement(index) ? plain(formatPath(file)) : colorizePath(file, true));
 			}
 		} else if (value instanceof FormattedFuture) {
 			// display progress icon
@@ -152,7 +153,7 @@ class RenameListCellRenderer extends DefaultFancyListCellRenderer {
 					// absolute path mode
 					File file = renameModel.getMatch(index).getCandidate();
 					File path = resolveAbsolutePath(file.getParentFile(), formattedFuture.toString(), null);
-					setText(isSelected || matchProbablity < 1 ? formatPath(path) : colorizePath(path, true));
+					setText(isSelected || matchProbablity < 1 ? plain(formatPath(path)) : colorizePath(path, true));
 
 					String ext = getExtension(path);
 					typeRenderer.setText(ext != null ? ext.toLowerCase() : "MISSING EXTENSION");
@@ -163,10 +164,10 @@ class RenameListCellRenderer extends DefaultFancyListCellRenderer {
 				} else {
 					// relative name mode
 					File path = new File(formattedFuture.toString());
-					setText(isSelected || matchProbablity < 1 || !renameModel.hasComplement(index) ? formatPath(path) : colorizePath(path, !renameModel.preserveExtension()));
+					setText(isSelected || matchProbablity < 1 || !renameModel.hasComplement(index) ? plain(formatPath(path)) : colorizePath(path, !renameModel.preserveExtension()));
 				}
 			} else {
-				setText(formattedFuture.preview()); // default text
+				setText(plain(formattedFuture.preview())); // default text
 			}
 
 			switch (formattedFuture.getState()) {
@@ -192,7 +193,7 @@ class RenameListCellRenderer extends DefaultFancyListCellRenderer {
 						if (formattedFuture.isComplexFormat()) {
 							typeRenderer.setVisible(true);
 							typeRenderer.setAlpha(1.0f);
-							typeRenderer.setText(formattedFuture.getMatch().getValue().toString());
+							typeRenderer.setText(plain(formattedFuture.getMatch().getValue().toString()));
 						}
 					}
 				}
@@ -210,6 +211,16 @@ class RenameListCellRenderer extends DefaultFancyListCellRenderer {
 				}
 			}
 		}
+	}
+
+	private static final String ZERO_WIDTH_SPACE = String.valueOf((char) 0x200B);
+
+	/**
+	 * File names and titles are plain text, but Swing renders any text that starts with &lt;html&gt; as HTML (e.g. a file named &lt;html&gt;&lt;img src=...&gt;)
+	 */
+	protected static String plain(String text) {
+		// a leading zero-width space keeps the text as is without showing anything
+		return text != null && BasicHTML.isHTMLString(text) ? ZERO_WIDTH_SPACE + text : text;
 	}
 
 	protected String formatPath(File file) {

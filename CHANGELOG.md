@@ -24,6 +24,7 @@ All notable changes to FileBot Pro.
 - `fn:amc` with `deleteAfterExtract` only deletes the volumes of the extracted archive, and nothing in `--action test`.
 - `fn:duplicates --mode binary` compares the content of the files before deleting or hard-linking them.
 - `fn:duplicates --action delete` only deletes movies and episodes whose stored metadata matches their file name.
+- File names that look like HTML are shown as plain text in the Rename panel.
 
 ## [1.4.0] - 2026-10-25
 
