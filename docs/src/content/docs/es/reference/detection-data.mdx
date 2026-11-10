@@ -15,7 +15,7 @@ así que los títulos nuevos se reconocen sin esperar a la siguiente versión.
   [pre-release `data`](https://github.com/davamudev/filebot-pro/releases/tag/data) de GitHub, y después solo los
   índices que cambiaron (unos pocos MB como mucho). Se hace en segundo plano y nunca retrasa el arranque. La petición es
   una descarga normal de GitHub: no lleva nada sobre ti ni sobre tus archivos.
-- **Comprobados antes de usarlos**: cada fichero debe coincidir con el SHA-256 del manifiesto y poder leerse antes de
+- **Comprobados antes de usarlos**: el manifiesto debe llevar una firma válida (Ed25519, clave pública incluida en la app) y no ser más antiguo que el último aceptado, y cada fichero debe coincidir con el SHA-256 del manifiesto y poder leerse antes de
   guardarse en la carpeta `cache/data` de los [datos de usuario](/es/reference/configuration/#datos-de-usuario)
   (`/data/cache/data` en Docker).
 - **Se aplican en el siguiente arranque**: una aplicación o un comando en marcha nunca cambia sus datos a mitad.

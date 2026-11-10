@@ -40,13 +40,25 @@ jobs:
       - name: Publish the indexes to the data pre-release
         env:
           GH_TOKEN: ${{ github.token }}
+          DATA_SIGNING_KEY: ${{ secrets.DATA_SIGNING_KEY }}
         run: |
           data=src/main/resources/dev/davamu/filebotpro/data
+          # the manifest carries the checksums of the indexes, so it is signed (Ed25519) and the application verifies the
+          # signature with the public key built into DataUpdate
+          if [ -z "$DATA_SIGNING_KEY" ]; then
+            echo "The DATA_SIGNING_KEY secret is missing." >&2
+            exit 1
+          fi
+          key="$(mktemp)"
+          printf '%s\n' "$DATA_SIGNING_KEY" > "$key"
+          openssl pkeyutl -sign -rawin -inkey "$key" -in "$data/manifest.json" -out "$RUNNER_TEMP/manifest.json.sig"
+          rm -f "$key"
           if ! gh release view data > /dev/null 2>&1; then
             gh release create data --prerelease --latest=false --target develop --title "Detection data" \
               --notes "Detection data indexes regenerated every week by the Update data workflow. FileBot Pro downloads the ones that changed about once a week, see the manifest.json. Not a release of the application."
           fi
           gh release upload data "$data"/*.xz --clobber
+          gh release upload data "$RUNNER_TEMP/manifest.json.sig" --clobber
           gh release upload data "$data/manifest.json" --clobber
           grep -E '"(format|date)"' "$data/manifest.json"
 

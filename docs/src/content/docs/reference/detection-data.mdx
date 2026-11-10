@@ -15,7 +15,7 @@ recognized without waiting for the next release.
   [`data` pre-release](https://github.com/davamudev/filebot-pro/releases/tag/data) on GitHub, and then only the indexes
   that changed (a few MB at most). It runs in the background and never slows down the start. The request is a plain
   download from GitHub: it carries nothing about you or your files.
-- **Checked before use**: each file must match the SHA-256 of the manifest and be readable before it is saved to the
+- **Checked before use**: the manifest must carry a valid signature (Ed25519, public key built into the app) and not be older than the last one accepted, and each file must match the SHA-256 of the manifest and be readable before it is saved to the
   `cache/data` folder of the [user data](/reference/configuration/#user-data) (`/data/cache/data` in Docker).
 - **Applied on the next start**: a running app or command never changes its data halfway.
 - **Bundled copy as a fallback**: without a valid download (first start, offline, damaged file, or a newer release that

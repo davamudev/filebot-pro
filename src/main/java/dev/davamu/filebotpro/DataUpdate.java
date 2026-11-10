@@ -19,7 +19,12 @@ import java.nio.channels.OverlappingFileLockException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.security.KeyFactory;
 import java.security.MessageDigest;
+import java.security.PublicKey;
+import java.security.Signature;
+import java.security.spec.X509EncodedKeySpec;
+import java.util.Base64;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -57,6 +62,13 @@ public final class DataUpdate {
 
 	private static final String BUNDLED = "/dev/davamu/filebotpro/data/";
 	private static final Pattern FILE_NAME = Pattern.compile("[a-z0-9][a-z0-9.-]*\\.xz");
+
+	private static final String SIGNATURE_SUFFIX = ".sig";
+
+	/**
+	 * Ed25519 public key (X.509, Base64) of the manifest.json signature, the private key is the DATA_SIGNING_KEY secret
+	 */
+	private static final String PUBLIC_KEY = "MCowBQYDK2VwAyEArzQXNXoC+ZOBw/o6c1L/DY2wz5N3H+6SNfFBwWxE7OU=";
 
 	private static final Duration CHECK_INTERVAL = Duration.ofDays(7);
 	private static final Duration RETRY_INTERVAL = Duration.ofDays(1);
@@ -317,7 +329,7 @@ public final class DataUpdate {
 			status.setProperty("attempted", now.toString());
 			writeStatus(statusFile, status);
 
-			if (update(state)) {
+			if (update(state, status)) {
 				status.setProperty("checked", now.toString());
 				writeStatus(statusFile, status);
 			}
@@ -331,9 +343,19 @@ public final class DataUpdate {
 	 *
 	 * @return true if everything is up to date now
 	 */
-	private static boolean update(State state) throws Exception {
+	private static boolean update(State state, Properties status) throws Exception {
 		URI url = URI.create(getApplicationProperty("data.url"));
-		Manifest remote = Manifest.parse(fetch(url));
+		byte[] manifestBytes = fetch(url);
+		verifySignature(manifestBytes, fetch(URI.create(url + SIGNATURE_SUFFIX)));
+		Manifest remote = Manifest.parse(manifestBytes);
+
+		// a signed but older manifest is a replay of an old release
+		Instant accepted = Instant.parse(status.getProperty("manifest", Instant.EPOCH.toString()));
+		if (remote.date().isBefore(accepted) || remote.date().isBefore(state.bundled().date())) {
+			debug.fine(() -> "Ignore detection data manifest older than the last accepted one: " + remote.date());
+			return true;
+		}
+		status.setProperty("manifest", remote.date().toString());
 
 		if (remote.format() != FORMAT) {
 			debug.fine(() -> String.format("Ignore detection data format %d (supported: %d)", remote.format(), FORMAT));
@@ -405,6 +427,20 @@ public final class DataUpdate {
 		byte[] bytes = new byte[data.remaining()];
 		data.get(bytes);
 		return bytes;
+	}
+
+	/**
+	 * The checksums travel in the manifest itself, so the manifest is signed (Ed25519, made by the
+	 * Update data workflow) and checked against the public key built into the application
+	 */
+	private static void verifySignature(byte[] manifest, byte[] signature) throws Exception {
+		PublicKey key = KeyFactory.getInstance("Ed25519").generatePublic(new X509EncodedKeySpec(Base64.getDecoder().decode(PUBLIC_KEY)));
+		Signature verifier = Signature.getInstance("Ed25519");
+		verifier.initVerify(key);
+		verifier.update(manifest);
+		if (!verifier.verify(signature)) {
+			throw new IOException("Invalid signature: " + MANIFEST);
+		}
 	}
 
 	private static void verify(String name, byte[] bytes, Entry entry) throws IOException {
