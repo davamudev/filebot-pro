@@ -29,6 +29,8 @@ jobs:
       WORKER_DIR: packaging/linux/apt/worker
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       # every package listed in the indexes must stay a release asset, the Worker redirects to it
       - name: Packages
