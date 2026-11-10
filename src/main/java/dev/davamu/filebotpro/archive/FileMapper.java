@@ -8,6 +8,7 @@ import java.io.FileFilter;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Set;
@@ -49,10 +50,34 @@ public class FileMapper implements ExtractOutProvider {
 
 		File outputFolder = outputFile.getParentFile();
 
+		// a symbolic link that already exists in the output folder must not lead outside of it, nor be written through
+		checkRealPath(outputDir, outputFile);
+		if (Files.isSymbolicLink(outputFile.toPath())) {
+			throw new IOException("Illegal archive entry path (symbolic link): " + entry.getPath());
+		}
+
 		// create parent folder if necessary
 		createFolders(outputFolder);
 
 		return new FileOutputStream(outputFile);
+	}
+
+	/**
+	 * Resolve symbolic links in the folder of the target (the part that exists) and check that it is still inside of the
+	 * output folder, since the check of the path text does not see links
+	 */
+	public static void checkRealPath(File outputDir, File target) throws IOException {
+		Path folder = target.toPath().toAbsolutePath().normalize().getParent();
+		while (folder != null && !Files.exists(folder)) {
+			folder = folder.getParent();
+		}
+		Path root = outputDir.toPath().toAbsolutePath().normalize();
+		while (root != null && !Files.exists(root)) {
+			root = root.getParent();
+		}
+		if (folder != null && root != null && !folder.toRealPath().startsWith(root.toRealPath())) {
+			throw new IOException(String.format("The destination [%s] is outside of the output folder [%s]", target, outputDir));
+		}
 	}
 
 	public FileFilter newPathFilter(Collection<FileInfo> selection) {

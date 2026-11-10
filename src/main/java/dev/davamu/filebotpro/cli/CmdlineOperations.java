@@ -683,6 +683,13 @@ public class CmdlineOperations implements CmdlineInterface {
 			if (!newFile.toPath().toAbsolutePath().normalize().startsWith(outputDir.toPath().toAbsolutePath().normalize())) {
 				throw new CmdlineException(String.format("Failed to process [%s] because the destination [%s] is outside of the output folder [%s]", original, newFile, outputDir));
 			}
+
+			// ... and neither can a symbolic link that already exists in the output folder
+			try {
+				FileMapper.checkRealPath(outputDir, newFile);
+			} catch (IOException e) {
+				throw new CmdlineException(String.format("Failed to process [%s] because the destination [%s] is outside of the output folder [%s]", original, newFile, outputDir));
+			}
 		}
 
 		return newFile;
