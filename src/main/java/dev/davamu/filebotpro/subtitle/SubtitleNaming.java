@@ -15,7 +15,8 @@ public enum SubtitleNaming {
 
 		@Override
 		public String format(File video, SubtitleDescriptor subtitle, String ext) {
-			return String.format("%s.%s", subtitle.getName(), ext);
+			// the name comes from the subtitle provider: never let it point outside the folder of the video
+			return validateFileName(String.format("%s.%s", subtitle.getName(), ext));
 		}
 
 		@Override
@@ -28,7 +29,7 @@ public enum SubtitleNaming {
 
 		@Override
 		public String format(File video, SubtitleDescriptor subtitle, String ext) {
-			return SubtitleUtilities.formatSubtitle(getName(video), null, ext);
+			return validateFileName(SubtitleUtilities.formatSubtitle(getName(video), null, ext));
 		}
 
 		@Override
@@ -41,7 +42,7 @@ public enum SubtitleNaming {
 
 		@Override
 		public String format(File video, SubtitleDescriptor subtitle, String ext) {
-			return SubtitleUtilities.formatSubtitle(getName(video), subtitle.getLanguageName(), ext);
+			return validateFileName(SubtitleUtilities.formatSubtitle(getName(video), subtitle.getLanguageName(), ext));
 		}
 
 		@Override

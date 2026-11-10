@@ -14,6 +14,7 @@ All notable changes to FileBot Pro.
 ### Security
 
 - Metadata stored in a file's extended attributes can no longer run code when the file is read.
+- Downloaded subtitles named after the provider's file name are always saved next to the video.
 
 ## [1.4.0] - 2026-10-25
 
