@@ -70,7 +70,7 @@ services:
     environment:
       - PUID=1000
       - PGID=1000
-      - VNC_PASSWORD=change-me   # required, asked by the browser
+      - VNC_PASSWORD=${VNC_PASSWORD:?set VNC_PASSWORD in .env}   # required, asked by the browser
     volumes:
       - ./data:/data
       - /volume1/media:/media

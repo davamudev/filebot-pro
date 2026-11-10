@@ -106,7 +106,8 @@ NFS) do not send them: add `"--def", "poll=60"` to scan the folder every 60 seco
 ## Desktop app in the browser
 
 The `gui` image runs the full desktop app on a virtual screen and shows it in the browser, for a NAS or a server
-without a desktop. Open `http://<host>:5800` after starting it:
+without a desktop. Put `VNC_PASSWORD=<your password>` in a `.env` file next to `compose.yaml`, start it and open
+`http://localhost:5800` on that machine:
 
 ```yaml
 services:
@@ -115,11 +116,11 @@ services:
     container_name: filebot-pro-gui
     restart: unless-stopped
     ports:
-      - "5800:5800"
+      - "127.0.0.1:5800:5800"   # this machine only, see below
     environment:
       - PUID=1000
       - PGID=1000
-      - VNC_PASSWORD=change-me   # required, asked by the browser
+      - VNC_PASSWORD=${VNC_PASSWORD:?set VNC_PASSWORD in .env}   # required, asked by the browser
     volumes:
       - ./data:/data
       - /volume1/media:/media
@@ -130,8 +131,9 @@ services:
 | `VNC_PASSWORD` | | Password of the browser view. Required: the container refuses to start without it unless `VNC_ALLOW_NO_PASSWORD=true` (no authentication: only on a trusted network or behind an authenticating reverse proxy) |
 | `DISPLAY_WIDTH`, `DISPLAY_HEIGHT` | `1600`, `900` | Size of the virtual screen |
 
-The VNC password only uses its first 8 characters, and the browser view is served over plain HTTP: publish port 5800 only
-on `127.0.0.1` (`"127.0.0.1:5800:5800"`) or behind a reverse proxy with TLS and authentication.
+The VNC password only uses its first 8 characters, and the browser view is served over plain HTTP: keep port 5800 on
+`127.0.0.1` and open it from other devices through a reverse proxy with TLS and authentication (publish `"5800:5800"`
+only on a trusted network).
 
 The app starts again when you close its window. Settings, presets and history live in `/data`, like in the
 command-line image.

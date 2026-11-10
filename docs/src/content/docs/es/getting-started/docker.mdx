@@ -107,7 +107,8 @@ máquina (SMB o NFS) no los envían: añade `"--def", "poll=60"` para revisar la
 ## Aplicación de escritorio en el navegador
 
 La imagen `gui` ejecuta la aplicación de escritorio completa en una pantalla virtual y la muestra en el navegador,
-para un NAS o un servidor sin escritorio. Abre `http://<host>:5800` después de arrancarla:
+para un NAS o un servidor sin escritorio. Pon `VNC_PASSWORD=<tu contraseña>` en un archivo `.env` junto a `compose.yaml`,
+arráncala y abre `http://localhost:5800` en esa máquina:
 
 ```yaml
 services:
@@ -116,11 +117,11 @@ services:
     container_name: filebot-pro-gui
     restart: unless-stopped
     ports:
-      - "5800:5800"
+      - "127.0.0.1:5800:5800"   # solo esta máquina, ver más abajo
     environment:
       - PUID=1000
       - PGID=1000
-      - VNC_PASSWORD=cambiame   # obligatoria, la pide el navegador
+      - VNC_PASSWORD=${VNC_PASSWORD:?pon VNC_PASSWORD en .env}   # obligatoria, la pide el navegador
     volumes:
       - ./data:/data
       - /volume1/media:/media
@@ -131,8 +132,9 @@ services:
 | `VNC_PASSWORD` | | Contraseña de la vista en el navegador. Obligatoria: el contenedor no arranca sin ella salvo con `VNC_ALLOW_NO_PASSWORD=true` (sin autenticación: solo en una red de confianza o tras un proxy inverso con autenticación) |
 | `DISPLAY_WIDTH`, `DISPLAY_HEIGHT` | `1600`, `900` | Tamaño de la pantalla virtual |
 
-La contraseña VNC solo usa sus 8 primeros caracteres y la vista en el navegador se sirve por HTTP sin cifrar: publica el
-puerto 5800 solo en `127.0.0.1` (`"127.0.0.1:5800:5800"`) o detrás de un proxy inverso con TLS y autenticación.
+La contraseña VNC solo usa sus 8 primeros caracteres y la vista en el navegador se sirve por HTTP sin cifrar: deja el
+puerto 5800 en `127.0.0.1` y ábrelo desde otros dispositivos a través de un proxy inverso con TLS y autenticación (publica
+`"5800:5800"` solo en una red de confianza).
 
 La aplicación vuelve a arrancar cuando cierras su ventana. Los ajustes, presets e historial se guardan en `/data`,
 igual que en la imagen de línea de comandos.

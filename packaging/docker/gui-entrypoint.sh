@@ -25,6 +25,14 @@ if [ -z "$VNC_PASSWORD" ] && [ "$VNC_ALLOW_NO_PASSWORD" != "true" ]; then
 	exit 1
 fi
 
+# the example passwords of older docs are known to everyone
+case "$VNC_PASSWORD" in
+	change-me | changeme | cambiame | password)
+		echo "VNC_PASSWORD is still the example password of the documentation. Set your own password." >&2
+		exit 1
+		;;
+esac
+
 if [ -n "$VNC_PASSWORD" ]; then
 	# the password is read from a file, not from the command line (visible to other processes). VNC only uses the first 8 characters
 	(umask 077; printf '%s
