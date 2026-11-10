@@ -94,7 +94,7 @@ public class OpenSubtitlesApi {
 				request.method(method, BodyPublishers.noBody());
 			}
 
-			HttpResponse<String> response = throttle(() -> HttpClients.get().send(request.build(), BodyHandlers.ofString(UTF_8)));
+			HttpResponse<String> response = throttle(() -> HttpClients.get().send(request.build(), BodyHandlers.limiting(BodyHandlers.ofString(UTF_8), WebRequest.MAX_RESPONSE_BYTES)));
 			int status = response.statusCode();
 			debug.finest(() -> String.format("[OpenSubtitles] %s %s => %d", method, path, status));
 

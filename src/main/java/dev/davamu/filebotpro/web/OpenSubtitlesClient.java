@@ -416,7 +416,7 @@ public class OpenSubtitlesClient implements SubtitleProvider, VideoHashSubtitleS
 		}
 
 		HttpRequest request = HttpRequest.newBuilder(URI.create(link)).header("User-Agent", api.getUserAgent()).timeout(Duration.ofSeconds(60)).build();
-		byte[] data = HttpClients.get().send(request, BodyHandlers.ofByteArray()).body();
+		byte[] data = HttpClients.get().send(request, BodyHandlers.limiting(BodyHandlers.ofByteArray(), WebRequest.MAX_RESPONSE_BYTES)).body();
 		return ByteBuffer.wrap(data);
 	}
 
