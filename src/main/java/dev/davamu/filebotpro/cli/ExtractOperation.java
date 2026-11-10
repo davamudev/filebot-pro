@@ -6,6 +6,7 @@ import static dev.davamu.filebotpro.util.FileUtilities.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -35,6 +36,12 @@ public final class ExtractOperation {
 
 		for (FileInfo entry : entries) {
 			File target = entry.toFile();
+
+			// entry names come from the archive: never touch files outside of the output folder (e.g. ../file), whatever the extractor
+			if (!isInside(outputMapper.getOutputDir(), target)) {
+				log.warning(format("Skipped [%s] because it is outside of the output folder", entry.getPath()));
+				continue;
+			}
 
 			if (!target.exists()) {
 				extract.add(entry);
@@ -105,6 +112,13 @@ public final class ExtractOperation {
 			List<File> extractedFiles = new ArrayList<File>();
 			for (FileInfo it : entries) {
 				File source = tempMapper.getOutputFile(relativeEntry(outputDir, it.toFile()));
+
+				// only move files that the extraction itself created in the temporary folder
+				if (!isInside(tempDir, source) || !source.isFile()) {
+					log.warning(format("Skipped [%s] because it was not extracted", it.getPath()));
+					continue;
+				}
+
 				File destination = nextAvailableIndexedName(it.toFile());
 
 				log.fine(format("[INDEX] Extract [%s] to [%s]", it.toFile().getName(), destination));
@@ -118,6 +132,12 @@ public final class ExtractOperation {
 				debug.warning(cause("Failed to delete temporary folder " + tempDir, e));
 			}
 		}
+	}
+
+	private static boolean isInside(File folder, File file) {
+		Path root = folder.toPath().toAbsolutePath().normalize();
+		Path path = file.toPath().toAbsolutePath().normalize();
+		return path.startsWith(root) && !path.equals(root);
 	}
 
 	private static File relativeEntry(File outputDir, File target) {
