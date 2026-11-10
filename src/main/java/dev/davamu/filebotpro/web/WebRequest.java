@@ -95,6 +95,21 @@ public final class WebRequest {
 	/** Largest buffer reserved up front from the announced Content-Length, the buffer grows on demand */
 	private static final int MAX_INITIAL_BUFFER_BYTES = 8 * 1024 * 1024;
 
+	/**
+	 * URLs from online databases must only go to the web: file:, jar:, ftp: and friends would read local files or other resources
+	 */
+	public static URL requireHttp(URL url) throws IOException {
+		String scheme = url.getProtocol();
+		if (!"https".equalsIgnoreCase(scheme) && !"http".equalsIgnoreCase(scheme)) {
+			throw new IOException("Unsupported URL scheme: " + url);
+		}
+		return url;
+	}
+
+	public static boolean isHttp(URL url) {
+		return url != null && ("https".equalsIgnoreCase(url.getProtocol()) || "http".equalsIgnoreCase(url.getProtocol()));
+	}
+
 	public static URLConnection openConnection(URL url) throws IOException {
 		URLConnection connection = url.openConnection();
 		connection.setConnectTimeout(CONNECT_TIMEOUT_MILLIS);

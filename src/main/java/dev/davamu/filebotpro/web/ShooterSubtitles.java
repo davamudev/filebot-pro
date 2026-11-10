@@ -175,7 +175,8 @@ public class ShooterSubtitles implements VideoHashSubtitleService {
 
 		@Override
 		public ByteBuffer fetch() throws Exception {
-			return WebRequest.fetch(new URL(link));
+			// the link comes from the Shooter response
+			return WebRequest.fetch(WebRequest.requireHttp(new URL(link)));
 		}
 
 		@Override
