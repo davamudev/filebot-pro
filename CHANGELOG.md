@@ -11,6 +11,10 @@ All notable changes to FileBot Pro.
 - One-command setup of the APT repository on Ubuntu and Debian (see the installation guide).
 - The `.deb` package adds the APT repository, so new versions arrive with the system updates.
 
+### Security
+
+- Metadata stored in a file's extended attributes can no longer run code when the file is read.
+
 ## [1.4.0] - 2026-10-25
 
 ### Added

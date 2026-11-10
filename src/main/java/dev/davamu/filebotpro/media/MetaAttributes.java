@@ -12,6 +12,7 @@ import java.nio.file.attribute.BasicFileAttributeView;
 import java.nio.file.attribute.FileTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -32,6 +33,7 @@ import dev.davamu.filebotpro.web.MoviePart;
 import dev.davamu.filebotpro.util.LegacyNamespace;
 import dev.davamu.filebotpro.web.MultiEpisode;
 import dev.davamu.filebotpro.web.SeriesInfo;
+import dev.davamu.filebotpro.web.SimpleDate;
 import dev.davamu.filebotpro.web.TheTVDBSeriesInfo;
 
 public class MetaAttributes {
@@ -140,17 +142,31 @@ public class MetaAttributes {
 	}
 
 	private static final Pattern TRUSTED_TYPE = Pattern.compile("[a-z]+" // json-io aliases of primitives and basic types (int, long, string, date, ...)
-			+ "|\\[*L?(java\\.lang\\.(Object|String|Integer|Long|Double|Float|Short|Byte|Boolean|Character)|dev\\.davamu\\.filebotpro\\.[\\w.$]+);?"
+			+ "|\\[*L?java\\.lang\\.(Object|String|Integer|Long|Double|Float|Short|Byte|Boolean|Character);?"
 			+ "|java\\.lang\\.(String|Integer|Long|Double|Float|Short|Byte|Boolean|Character)"
 			+ "|java\\.util\\.(ArrayList|LinkedList|HashMap|LinkedHashMap|TreeMap|HashSet|LinkedHashSet|TreeSet|Date|Locale|EnumMap|EnumSet)"
-			+ "|java\\.util\\.(ImmutableCollections|Collections)\\$\\w+"
-			+ "|dev\\.davamu\\.filebotpro\\.[\\w.$]+");
+			+ "|java\\.util\\.(ImmutableCollections|Collections)\\$\\w+");
+
+	// only the data classes that the metadata of a file can contain: any other class of the application may have side effects
+	// when json-io creates it (e.g. format expressions compile Groovy code in their constructor)
+	private static final Set<String> TRUSTED_CLASSES = Stream.concat(JSON_TYPE_MAP.keySet().stream(), Stream.of(SeriesInfo.class, TheTVDBSeriesInfo.class, SimpleDate.class).map(Class::getName)).collect(toUnmodifiableSet());
+
+	// arrays of trusted classes, e.g. [Ldev.davamu.filebotpro.web.Episode;
+	private static final Pattern ARRAY_TYPE = Pattern.compile("\\[+L(.+);");
+
+	static boolean isTrustedType(String type) {
+		if (TRUSTED_TYPE.matcher(type).matches() || JSON_TYPE_MAP.containsValue(type)) {
+			return true;
+		}
+		Matcher array = ARRAY_TYPE.matcher(type);
+		return TRUSTED_CLASSES.contains(array.matches() ? array.group(1) : type);
+	}
 
 	static boolean hasOnlyTrustedTypes(String json) {
 		Matcher matcher = JSON_TYPE.matcher(decodeUnicodeEscapes(json));
 		while (matcher.find()) {
 			String type = matcher.group(1);
-			if (!TRUSTED_TYPE.matcher(type).matches() && !JSON_TYPE_MAP.containsValue(type)) {
+			if (!isTrustedType(type)) {
 				debug.warning("Ignored metadata with untrusted type: " + type);
 				return false;
 			}
