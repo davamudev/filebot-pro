@@ -19,6 +19,7 @@ All notable changes to FileBot Pro.
 - Extracting archives skips entries that point outside of the output folder, also with `--conflict index` and the external 7-Zip.
 - SFV, MD5 and SHA files can no longer make FileBot Pro hash files outside of their folder.
 - Chinese subtitles from Shooter are only downloaded from web links, never from local files.
+- Artwork, covers and fanart are only downloaded from web links, never copied from local files.
 
 ## [1.4.0] - 2026-10-25
 

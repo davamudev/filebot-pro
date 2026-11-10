@@ -360,6 +360,9 @@ public class ScriptShellMethods {
 	}
 
 	public static File saveAs(URL self, File file) throws IOException {
+		// artwork URLs come from online databases: a file: or jar: URL would copy local files into the media folders
+		WebRequest.requireHttp(self);
+
 		// resolve relative paths
 		file = file.getAbsoluteFile();
 
