@@ -5,10 +5,20 @@ set -e
 
 export DISPLAY=:0
 
-# the X processes run as root: keep their caches out of the /data volume
+# keep the caches of the X processes out of the /data volume
 HOME=/tmp
 
-Xvfb :0 -screen 0 "${DISPLAY_WIDTH:-1600}x${DISPLAY_HEIGHT:-900}x24" -nolisten tcp &
+# the display, window manager, VNC server and web client run as PUID / PGID too, not as root
+if [ "$(id -u)" = "0" ]; then
+	PUID="${PUID:-1000}"
+	PGID="${PGID:-1000}"
+	mkdir -p -m 1777 /tmp/.X11-unix
+	drop() { setpriv --reuid="$PUID" --regid="$PGID" --clear-groups "$@"; }
+else
+	drop() { "$@"; }
+fi
+
+drop Xvfb :0 -screen 0 "${DISPLAY_WIDTH:-1600}x${DISPLAY_HEIGHT:-900}x24" -nolisten tcp &
 
 # wait for the X server
 i=0
@@ -17,7 +27,7 @@ while [ ! -e /tmp/.X11-unix/X0 ] && [ $i -lt 100 ]; do
 	i=$((i + 1))
 done
 
-openbox &
+drop openbox &
 
 # the web client controls a desktop that renames and moves files: a password is required unless explicitly disabled
 if [ -z "$VNC_PASSWORD" ] && [ "$VNC_ALLOW_NO_PASSWORD" != "true" ]; then
@@ -37,12 +47,13 @@ if [ -n "$VNC_PASSWORD" ]; then
 	# the password is read from a file, not from the command line (visible to other processes). VNC only uses the first 8 characters
 	(umask 077; printf '%s
 ' "$VNC_PASSWORD" > /tmp/vncpasswd)
-	x11vnc -display :0 -forever -shared -quiet -localhost -rfbport 5900 -passwdfile /tmp/vncpasswd &
+	[ "$(id -u)" != "0" ] || chown "$PUID:$PGID" /tmp/vncpasswd
+	drop x11vnc -display :0 -forever -shared -quiet -localhost -rfbport 5900 -passwdfile /tmp/vncpasswd &
 else
-	x11vnc -display :0 -forever -shared -quiet -localhost -rfbport 5900 -nopw &
+	drop x11vnc -display :0 -forever -shared -quiet -localhost -rfbport 5900 -nopw &
 fi
 
-websockify --web /usr/share/novnc 5800 localhost:5900 > /dev/null 2>&1 &
+drop websockify --web /usr/share/novnc 5800 localhost:5900 > /dev/null 2>&1 &
 
 # stop the app with the container (wait returns as soon as a trapped signal arrives)
 trap 'kill "$pid" 2> /dev/null; exit 0' TERM INT
