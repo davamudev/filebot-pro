@@ -17,6 +17,7 @@ All notable changes to FileBot Pro.
 - Downloaded subtitles named after the provider's file name are always saved next to the video.
 - Titles from online databases can no longer move files outside of the `--output` folder through an absolute path.
 - Extracting archives skips entries that point outside of the output folder, also with `--conflict index` and the external 7-Zip.
+- SFV, MD5 and SHA files can no longer make FileBot Pro hash files outside of their folder.
 
 ## [1.4.0] - 2026-10-25
 

@@ -69,7 +69,11 @@ public class VerificationFormat extends Format {
 		throw new UnsupportedOperationException();
 	}
 
-	protected Entry<File, String> entry(String path, String hash) {
+	protected Entry<File, String> entry(String path, String hash) throws ParseException {
+		// entries are relative to the folder of the verification file: never read files outside of it
+		if (path.matches("\\s*([/\\\\]|[A-Za-z]:).*") || Pattern.compile("(^|[/\\\\])\\s*\\.\\.\\s*([/\\\\]|$)").matcher(path).find()) {
+			throw new ParseException("Path outside of the verification file folder: " + path, 0);
+		}
 		return new SimpleImmutableEntry<File, String>(new File(path), hash);
 	}
 
