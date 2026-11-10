@@ -29,6 +29,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
 import dev.davamu.filebotpro.platform.windows.WinAppUtilities;
+import dev.davamu.filebotpro.util.FileUtilities;
 
 /**
  * Pass the files of another launch of the desktop app (e.g. Open With in the file manager) to the window that is already
@@ -149,7 +150,8 @@ public final class SingleInstance {
 		try {
 			ServerSocket server = new ServerSocket(0, 50, InetAddress.getLoopbackAddress());
 			String token = UUID.randomUUID().toString();
-			Files.write(getPortFile(), List.of(String.valueOf(server.getLocalPort()), token, String.valueOf(ProcessHandle.current().pid())), UTF_8);
+			// the token lets local processes send files to this instance: readable by the owner only
+			Files.write(FileUtilities.createOwnerOnlyFile(getPortFile()), List.of(String.valueOf(server.getLocalPort()), token, String.valueOf(ProcessHandle.current().pid())), UTF_8);
 
 			if (files.size() > 0) {
 				receive(files);

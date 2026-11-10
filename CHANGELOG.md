@@ -26,6 +26,7 @@ All notable changes to FileBot Pro.
 - `fn:duplicates --action delete` only deletes movies and episodes whose stored metadata matches their file name.
 - File names that look like HTML are shown as plain text in the Rename panel.
 - Docker: the `gui` image refuses to start with the example VNC password of the documentation.
+- Linux and macOS: the preferences backup with the OpenSubtitles login and a new user data folder are only readable by their owner.
 
 ## [1.4.0] - 2026-10-25
 

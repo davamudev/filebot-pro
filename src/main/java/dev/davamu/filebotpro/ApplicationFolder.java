@@ -9,6 +9,8 @@ import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.PosixFileAttributeView;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.util.logging.Level;
 
 public enum ApplicationFolder {
@@ -48,6 +50,11 @@ public enum ApplicationFolder {
 			// create folders if necessary
 			if (!Files.exists(f, LinkOption.NOFOLLOW_LINKS)) {
 				Files.createDirectories(f);
+
+				// the user folder holds settings, logins and history: owner only (rwx------) on Linux and macOS, whatever the umask
+				if (name().equals("AppData") && Files.getFileStore(f).supportsFileAttributeView(PosixFileAttributeView.class)) {
+					Files.setPosixFilePermissions(f, PosixFilePermissions.fromString("rwx------"));
+				}
 			}
 
 			this.path = f.toRealPath(LinkOption.NOFOLLOW_LINKS).toFile();

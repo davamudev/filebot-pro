@@ -287,7 +287,8 @@ public final class Settings {
 	}
 
 	public static void store(File f) {
-		try (OutputStream out = new BufferedOutputStream(new FileOutputStream(f))) {
+		try (OutputStream out = new BufferedOutputStream(new FileOutputStream(createOwnerOnlyFile(f.toPath()).toFile()))) {
+			// the preferences contain the OpenSubtitles login, so the file is readable by its owner only
 			// application preferences only, not the preferences of every other Java application of this user
 			Preferences.userNodeForPackage(Settings.class).exportSubtree(out);
 		} catch (Exception e) {

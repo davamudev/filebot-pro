@@ -33,6 +33,8 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.DosFileAttributes;
+import java.nio.file.attribute.PosixFileAttributeView;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayDeque;
@@ -422,6 +424,31 @@ public final class FileUtilities {
 			return Files.move(link, file.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE).toFile();
 		} catch (AtomicMoveNotSupportedException e) {
 			return Files.move(link, file.toPath(), StandardCopyOption.REPLACE_EXISTING).toFile();
+		}
+	}
+
+	/**
+	 * Create the file if necessary and make it readable and writable by its owner only (rw------- on Linux and macOS), before any secret is written
+	 * to it. File systems without POSIX permissions (Windows) keep their defaults (the user profile is private).
+	 */
+	public static Path createOwnerOnlyFile(Path file) throws IOException {
+		if (!Files.exists(file, LinkOption.NOFOLLOW_LINKS)) {
+			Files.createFile(file);
+		}
+		setOwnerOnly(file);
+		return file;
+	}
+
+	/**
+	 * rw------- for files and rwx------ for folders, if the file system supports POSIX permissions
+	 */
+	public static void setOwnerOnly(Path path) {
+		try {
+			if (Files.getFileStore(path).supportsFileAttributeView(PosixFileAttributeView.class)) {
+				Files.setPosixFilePermissions(path, PosixFilePermissions.fromString(Files.isDirectory(path) ? "rwx------" : "rw-------"));
+			}
+		} catch (Exception e) {
+			debug.warning(cause("Failed to set owner-only permissions: " + path, e));
 		}
 	}
 
