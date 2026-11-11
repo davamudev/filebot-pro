@@ -8,6 +8,8 @@ import static dev.davamu.filebotpro.util.FileUtilities.*;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.ClosedWatchServiceException;
+import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
@@ -19,6 +21,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -32,7 +35,11 @@ public abstract class FolderWatchService implements Closeable {
 	private final Collection<File> commitSet = new HashSet<File>();
 
 	private final ExecutorService processor = Executors.newSingleThreadExecutor();
-	private final ExecutorService watchers = Executors.newCachedThreadPool(new DefaultThreadFactory("FolderWatchService"));
+	private final ExecutorService watcher = Executors.newSingleThreadExecutor(new DefaultThreadFactory("FolderWatchService"));
+
+	// one watch service (one inotify instance on Linux) for all folders, so large folder trees don't run into the per-user limit of instances
+	private final Map<WatchKey, Path> watchKeys = new ConcurrentHashMap<WatchKey, Path>();
+	private WatchService watchService;
 
 	private long commitDelay = 500; // 0.5 s
 	private boolean commitPerFolder = true;
@@ -102,7 +109,7 @@ public abstract class FolderWatchService implements Closeable {
 
 	public abstract void processCommitSet(File[] files, File dir);
 
-	public synchronized void watchFolder(File folder) throws IOException {
+	public void watchFolder(File folder) throws IOException {
 		if (!watchTree) {
 			startWatch(folder);
 			return;
@@ -120,126 +127,99 @@ public abstract class FolderWatchService implements Closeable {
 		startWatch(root);
 	}
 
-	private synchronized void startWatch(File node) throws IOException {
+	private void startWatch(File node) throws IOException {
 		if (!node.isDirectory()) {
 			throw new IllegalArgumentException("Must be a folder: " + node);
 		}
 
-		watchers.submit(new FolderWatcher(node) {
-
-			@Override
-			protected void processEvents(List<WatchEvent<?>> events) {
-				synchronized (commitSet) {
-					resetCommitTimer();
-					super.processEvents(events);
-				}
+		synchronized (watchKeys) {
+			if (watchService == null) {
+				watchService = FileSystems.getDefault().newWatchService();
+				watcher.submit(this::watch);
 			}
 
-			@Override
-			protected void created(File file) {
-				synchronized (commitSet) {
-					if (!file.isDirectory()) {
-						commitSet.add(file);
-						return;
-					}
+			Path path = node.toPath();
+			watchKeys.put(path.register(watchService, ENTRY_CREATE, ENTRY_MODIFY, ENTRY_DELETE), path);
+		}
+	}
 
-					// start watching newly created folder
-					if (watchTree && NOT_HIDDEN.accept(file)) {
-						try {
-							commitSet.addAll(listFiles(file, FILES));
-							watchFolder(file);
-						} catch (IOException e) {
-							debug.log(Level.SEVERE, e.getMessage(), e);
-						}
-					}
+	private void watch() {
+		try {
+			while (true) {
+				WatchKey key = watchService.take();
+				Path folder = watchKeys.get(key);
+
+				if (folder != null) {
+					processEvents(folder, key.pollEvents());
+				}
+
+				if (!key.reset()) {
+					watchKeys.remove(key);
 				}
 			}
+		} catch (InterruptedException | ClosedWatchServiceException e) {
+			// ignore, part of an orderly shutdown
+		} catch (Exception e) {
+			debug.log(Level.WARNING, e.getMessage(), e);
+		}
+	}
 
-			@Override
-			protected void modified(File file) {
-				synchronized (commitSet) {
-					if (!file.isDirectory()) {
-						commitSet.add(file);
-					}
+	private void processEvents(Path folder, List<WatchEvent<?>> events) {
+		// outside of the commitSet lock, commit() takes both locks in the opposite order
+		resetCommitTimer();
+
+		synchronized (commitSet) {
+			for (WatchEvent<?> event : events) {
+				if (event.kind() == OVERFLOW) {
+					continue;
 				}
-			}
 
-			@Override
-			protected void deleted(File file) {
-				synchronized (commitSet) {
+				File file = folder.resolve(event.context().toString()).toFile();
+
+				if (event.kind() == ENTRY_CREATE) {
+					created(file);
+				} else if (event.kind() == ENTRY_MODIFY) {
+					modified(file);
+				} else if (event.kind() == ENTRY_DELETE) {
 					commitSet.remove(file);
 				}
 			}
-		});
+		}
+	}
+
+	private void created(File file) {
+		if (!file.isDirectory()) {
+			commitSet.add(file);
+			return;
+		}
+
+		// start watching newly created folder
+		if (watchTree && NOT_HIDDEN.accept(file)) {
+			try {
+				commitSet.addAll(listFiles(file, FILES));
+				watchFolder(file);
+			} catch (IOException e) {
+				debug.log(Level.SEVERE, e.getMessage(), e);
+			}
+		}
+	}
+
+	private void modified(File file) {
+		if (!file.isDirectory()) {
+			commitSet.add(file);
+		}
 	}
 
 	@Override
 	public synchronized void close() throws IOException {
 		commitTimer.cancel();
 		processor.shutdownNow();
-		watchers.shutdownNow();
-	}
+		watcher.shutdownNow();
 
-	private abstract static class FolderWatcher implements Runnable, Closeable {
-
-		private final Path node;
-		private final WatchService watchService;
-
-		public FolderWatcher(File node) throws IOException {
-			this.node = node.toPath();
-			this.watchService = this.node.getFileSystem().newWatchService();
-			this.node.register(watchService, ENTRY_CREATE, ENTRY_MODIFY, ENTRY_DELETE);
-		}
-
-		@Override
-		public void run() {
-			try {
-				watch();
-			} catch (InterruptedException e) {
-				// ignore, part of an orderly shutdown
-			} catch (Exception e) {
-				debug.log(Level.WARNING, e.getMessage(), e);
+		synchronized (watchKeys) {
+			if (watchService != null) {
+				watchService.close();
 			}
-		}
-
-		public void watch() throws IOException, InterruptedException {
-			try {
-				boolean valid = true;
-				while (valid) {
-					WatchKey key = watchService.take();
-					processEvents(key.pollEvents());
-					valid = key.reset();
-				}
-			} finally {
-				this.close();
-			}
-		}
-
-		public File getAbsoluteFile(WatchEvent event) {
-			return node.resolve(event.context().toString()).toFile();
-		}
-
-		protected void processEvents(List<WatchEvent<?>> list) {
-			for (WatchEvent event : list) {
-				if (event.kind() == ENTRY_CREATE) {
-					created(getAbsoluteFile(event));
-				} else if (event.kind() == ENTRY_MODIFY) {
-					modified(getAbsoluteFile(event));
-				} else if (event.kind() == ENTRY_DELETE) {
-					deleted(getAbsoluteFile(event));
-				}
-			}
-		}
-
-		protected abstract void created(File file);
-
-		protected abstract void modified(File file);
-
-		protected abstract void deleted(File file);
-
-		@Override
-		public void close() throws IOException {
-			watchService.close();
 		}
 	}
 

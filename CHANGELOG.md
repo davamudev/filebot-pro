@@ -11,6 +11,10 @@ All notable changes to FileBot Pro.
 - One-command setup of the APT repository on Ubuntu and Debian (see the installation guide).
 - The `.deb` package adds the APT repository, so new versions arrive with the system updates.
 
+### Fixed
+
+- `fn:watcher` no longer fails with "User limit of inotify instances reached" on folders with many subfolders.
+
 ### Security
 
 - Metadata stored in a file's extended attributes can no longer run code when the file is read.
