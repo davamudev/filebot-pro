@@ -1,14 +1,14 @@
 {
   "format": 1,
-  "date": "2026-11-08T19:17:08Z",
+  "date": "2026-11-11T00:34:49Z",
   "files": {
     "anidb-pictures.txt.xz": { "sha256": "e977fec5ba1e434ba78af8843c964a5778be36c38b63eda064c325bacfc687ed", "size": 86712, "date": "2026-11-08T19:17:08Z" },
     "anidb.txt.xz": { "sha256": "a715bda61380fa3abbbaf857c8c4eaf747a61d03894fa851d3588a509acfbd40", "size": 1260216, "date": "2026-11-08T19:17:08Z" },
-    "anime-list.xml.xz": { "sha256": "2990e0a400ccd7f7cda9399bdbebbc5906dce1ff4d5bee1cb526b4bef6aa36ab", "size": 218796, "date": "2026-11-08T19:17:08Z" },
-    "discdb.txt.xz": { "sha256": "a93f560fdce8f4901280a21502128d585345e5dc2cb85d9cb255f85216eae59c", "size": 804796, "date": "2026-11-08T19:17:08Z" },
-    "mediainfo.txt.xz": { "sha256": "28a10d468548bc01b34e1cf4fac13850c3199788d86c9a44c2425fd0440f8868", "size": 16876, "date": "2026-11-08T19:17:08Z" },
-    "moviedb.txt.xz": { "sha256": "937ffb68d538bdaba195dc621ef1820cee374d08725cfe33e97a852afde335da", "size": 2125196, "date": "2026-11-08T19:17:08Z" },
-    "osdb.txt.xz": { "sha256": "fbbd17794300243387d5b0864f9a80dec583737b79c5d1017dab1c72f2e4a921", "size": 2755348, "date": "2026-11-08T19:17:08Z" },
-    "series.txt.xz": { "sha256": "9feb8325ed387ccd104bc2029d5452e8c935e9caf97576aa874fcb4baf2e3834", "size": 1020404, "date": "2026-11-08T19:17:08Z" }
+    "anime-list.xml.xz": { "sha256": "ef9f7b15a48976a2f34978c3d67d70e00de5a6a383e7e2913aac73fb731e4c2a", "size": 218820, "date": "2026-11-11T00:34:49Z" },
+    "discdb.txt.xz": { "sha256": "060d75ca515c6b8e712efd7b0c669a0e2983736448aae259b263b10788e3093d", "size": 825432, "date": "2026-11-11T00:34:49Z" },
+    "mediainfo.txt.xz": { "sha256": "eaceff75c81b9ac4a2eb95e30972547280f0604c86b519643a8a48933647b489", "size": 16908, "date": "2026-11-11T00:34:49Z" },
+    "moviedb.txt.xz": { "sha256": "e27d00a3e7d3f130cf0f9cdd1380647321549aaf8ea58f3888ccc721e3cd9de0", "size": 2125784, "date": "2026-11-11T00:34:49Z" },
+    "osdb.txt.xz": { "sha256": "5e94c149561cf17929d36d2fad157556393e99533a20caaefc75ead34f729938", "size": 2759580, "date": "2026-11-11T00:34:49Z" },
+    "series.txt.xz": { "sha256": "9b2e6a3dcad1e18c5f0465b29a308fb6bb20479ea0990f886556e638b5feedb6", "size": 1027492, "date": "2026-11-11T00:34:49Z" }
   }
 }
