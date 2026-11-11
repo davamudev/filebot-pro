@@ -18,11 +18,19 @@ else
 	drop() { "$@"; }
 fi
 
+# a stopped and restarted container keeps /tmp: the lock and socket of the previous X server would stop Xvfb from starting
+rm -f /tmp/.X0-lock /tmp/.X11-unix/X0 || true
+
 drop Xvfb :0 -screen 0 "${DISPLAY_WIDTH:-1600}x${DISPLAY_HEIGHT:-900}x24" -nolisten tcp &
+xvfb=$!
 
 # wait for the X server
 i=0
 while [ ! -e /tmp/.X11-unix/X0 ] && [ $i -lt 100 ]; do
+	if ! kill -0 "$xvfb" 2> /dev/null; then
+		echo "Xvfb could not start the display :0" >&2
+		exit 1
+	fi
 	sleep 0.1
 	i=$((i + 1))
 done

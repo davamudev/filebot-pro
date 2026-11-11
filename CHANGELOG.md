@@ -14,6 +14,7 @@ All notable changes to FileBot Pro.
 ### Fixed
 
 - `fn:watcher` no longer fails with "User limit of inotify instances reached" on folders with many subfolders.
+- Docker: the `gui` image starts again after the container is stopped and started.
 
 ### Security
 
