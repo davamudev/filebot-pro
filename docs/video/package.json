@@ -14,7 +14,7 @@
     },
     "dependencies": {
         "@remotion/cli": "4.0.539",
-        "@remotion/google-fonts": "4.0.537",
+        "@remotion/google-fonts": "4.0.542",
         "@remotion/transitions": "4.0.539",
         "lucide-react": "1.61.0",
         "react": "19.3.1",
