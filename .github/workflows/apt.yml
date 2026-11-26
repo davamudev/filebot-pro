@@ -52,6 +52,10 @@ jobs:
           fi
           printf '%s\n' "$APT_GPG_PRIVATE_KEY" | gpg --batch --import
 
+      # the runner image no longer ships apt-ftparchive
+      - name: Tools
+        run: sudo apt-get install --yes --no-install-recommends apt-utils
+
       - name: Indexes
         env:
           APT_GPG_PASSPHRASE: ${{ secrets.APT_GPG_PASSPHRASE }}
