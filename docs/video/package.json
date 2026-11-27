@@ -13,7 +13,7 @@
         "render": "npm run music && npm run render:en && npm run render:es && npm run render:posters"
     },
     "dependencies": {
-        "@remotion/cli": "4.0.539",
+        "@remotion/cli": "4.0.542",
         "@remotion/google-fonts": "4.0.537",
         "@remotion/transitions": "4.0.539",
         "lucide-react": "1.61.0",
